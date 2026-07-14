@@ -8,7 +8,7 @@ A pipeline for analyzing raw historical/ancient DNA obtained from a sequencing f
 
 Below is an overview of the steps of the pipeline:
 
-![Pipeline Overview](docs/img/pf_workflow_withoutLogo.svg)
+![Pipeline Overview](docs/img/pf_pipeline_process_withoutLogo.svg)
 
 For detailed information about the processing steps, see the [Process Overview](docs/process_overview.md) page. For common questions and troubleshooting, see the [FAQ](docs/FAQ.md).
 
