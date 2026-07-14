@@ -11,19 +11,22 @@ def create_multiqc_reference_input(wildcards):
 
         samples_of_individual = get_samples_for_species_individual(species, individual)
 
-        if config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("execute", True) == True and config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("centrifuge", {}).get("execute", True) == True:
-            for sample in samples_of_individual:
-                # get raw read file paths
-                raw_reads = get_raw_reads_for_sample(species, sample)
-                # contamination analysis outputs
-                file_list.append(f"{species}/results/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv")
+        if config.get("pipeline", {}).get("raw_reads_processing", {}).get("execute", True) == True:
 
-        if config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("execute", True) == True and config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("execute", True) == True:
-            file_list.append(f"{species}/results/contamination_analysis/ecmsd/{individual}_Mito_summary_hits_combined.tsv")
+            if config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("execute", True) == True:
+                
+                if config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("centrifuge", {}).get("execute", True) == True:
+                    
+                    for sample in samples_of_individual:
+                        raw_reads = get_raw_reads_for_sample(species, sample)
+                        file_list.append(f"{species}/results/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv")
 
-        # merged reads fastqc
-        if config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("execute", True) == True and config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("settings", {}).get("multiqc_merged_reads", True) == True:
-            file_list.append(f"{species}/results/reads/reads_merged/fastqc/{individual}_merged_fastqc.zip")
+                if config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("execute", True) == True:
+                    file_list.append(f"{species}/results/contamination_analysis/ecmsd/{individual}_Mito_summary_hits_combined.tsv")
+
+            # merged reads fastqc
+            if config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("execute", True) == True and config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("settings", {}).get("multiqc_merged_reads", True) == True:
+                file_list.append(f"{species}/results/reads/reads_merged/fastqc/{individual}_merged_fastqc.zip")
 
         # bam analytics for the single reference
         if config.get("pipeline", {}).get("reference_processing", {}).get("execute", False) == True:
