@@ -182,6 +182,8 @@ Merged per-individual reads are mapped to the reference genome. Mapping always r
 
 Removes PCR and sequencing duplicates using DeDup. Default: **off**.
 
+Uses a [modified DeDup fork](https://github.com/SarahSaadain/DeDup) for performance improvements over upstream DeDup ([benchmark comparison repo](https://github.com/SarahSaadain/DeDup_comparison_fork)).
+
 | Setting | Default | Description |
 |---|---|---|
 | `settings.min_contigs_per_cluster` | `1` | Minimum number of contigs grouped into a cluster. Small contigs below this count are merged together before deduplication. |

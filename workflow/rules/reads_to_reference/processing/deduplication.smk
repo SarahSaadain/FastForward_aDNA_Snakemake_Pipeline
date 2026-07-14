@@ -153,10 +153,25 @@ rule dedup_split_bam_into_clusters_by_contig_cluster:
     wrapper:
         "v9.3.0/bio/samtools/view"
 
+# Rule: Index split cluster BAM file
+rule dedup_index_split_cluster_bam:
+    input:
+        "{species}/processed/{reference}/dedup_cluster/{individual}/split_cluster/{individual}_{reference}_cluster_{start}_{end}.bam"
+    output:
+        temp("{species}/processed/{reference}/dedup_cluster/{individual}/split_cluster/{individual}_{reference}_cluster_{start}_{end}.bam.bai")
+    message:
+        "Indexing split BAM file for cluster {wildcards.start}-{wildcards.end} for individual {wildcards.individual} in species {wildcards.species}"
+    params:
+        extra="",  # optional params string
+    threads: 2
+    wrapper:
+        "v9.3.0/bio/samtools/index"
+
 # Rule: Deduplicate BAM file for each contig cluster
 rule dedup_deduplicate_bam_cluster:
     input:
-        bam="{species}/processed/{reference}/dedup_cluster/{individual}/split_cluster/{individual}_{reference}_cluster_{start}_{end}.bam"
+        bam="{species}/processed/{reference}/dedup_cluster/{individual}/split_cluster/{individual}_{reference}_cluster_{start}_{end}.bam",
+        bai="{species}/processed/{reference}/dedup_cluster/{individual}/split_cluster/{individual}_{reference}_cluster_{start}_{end}.bam.bai"
     output:
         dedup_folder= directory("{species}/processed/{reference}/dedup_cluster/{individual}/dedup_{start}_{end}/"),
         dedup_bam   = temp("{species}/processed/{reference}/dedup_cluster/{individual}/dedup_{start}_{end}/{individual}_{reference}_cluster_{start}_{end}_rmdup.bam"),
@@ -168,12 +183,14 @@ rule dedup_deduplicate_bam_cluster:
         "{species}/processed/{reference}/dedup_cluster/{individual}/dedup_{start}_{end}/{individual}_{reference}_{start}_{end}.dedup.log",
     resources:
         mem_mb = 20000
+    params:
+        jar = DEDUP_JAR_PATH
     conda:
         "../../../envs/dedup.yaml"
     shell:
         """
         mkdir -p {output.dedup_folder}
-        dedup -Xms5g -Xmx20g --input {input.bam} --merged --output {output.dedup_folder} > {log}
+        java -Xms5g -Xmx20g -jar {params.jar} --input {input.bam} --merged --output {output.dedup_folder}
         """
 
 # Rule: Merge deduplicated BAM files

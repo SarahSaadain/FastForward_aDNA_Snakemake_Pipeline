@@ -67,6 +67,8 @@ The resulting alignments are immediately sorted by coordinate and indexed. The u
 
 PCR and sequencing duplicates are removed using **DeDup**, a tool specifically designed for ancient DNA that correctly handles merged single-stranded reads. Deduplication is controlled by **`pipeline.reference_processing.deduplication.execute`** (default `true`). If disabled, the sorted BAM from mapping is passed directly to subsequent steps.
 
+The pipeline uses a [modified DeDup fork](https://github.com/SarahSaadain/DeDup) for performance improvements over upstream DeDup; the jar is downloaded automatically (see `workflow/scripts/bootstrap_dedup_jar.py`). Benchmarks against upstream DeDup are tracked in a [separate comparison repo](https://github.com/SarahSaadain/DeDup_comparison_fork).
+
 Because DeDup can be memory-intensive on reference genomes with many contigs, the pipeline uses a divide-and-conquer approach: contigs are grouped into clusters, the sorted BAM is split by cluster, each cluster is deduplicated independently, and the results are merged back together. The maximum cluster size is configurable via **`deduplication.settings.max_contigs_per_cluster`** (default 500). Lowering this value reduces peak memory use at the cost of more merge operations; reducing it is only necessary for large, highly fragmented reference genomes. Each deduplication run produces a histogram and a JSON statistics file; the per-cluster JSON files are merged into a single summary that feeds into downstream QC reporting.
 
 ### DNA Damage Analysis and BAM Rescaling
