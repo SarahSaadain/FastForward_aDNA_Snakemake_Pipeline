@@ -126,12 +126,12 @@ pipeline:
     # Deduplication settings
     deduplication:
       # When true, this sub-stage will be executed (Default: true)
-      execute: false
+      execute: true
       settings:
         # To increase performance, deduplication will be done per cluster of contigs
         # Below settings define how the contigs will be clustered
         # Optional: Maximum number of contigs per cluster (Default: 10 if not specified)
-        max_contigs_per_cluster: 10
+        min_contigs_per_cluster: 1
         # Optional: Maximum number of contigs per cluster (Default: 500 if not specified)
         max_contigs_per_cluster: 500
     
