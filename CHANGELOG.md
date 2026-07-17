@@ -2,6 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
+
 ## [2.0.0] - 2026-06-02
 
 > ⚠️ NOTE: This release includes significant changes to the pipeline's configuration structure and output organization. Users will need to update their existing configurations and reorganize outputs to align with the new structure.
@@ -22,6 +23,7 @@ All notable changes to this project will be documented in this file.
 - **Species configuration**: New `execute` option to conditionally include/exclude a species from processing; new species-level settings for individuals, references, and feature libraries; preview logging now reports counts of references, individuals, samples, feature libraries, and SCG libraries; config designer updated to match
 - **DeDup**: Deduplication now uses a modified DeDup fork for improved performance over upstream DeDup, with the jar pinned and downloaded automatically; minimum contigs-per-cluster is now configurable (default `1`)
 - **SeqVista**: Replaced `teplotter` with SeqVista for dynamics normalization; updated to latest SeqVista version with compressed output; added cross-library stats combination; added plotting options for individual and comparison outputs; added flag files for quick sequence checks; added SNP/indel statistics calculation and comparison, mean coverage calculation and additional output columns; output files now gzip-compressed
+- **SeqVista**: Added independent `seqvista.settings.coverage_analysis` (default: on), `snp_analysis` (default: off), and `indel_analysis` (default: off) settings to control which per-individual and species-level outputs are generated; config designer updated to match
 - **Config Designer**: New interactive configuration designer to guide pipeline setup
 - **Configurable mapper selection**: Pipeline now supports `bwa-aln`, `bwa-mem2`, and `minimap2` for dynamics and reference processing via config
 - **MultiQC refactor**: Restructured data preparation and analytics rules; output paths now include species and individual level directories; added optional `c_curve`, `qualimap`, and `samtools stats` analysis stages; streamlined contamination analysis execution logic for species and individual reports
