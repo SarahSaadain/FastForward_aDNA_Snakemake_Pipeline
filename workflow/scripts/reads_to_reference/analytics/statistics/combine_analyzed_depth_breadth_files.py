@@ -24,7 +24,7 @@ def combine_analysis_files(individual_analysis_files, combined_file_path, combin
 
             # Parse BAM filename from analysis filename
             original_bam_base = os.path.basename(analysis_file).replace(
-                ".coverage_analysis.csv", ""
+                "_coverage_analysis.csv", ""
             )
             original_bam_filename = original_bam_base + "_final.bam"
 
