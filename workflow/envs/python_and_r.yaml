@@ -7,6 +7,7 @@ dependencies:
   - biopython
   - pysam
   - pandas
+  - numpy
   - r-base=4.3
   - r-ggplot2
   - r-dplyr
