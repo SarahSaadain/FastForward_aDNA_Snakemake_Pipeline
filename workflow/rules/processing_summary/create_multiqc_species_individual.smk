@@ -40,7 +40,7 @@ def create_multiqc_species_individual_input(wildcards):
             file_list.append(f"{species}/results/reads/reads_merged/fastqc/{individual}_merged_fastqc.zip")
 
     # bam analytics
-    if config.get("pipeline", {}).get("reference_processing", {}).get("execute", False) == True:
+    if config.get("pipeline", {}).get("reference_processing", {}).get("execute", True) == True:
 
         for reference in references:
             
