@@ -20,7 +20,7 @@ rule preseq_c_curve:
         """
         preseq c_curve \
             -B \
-            -o {output.txt} \
-            {input.bam} \
-            > {log} 2>&1
+            -o "{output.txt}" \
+            "{input.bam}" \
+            > "{log}" 2>&1
         """

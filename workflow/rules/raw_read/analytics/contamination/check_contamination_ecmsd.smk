@@ -32,7 +32,7 @@ rule ecmsd_database_setup:
         "Setting up ECMSD database."
     shell:
         """
-        ECMSD --create-db --db-folder {output}
+        ECMSD --create-db --db-folder "{output}"
         """
 
 rule ecmsd_analyze_contamination:
@@ -60,7 +60,7 @@ rule ecmsd_analyze_contamination:
     message: "Running ECMSD contamination analysis for {input.fastq}"
     shell:
         """
-        outdir=$(dirname $(dirname {output.summary}))
+        outdir=$(dirname "$(dirname "{output.summary}")")
         mkdir -p "$outdir"
 
         echo "Running ECMSD for sample {wildcards.sample}"
@@ -68,15 +68,15 @@ rule ecmsd_analyze_contamination:
         echo "Output folder: $outdir"
 
         ECMSD \
-            --fwd {input.fastq} \
+            --fwd "{input.fastq}" \
             --out "$outdir" \
             --threads {threads} \
-            --prefix {params.prefix} \
+            --prefix "{params.prefix}" \
             --cov-threshold {params.cov_threshold} \
             --top-n {params.top_n} \
             --mapping_quality {params.mapping_quality} \
-            --taxonomic-hierarchy {params.taxonomic_hierarchy} \
-            --db-folder {input.database} \
+            --taxonomic-hierarchy "{params.taxonomic_hierarchy}" \
+            --db-folder "{input.database}" \
             --force
         """
 

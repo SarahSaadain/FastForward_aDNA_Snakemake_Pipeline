@@ -41,8 +41,8 @@ if _filter_remove:
             echo "Copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}..."
             echo "Input bam: {input.bam}"
             echo "Output bam: {output.bam}"
-            cp {input.bam} {output.bam}
-            cp {input.bai} {output.bai}
+            cp "{input.bam}" "{output.bam}"
+            cp "{input.bai}" "{output.bai}"
             echo "Done copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}."
             """
 else:
@@ -67,7 +67,7 @@ else:
             echo "Copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}..."
             echo "Input bam: {input.bam}"
             echo "Output bam: {output.bam}"
-            cp {input.bam} {output.bam}
-            cp {input.bai} {output.bai}
+            cp "{input.bam}" "{output.bam}"
+            cp "{input.bai}" "{output.bai}"
             echo "Done copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}."
             """

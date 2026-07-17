@@ -104,7 +104,7 @@ rule dedup_extract_contigs_from_reference_fai:
         "Extracting full-length contig BED from FAI for {wildcards.species} / {wildcards.reference}"
     shell:
         """
-        awk '{{print $1 "\t0\t" $2}}' {input.fai} > {output.bed}
+        awk '{{print $1 "\t0\t" $2}}' "{input.fai}" > "{output.bed}"
         """
 
 # Checkpoint: Create all contig clusters for deduplication
@@ -189,8 +189,8 @@ rule dedup_deduplicate_bam_cluster:
         "../../../envs/dedup.yaml"
     shell:
         """
-        mkdir -p {output.dedup_folder}
-        java -Xms5g -Xmx20g -jar {params.jar} --input {input.bam} --merged --output {output.dedup_folder}
+        mkdir -p "{output.dedup_folder}"
+        java -Xms5g -Xmx20g -jar "{params.jar}" --input "{input.bam}" --merged --output "{output.dedup_folder}"
         """
 
 # Rule: Merge deduplicated BAM files

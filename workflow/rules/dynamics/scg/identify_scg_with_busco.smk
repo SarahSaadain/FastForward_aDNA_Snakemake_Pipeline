@@ -46,7 +46,7 @@ rule prepare_scg_determination_reference:
     message: "Preparing reference genome for SCG determination for {wildcards.species}"
     shell:
         """
-        ln -sf $(realpath {input.ref}) {output.ref_link}
+        ln -sf "$(realpath "{input.ref}")" "{output.ref_link}"
         """
 
 rule run_busco_for_scg_determination:

@@ -71,7 +71,7 @@ rule clean_feature_library_name:
     message: "Preparing TE library for {wildcards.species}"
     shell:
         """
-        ln -sf $(realpath {input}) {output}
+        ln -sf "$(realpath "{input}")" "{output}"
         """
 
 rule prepare_feature_library:
@@ -83,7 +83,7 @@ rule prepare_feature_library:
     shell:
         # remove trailing whitespace from headers and append _fle to each header
         """
-        sed -E '/^>/ s/[[:space:]]//g; /^>/ s/(_fle)?$/_fle/' {input} > {output}
+        sed -E '/^>/ s/[[:space:]]//g; /^>/ s/(_fle)?$/_fle/' "{input}" > "{output}"
         """
 
 rule clean_scg_library_name:
@@ -94,7 +94,7 @@ rule clean_scg_library_name:
     message: "Preparing SCG library for {wildcards.species}"
     shell:
         """
-        ln -sf $(realpath {input}) {output}
+        ln -sf "$(realpath "{input}")" "{output}"
         """
 
 rule prepare_scg_library:
@@ -106,7 +106,7 @@ rule prepare_scg_library:
     shell:
         # remove trailing whitespace from headers and append _scg to each header
         """
-        sed -E '/^>/ s/[[:space:]]//g; /^>/ s/(_scg)?$/_scg/' {input} > {output}
+        sed -E '/^>/ s/[[:space:]]//g; /^>/ s/(_scg)?$/_scg/' "{input}" > "{output}"
         """
 
 if _comp_execute:
@@ -119,7 +119,7 @@ if _comp_execute:
         shell:
             # Skip any FASTA entry whose header ends in _comp (header + its sequence lines)
             """
-            awk '/^>/{{skip=/_comp$/}} !skip' {input} > {output}
+            awk '/^>/{{skip=/_comp$/}} !skip' "{input}" > "{output}"
             """
 
     rule prepare_competition_library:
@@ -131,7 +131,7 @@ if _comp_execute:
         shell:
             # remove trailing whitespace from headers and append _comp to each header
             """
-            sed -E '/^>/ s/[[:space:]]//g; /^>/ s/(_comp)?$/_comp/' {input} > {output}
+            sed -E '/^>/ s/[[:space:]]//g; /^>/ s/(_comp)?$/_comp/' "{input}" > "{output}"
             """
 
 rule combine_scg_and_ref_library:
@@ -144,5 +144,5 @@ rule combine_scg_and_ref_library:
     message: "Concatenating SCG and Feature libraries for {wildcards.species}"
     shell:
         """
-        cat {input.scg} {input.fl} {input.comp} > {output.library}
+        cat "{input.scg}" "{input.fl}" {input.comp} > "{output.library}"
         """

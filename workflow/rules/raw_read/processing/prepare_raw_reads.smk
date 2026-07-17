@@ -11,6 +11,6 @@ rule prepare_raw_reads:
     message: "Moving raw read file {input.raw_read} to {output.raw_read}"
     shell: 
         """
-        mv {input.raw_read} {output.raw_read}
+        mv "{input.raw_read}" "{output.raw_read}"
         echo "Done moving raw read file {input.raw_read} to {output.raw_read}"
         """

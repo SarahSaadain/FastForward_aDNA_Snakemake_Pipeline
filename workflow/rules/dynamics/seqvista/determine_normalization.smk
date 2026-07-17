@@ -60,5 +60,5 @@ rule plot_normalization:
         "../../../envs/python_and_r.yaml"
     shell:
         """
-        Rscript workflow/scripts/dynamics/normalization/plot_normalization.r --input {input} --output {output} --order {params.order} --names {params.names}
+        Rscript workflow/scripts/dynamics/normalization/plot_normalization.r --input "{input}" --output "{output}" --order "{params.order}" --names "{params.names}"
         """

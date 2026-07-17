@@ -33,4 +33,4 @@ rule get_quality_filtered_final:
         final=temp("{species}/processed/reads/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz")
     message: "Selecting quality filtered reads for {wildcards.sample}"
     shell:
-        "cp {input.source} {output.final}"
+        "cp \"{input.source}\" \"{output.final}\""

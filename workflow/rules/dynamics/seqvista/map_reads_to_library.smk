@@ -160,9 +160,9 @@ if _comp_execute:
             # Stream the BAM through awk to drop @SQ headers and alignment records for _comp references.
             # No index needed because we process the stream linearly.
             """
-            samtools view -h {input.bam} | \
+            samtools view -h "{input.bam}" | \
             awk '/^@SQ/ && $2~/^SN:.*_comp$/{{next}} /^@/{{print; next}} $3~/_comp$/{{next}} {{print}}' | \
-            samtools view -b > {output.bam} 2>{log}
+            samtools view -b > "{output.bam}" 2>"{log}"
             """
 
 else:
@@ -197,10 +197,10 @@ if _dyn_min_mapq_scg > 0 or _dyn_min_mapq_fle > 0:
             "../../../envs/samtools.yaml"
         shell:
             """
-            samtools view -h {input.bam} | \
+            samtools view -h "{input.bam}" | \
             awk -v mq_scg={params.min_mapq_scg} -v mq_fle={params.min_mapq_fle} \
               'BEGIN{{OFS="\t"}} /^@/{{print; next}} ($3 ~ /_scg$/ && $5+0 < mq_scg) {{next}} ($3 ~ /_fle$/ && $5+0 < mq_fle) {{next}} {{print}}' | \
-            samtools view -b -o {output.bam} 2>{log}
+            samtools view -b -o "{output.bam}" 2>"{log}"
             """
 
 # SAMTOOLS doesn't parallelize the indexing work — it only parallelizes compression/decompression.

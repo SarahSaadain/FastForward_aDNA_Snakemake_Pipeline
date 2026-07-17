@@ -105,11 +105,11 @@ rule get_adapter_removal_final:
     message: "Getting trimmed reads in {wildcards.sample}"
     shell:
         """
-        echo "Determining final trimmed reads for {wildcards.sample}" > {log} 2>&1
-        echo "Input: {input}" >> {log} 2>&1
-        echo "Output: {output}" >> {log} 2>&1
-        cat {input} > {output}
-        echo "Determination completed for {wildcards.sample}" >> {log} 2>&1
+        echo "Determining final trimmed reads for {wildcards.sample}" > "{log}" 2>&1
+        echo "Input: {input}" >> "{log}" 2>&1
+        echo "Output: {output}" >> "{log}" 2>&1
+        cat {input} > "{output}"
+        echo "Determination completed for {wildcards.sample}" >> "{log}" 2>&1
         """
 
 rule merge_reads_adapter_removal_pe:
@@ -126,14 +126,14 @@ rule merge_reads_adapter_removal_pe:
     message: "Merging trimmed reads for paired-end"
     shell:
         """
-        echo "Merging trimmed paired-end reads for {wildcards.sample}" > {log} 2>&1
-        echo "Input files:" >> {log} 2>&1
-        echo "Merged: {input.merged}" >> {log} 2>&1
-        echo "Trimmed R1: {input.trimmed1}" >> {log} 2>&1
-        echo "Trimmed R2: {input.trimmed2}" >> {log} 2>&1
-        echo "Unpaired R1: {input.unpaired1}" >> {log} 2>&1
-        echo "Unpaired R2: {input.unpaired2}" >> {log} 2>&1
-        echo "Output: {output}" >> {log} 2>&1
-        cat {input.merged} {input.trimmed1} {input.trimmed2} {input.unpaired1} {input.unpaired2} > {output}
-        echo "Merging completed for {wildcards.sample}" >> {log} 2>&1
+        echo "Merging trimmed paired-end reads for {wildcards.sample}" > "{log}" 2>&1
+        echo "Input files:" >> "{log}" 2>&1
+        echo "Merged: {input.merged}" >> "{log}" 2>&1
+        echo "Trimmed R1: {input.trimmed1}" >> "{log}" 2>&1
+        echo "Trimmed R2: {input.trimmed2}" >> "{log}" 2>&1
+        echo "Unpaired R1: {input.unpaired1}" >> "{log}" 2>&1
+        echo "Unpaired R2: {input.unpaired2}" >> "{log}" 2>&1
+        echo "Output: {output}" >> "{log}" 2>&1
+        cat "{input.merged}" "{input.trimmed1}" "{input.trimmed2}" "{input.unpaired1}" "{input.unpaired2}" > "{output}"
+        echo "Merging completed for {wildcards.sample}" >> "{log}" 2>&1
         """

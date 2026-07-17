@@ -33,14 +33,14 @@ rule download_centrifuge_index:
         echo "Downloading Centrifuge index from {params.url} to {params.outdir}"
         echo "This may take a while depending on your internet connection..."
 
-        mkdir -p {params.outdir}
-        wget -O {params.outdir}/p+h+v.tar.gz {params.url}
+        mkdir -p "{params.outdir}"
+        wget -O "{params.outdir}/p+h+v.tar.gz" "{params.url}"
 
         echo "Extracting Centrifuge index..."
-        tar -xzf {params.outdir}/p+h+v.tar.gz -C {params.outdir}
+        tar -xzf "{params.outdir}/p+h+v.tar.gz" -C "{params.outdir}"
 
         echo "Cleaning up downloaded archive..."
-        rm {params.outdir}/p+h+v.tar.gz
+        rm "{params.outdir}/p+h+v.tar.gz"
         """
 
 rule analyze_contamination_with_centrifuge:
@@ -59,10 +59,10 @@ rule analyze_contamination_with_centrifuge:
     shell:
         """
         centrifuge \
-            -x {params.index} \
-            -U {input.fastq} \
-            -S {output.output} \
-            --report-file {output.report} \
+            -x "{params.index}" \
+            -U "{input.fastq}" \
+            -S "{output.output}" \
+            --report-file "{output.report}" \
             --threads {threads}
         """
 
@@ -74,11 +74,11 @@ rule analyze_centrifuge_report_taxon_counts:
     message: "Counting taxon occurrences in {input.centrifuge_out}"
     shell:
         r"""
-        awk '$3 != 0 {{print $3}}' {input.centrifuge_out} \
+        awk '$3 != 0 {{print $3}}' "{input.centrifuge_out}" \
             | sort \
             | uniq -c \
             | sort -nr \
-            > {output.taxon_counts}
+            > "{output.taxon_counts}"
         """
 
 rule analyze_centrifuge_report_proportions:
@@ -114,4 +114,4 @@ rule compress_centrifuge_output:
         "../../../../envs/pigz.yaml"
     message: "Compressing Centrifuge output for {wildcards.sample}"
     shell:
-        "pigz -p {threads} -c {input.tsv} > {output}"
+        "pigz -p {threads} -c \"{input.tsv}\" > \"{output}\""

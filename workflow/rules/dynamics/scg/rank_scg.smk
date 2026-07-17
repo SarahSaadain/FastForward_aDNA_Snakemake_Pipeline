@@ -60,8 +60,8 @@ rule filter_top_scgs:
     message: "Selecting top {params.num_top_scgs} SCGs for {wildcards.species}"
     shell:
         """
-        awk 'NR>1 && NR<={params.num_top_scgs}+1 {{print $1}}' {input.ranked_scgs} | sort -u > {output.relevant_contigs}
-        awk '{{print $1 "\t0\t1000000000"}}' {output.relevant_contigs} | sort -u > {output.relevant_contigs_bed}
+        awk 'NR>1 && NR<={params.num_top_scgs}+1 {{print $1}}' "{input.ranked_scgs}" | sort -u > "{output.relevant_contigs}"
+        awk '{{print $1 "\t0\t1000000000"}}' "{output.relevant_contigs}" | sort -u > "{output.relevant_contigs_bed}"
         """
 
 # The filtered FASTA stays in processed/ — it feeds into the seqvista prepare_libraries pipeline

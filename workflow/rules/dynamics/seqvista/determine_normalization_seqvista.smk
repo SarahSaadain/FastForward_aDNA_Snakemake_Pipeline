@@ -64,15 +64,15 @@ rule determine_seqvista_of_individual_bam_to_so:
     shell:
         """
         python workflow/scripts/dynamics/seqvista/bam2so.py \
-            --infile {input.bam} \
-            --fasta {input.fasta} \
-            --outfile {output.coverage} \
+            --infile "{input.bam}" \
+            --fasta "{input.fasta}" \
+            --outfile "{output.coverage}" \
             --mapqth {params.mapqth} \
             --mc-snp {params.mc_snp} \
             --mf-snp {params.mf_snp} \
             --mc-indel {params.mc_indel} \
             --mf-indel {params.mf_indel} \
-            2> {log}
+            2> "{log}"
         """
 
 rule normalize_seqvista_of_individual:
@@ -90,8 +90,8 @@ rule normalize_seqvista_of_individual:
     shell:
         """
         python workflow/scripts/dynamics/seqvista/normalize-so.py \
-            --so {input.coverage} \
-            --outfile {output.normalized} \
+            --so "{input.coverage}" \
+            --outfile "{output.normalized}" \
             --end-distance {params.end_distance} \
             --exclude-quantile {params.exclude_quantile}
         """
@@ -107,7 +107,7 @@ rule estimate_seqvista_of_individual:
         "Estimating seqvista for {wildcards.individual} of {wildcards.species}."
     shell:
         """
-        python workflow/scripts/dynamics/seqvista/estimate-so.py --so {input.coverage} --outfile {output.estimation}
+        python workflow/scripts/dynamics/seqvista/estimate-so.py --so "{input.coverage}" --outfile "{output.estimation}"
         """
 
 rule prepare_seqvista_visualization_of_individual:
@@ -124,11 +124,11 @@ rule prepare_seqvista_visualization_of_individual:
     shell:
         """
         python workflow/scripts/dynamics/seqvista/so2plotable.py \
-            --so {input.coverage} \
-            --outdir {output.plotable} \
-            --bin-size {params.bin_size} \
+            --so "{input.coverage}" \
+            --outdir "{output.plotable}" \
+            --bin-size "{params.bin_size}" \
             --seq-ids ALL \
-            --sample-id {wildcards.individual}
+            --sample-id "{wildcards.individual}"
         """
 
 rule calculate_seqvista_normalized_stats_of_individual:
@@ -143,9 +143,9 @@ rule calculate_seqvista_normalized_stats_of_individual:
     shell:
         """
         python workflow/scripts/dynamics/seqvista/so2covstats.py \
-            --so {input.coverage} \
-            --outfile {output.stats} \
-            --sample-id {wildcards.individual}
+            --so "{input.coverage}" \
+            --outfile "{output.stats}" \
+            --sample-id "{wildcards.individual}"
         """
 
 rule calculate_seqvista_snp_stats_of_individual:
@@ -160,9 +160,9 @@ rule calculate_seqvista_snp_stats_of_individual:
     shell:
         """
         python workflow/scripts/dynamics/seqvista/so2snpstats.py \
-            --so {input.coverage} \
-            --outfile {output.stats} \
-            --sample-id {wildcards.individual}
+            --so "{input.coverage}" \
+            --outfile "{output.stats}" \
+            --sample-id "{wildcards.individual}"
         """
 
 rule calculate_seqvista_indel_stats_of_individual:
@@ -177,9 +177,9 @@ rule calculate_seqvista_indel_stats_of_individual:
     shell:
         """
         python workflow/scripts/dynamics/seqvista/so2indelstats.py \
-            --so {input.coverage} \
-            --outfile {output.stats} \
-            --sample-id {wildcards.individual}
+            --so "{input.coverage}" \
+            --outfile "{output.stats}" \
+            --sample-id "{wildcards.individual}"
         """
 
 rule compare_seqvista_stats_accross_individuals_of_species:
@@ -197,7 +197,7 @@ rule compare_seqvista_stats_accross_individuals_of_species:
         "Running seqvista for {wildcards.species}."
     shell:
         """
-        python workflow/scripts/dynamics/seqvista/compare_covstats.py --stats {input} --outfile {output.stats}
+        python workflow/scripts/dynamics/seqvista/compare_covstats.py --stats {input} --outfile "{output.stats}"
         """
 
 rule compare_seqvista_snp_stats_across_individuals_of_species:
@@ -217,7 +217,7 @@ rule compare_seqvista_snp_stats_across_individuals_of_species:
         """
         python workflow/scripts/dynamics/seqvista/compare_snpstats.py \
             --snpstats {input} \
-            --outfile {output.comparison}
+            --outfile "{output.comparison}"
         """
 
 rule compare_seqvista_indel_stats_across_individuals_of_species:
@@ -237,7 +237,7 @@ rule compare_seqvista_indel_stats_across_individuals_of_species:
         """
         python workflow/scripts/dynamics/seqvista/compare_indelstats.py \
             --indelstats {input} \
-            --outfile {output.comparison}
+            --outfile "{output.comparison}"
         """
 
 rule combine_seqvista_stats_across_feature_libraries:
@@ -273,7 +273,7 @@ rule run_seqvista_visualization_of_individual:
         "Running seqvista visualization for {wildcards.individual} of {wildcards.species}."
     shell:
         """
-        python workflow/scripts/dynamics/seqvista/plot.py --folder {input} --outdir {output}  --log {params.log_threshhold}  --threads {threads}
+        python workflow/scripts/dynamics/seqvista/plot.py --folder "{input}" --outdir "{output}"  --log {params.log_threshhold}  --threads {threads}
         """
 
 rule run_seqvista_visualization_of_species:
@@ -295,7 +295,7 @@ rule run_seqvista_visualization_of_species:
         "Running seqvista visualization for {wildcards.species}."
     shell:
         """
-        python workflow/scripts/dynamics/seqvista/plot.py --folders {input} --outdir {output.plots} --merged-dir {output.merged} --log {params.log_threshhold} --threads {threads}
+        python workflow/scripts/dynamics/seqvista/plot.py --folders {input} --outdir "{output.plots}" --merged-dir "{output.merged}" --log {params.log_threshhold} --threads {threads}
         """
 
 rule compress_seqvista_coverage_of_individual:
@@ -308,7 +308,7 @@ rule compress_seqvista_coverage_of_individual:
         "../../../envs/pigz.yaml"
     message: "Compressing SeqVista coverage output for {wildcards.individual} of {wildcards.species}"
     shell:
-        "pigz -p {threads} -c {input.source} > {output.target}"
+        "pigz -p {threads} -c \"{input.source}\" > \"{output.target}\""
 
 rule compress_seqvista_coverage_normalized_of_individual:
     input:
@@ -320,7 +320,7 @@ rule compress_seqvista_coverage_normalized_of_individual:
         "../../../envs/pigz.yaml"
     message: "Compressing SeqVista normalized output for {wildcards.individual} of {wildcards.species}"
     shell:
-        "pigz -p {threads} -c {input.source} > {output.target}"
+        "pigz -p {threads} -c \"{input.source}\" > \"{output.target}\""
 
 rule compress_seqvista_snp_stats_of_individual:
     input:
@@ -332,7 +332,7 @@ rule compress_seqvista_snp_stats_of_individual:
         "../../../envs/pigz.yaml"
     message: "Compressing SeqVista SNP stats for {wildcards.individual} of {wildcards.species}"
     shell:
-        "pigz -p {threads} -c {input.source} > {output.target}"
+        "pigz -p {threads} -c \"{input.source}\" > \"{output.target}\""
 
 rule compress_seqvista_indel_stats_of_individual:
     input:
@@ -344,7 +344,7 @@ rule compress_seqvista_indel_stats_of_individual:
         "../../../envs/pigz.yaml"
     message: "Compressing SeqVista indel stats for {wildcards.individual} of {wildcards.species}"
     shell:
-        "pigz -p {threads} -c {input.source} > {output.target}"
+        "pigz -p {threads} -c \"{input.source}\" > \"{output.target}\""
 
 rule compress_seqvista_coverage_comparison_of_species:
     input:
@@ -356,7 +356,7 @@ rule compress_seqvista_coverage_comparison_of_species:
         "../../../envs/pigz.yaml"
     message: "Compressing SeqVista coverage comparison for {wildcards.species}"
     shell:
-        "pigz -p {threads} -c {input.source} > {output.target}"
+        "pigz -p {threads} -c \"{input.source}\" > \"{output.target}\""
 
 rule compress_seqvista_snp_comparison_of_species:
     input:
@@ -368,7 +368,7 @@ rule compress_seqvista_snp_comparison_of_species:
         "../../../envs/pigz.yaml"
     message: "Compressing SeqVista SNP comparison for {wildcards.species}"
     shell:
-        "pigz -p {threads} -c {input.source} > {output.target}"
+        "pigz -p {threads} -c \"{input.source}\" > \"{output.target}\""
 
 rule compress_seqvista_indel_comparison_of_species:
     input:
@@ -380,7 +380,7 @@ rule compress_seqvista_indel_comparison_of_species:
         "../../../envs/pigz.yaml"
     message: "Compressing SeqVista indel comparison for {wildcards.species}"
     shell:
-        "pigz -p {threads} -c {input.source} > {output.target}"
+        "pigz -p {threads} -c \"{input.source}\" > \"{output.target}\""
 
 rule compress_seqvista_plotable_of_individual:
     input:
@@ -392,7 +392,7 @@ rule compress_seqvista_plotable_of_individual:
         "../../../envs/pigz.yaml"
     message: "Compressing SeqVista plotables of individual for {wildcards.individual} of {wildcards.species}"
     shell:
-        "tar -c {input.source} | pigz -p {threads} > {output.target}"
+        "tar -c \"{input.source}\" | pigz -p {threads} > \"{output.target}\""
 
 rule compress_seqvista_plotable_of_species:
     input:
@@ -404,7 +404,7 @@ rule compress_seqvista_plotable_of_species:
         "../../../envs/pigz.yaml"
     message: "Compressing SeqVista plotables of species for {wildcards.species}"
     shell:
-        "tar -c {input.source} | pigz -p {threads} > {output.target}"
+        "tar -c \"{input.source}\" | pigz -p {threads} > \"{output.target}\""
 
 rule extract_flagged_seqids:
     input:

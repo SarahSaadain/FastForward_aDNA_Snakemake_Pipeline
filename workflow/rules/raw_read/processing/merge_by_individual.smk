@@ -39,13 +39,13 @@ rule merge_reads_by_individual:
         "Merging individual {wildcards.individual} of species {wildcards.species}."
     shell:
         """
-        echo "Merging quality-filtered reads for individual {wildcards.individual} of species {wildcards.species}..." > {log}
-        echo "Input files:" >> {log}
+        echo "Merging quality-filtered reads for individual {wildcards.individual} of species {wildcards.species}..." > "{log}"
+        echo "Input files:" >> "{log}"
         for f in {input}; do
-            echo "  $f" >> {log}
+            echo "  $f" >> "{log}"
         done
-        echo "Output file: {output}" >> {log}
+        echo "Output file: {output}" >> "{log}"
 
-        cat {input} > {output}
-        echo "Merging completed for individual {wildcards.individual} of species {wildcards.species}." >> {log}
+        cat {input} > "{output}"
+        echo "Merging completed for individual {wildcards.individual} of species {wildcards.species}." >> "{log}"
         """

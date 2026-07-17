@@ -7,8 +7,8 @@ rule link_qualimap_for_multiqc:
         "Linking qualimap results for {wildcards.individual} of {wildcards.species} to multiqc custom content."
     shell:
         """
-        mkdir -p $(dirname {output})
-        cp -r {input} {output}
+        mkdir -p "$(dirname "{output}")"
+        cp -r "{input}" "{output}"
         """
 
 rule copy_mapdamage_result_for_multiqc:
@@ -25,8 +25,8 @@ rule copy_mapdamage_result_for_multiqc:
         "Copying mapdamage results for {wildcards.individual} of {wildcards.species} to multiqc custom content."
     shell:
         """
-        mkdir -p {output.folder}
-        cp {input.GtoA3p} {output.GtoA3p}
-        cp {input.CtoT5p} {output.CtoT5p}
-        cp {input.lg_dist} {output.lg_dist}
+        mkdir -p "{output.folder}"
+        cp "{input.GtoA3p}" "{output.GtoA3p}"
+        cp "{input.CtoT5p}" "{output.CtoT5p}"
+        cp "{input.lg_dist}" "{output.lg_dist}"
         """

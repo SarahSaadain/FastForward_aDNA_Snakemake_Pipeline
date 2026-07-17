@@ -101,7 +101,7 @@ rule move_rescaled_bam:
         "Move rescaled BAM and index to processed directory for {input.sorted_bam}",
     shell:
         """
-        cp {input.sorted_bam} {output.sorted_bam} 
-        cp {input.bam_index} {output.bam_index} 
+        cp "{input.sorted_bam}" "{output.sorted_bam}"
+        cp "{input.bam_index}" "{output.bam_index}"
         """
 
