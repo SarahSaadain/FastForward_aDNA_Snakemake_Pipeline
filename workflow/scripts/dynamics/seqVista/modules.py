@@ -108,10 +108,11 @@ class SeqEntryReader:
             ...
     """
     
-    def __init__(self, file):
+    def __init__(self, file, need_ambcov=True):
         self.file = file
         self._file = None
         self._should_close = False
+        self._need_ambcov = need_ambcov
 
     def __iter__(self):
         self._open_file()
@@ -125,7 +126,7 @@ class SeqEntryReader:
             if not line:
                 # End of file — yield last record if any
                 if self._activeSeq:
-                    se = SeqEntry.parse(self._activeLines)
+                    se = SeqEntry.parse(self._activeLines, need_ambcov=self._need_ambcov)
                     self._activeSeq = None
                     self._activeLines = []
                     return se
@@ -144,7 +145,7 @@ class SeqEntryReader:
             elif seqName!=self._activeSeq:
                 # New record starts
                 # Yield previous record
-                se = SeqEntry.parse(self._activeLines)
+                se = SeqEntry.parse(self._activeLines, need_ambcov=self._need_ambcov)
                 self._activeSeq=seqName
                 self._activeLines = [line]
                 return se
@@ -223,7 +224,7 @@ class NormFactor:
             mcov=float(sum(cov))/float(len(cov))
             return [mcov,None,None]
         
-        cov.sort()
+        cov = sorted(cov)  # copy — cov may be a view into se.cov; must not sort in place
         first=  cov[:qlen]
         middle=  cov[qlen:-qlen]
         last=  cov[-qlen:]
@@ -275,7 +276,7 @@ class NormFactor:
         assert minDistance >=0
         per_scg_medians=[]
         for se in seqEntries:
-            if not se.cov:
+            if se.cov is None or len(se.cov) == 0:
                 continue
             per_scg_medians.append(float(np.median(se.cov)))
 
@@ -357,11 +358,12 @@ class SNP:
 
 class SeqEntry:
 
-    @classmethod 
-    def parse(cls,lines):
+    @classmethod
+    def parse(cls,lines,need_ambcov=True):
         activeName=None
         covar=None
         ambcovar=None
+        ambcov_seen=False
         snplist=[]
         indellist=[]
 
@@ -381,16 +383,20 @@ class SeqEntry:
             elif feature =="cov":
                 if covar is not None:
                     raise Exception(f"two coverage arrays for sequence {sn}")
-                covar = [float(x) for x in tmp[2].split()]
+                covar = np.fromstring(tmp[2], dtype=np.float64, sep=" ")
             elif feature =="ambcov":
-                if ambcovar is not None:
+                if ambcov_seen:
                     raise Exception(f"two amb coverage arrays for sequence {sn}")
-                ambcovar = [float(x) for x in tmp[2].split()]
+                ambcov_seen = True
+                # skip the float conversion entirely when the caller doesn't need it —
+                # this array is as large as cov and often unused (e.g. SNP-only stats)
+                if need_ambcov:
+                    ambcovar = np.fromstring(tmp[2], dtype=np.float64, sep=" ")
             else:
                 raise Exception(f"Unknown feature {feature}")
         if covar is None:
             raise Exception(f"No coverage for {activeName}")
-        if ambcovar is None:
+        if not ambcov_seen:
             raise Exception(f"No ambiguous coverage for {activeName}")
         return SeqEntry(activeName,covar,ambcovar,snplist,indellist)
     
@@ -672,8 +678,8 @@ class PlotableFormater:
                 endpos=startpos+i.length # eg 9 = 6+3
                 if startpos in tomask or endpos in tomask:
                     continue
-                startcov=se.cov[startpos-1] # startcov at 5 = 6-1
-                endcov=se.cov[endpos]   # endcov at 9
+                startcov=float(se.cov[startpos-1]) # startcov at 5 = 6-1
+                endcov=float(se.cov[endpos])   # endcov at 9
                 
                 # note startpos does not get PlottableFormat.offset on purpose! endpos needs offset
                 # desired startpos in 1-based = 6; endpos = 10
@@ -751,6 +757,33 @@ def test_covstat():
     assert cs[4]==4
     assert cs[5]==6
     print("Quick test computations of coverage statistic passed ✓")
+
+def test_covstat_does_not_mutate_se_cov():
+    # se.cov/ambcov are numpy arrays once loaded via SeqEntry.parse; slicing them
+    # yields a view, so NormFactor._getCovTriplet must sort a copy, not the view,
+    # or it silently reorders se.cov in place.
+    cov = np.array([0,2,2,2,2,2,1,2,3,2,2,0], dtype=np.float64)
+    ambcov = np.array([99,5,5,5,6,4,5,5,5,5,5,99], dtype=np.float64)
+    cov_before = cov.copy()
+    ambcov_before = ambcov.copy()
+    se = SeqEntry("t", cov, ambcov, [], [])
+    NormFactor.getCovStat(se, 1, 10)
+    assert (se.cov == cov_before).all()
+    assert (se.ambcov == ambcov_before).all()
+    print("Quick test that getCovStat does not mutate se.cov/ambcov PASSED ✓")
+
+def test_seqentryreader_need_ambcov_false_skips_ambcov():
+    se_in = SeqEntry("chr1", [1.0, 2.0, 3.0], [9.0, 9.0, 9.0], [], [])
+    so_text = str(se_in) + "\n"
+
+    reader = SeqEntryReader(StringIO(so_text), need_ambcov=False)
+    entries = list(reader)
+
+    assert len(entries) == 1
+    se = entries[0]
+    assert list(se.cov) == [1.0, 2.0, 3.0]
+    assert se.ambcov is None
+    print("Quick test that need_ambcov=False skips ambcov parsing PASSED ✓")
 
 def test_normalize():
     s=SNP("chr1",1,"A",5,6,7,1)

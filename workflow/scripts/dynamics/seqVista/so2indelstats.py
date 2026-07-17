@@ -66,20 +66,35 @@ def _indel_records(se, sample_id: str) -> list[dict]:
     return records
 
 
-def compute_indelstats(filepath: Path, sample_id: str) -> pd.DataFrame:
-    records = []
-    for se in SeqEntryReader(str(filepath)):
-        records.extend(_indel_records(se, sample_id))
-    df = pd.DataFrame(records, columns=_COLS) if records else pd.DataFrame(columns=_COLS)
-    dupes = df.duplicated(subset=["seqid", "pos", "type", "indel_length"])
-    if dupes.any():
-        log.warning(
-            "%d duplicate indel events in %s — keeping first occurrence:\n%s",
-            int(dupes.sum()), filepath.name,
-            df[dupes][["seqid", "pos", "type", "indel_length"]].to_string(index=False),
-        )
-        df = df[~dupes].reset_index(drop=True)
-    return df
+def compute_indelstats(filepath: Path, sample_id: str, outfile: Path) -> int:
+    """Stream per-position indel stats straight to outfile, one scaffold at a time.
+
+    See so2snpstats.compute_snpstats for why this streams rather than
+    accumulating records for the whole file: seqid already scopes duplicate
+    detection to a single scaffold, so checking duplicates per scaffold as
+    it's processed is equivalent to checking across the whole file, but
+    keeps memory bounded by the largest single scaffold.
+    """
+    n_written = 0
+    header_written = False
+    with open(outfile, "w") as out:
+        for se in SeqEntryReader(str(filepath), need_ambcov=False):
+            records = _indel_records(se, sample_id)
+            df = pd.DataFrame(records, columns=_COLS) if records else pd.DataFrame(columns=_COLS)
+            dupes = df.duplicated(subset=["seqid", "pos", "type", "indel_length"])
+            if dupes.any():
+                log.warning(
+                    "%d duplicate indel events for %s in %s — keeping first occurrence:\n%s",
+                    int(dupes.sum()), se.seqname, filepath.name,
+                    df[dupes][["seqid", "pos", "type", "indel_length"]].to_string(index=False),
+                )
+                df = df[~dupes].reset_index(drop=True)
+            df.to_csv(out, sep="\t", index=False, header=not header_written)
+            header_written = True
+            n_written += len(df)
+        if not header_written:
+            pd.DataFrame(columns=_COLS).to_csv(out, sep="\t", index=False)
+    return n_written
 
 
 def main():
@@ -108,10 +123,8 @@ def main():
     outfile = args.outfile or Path(f"{args.sample_id}.indelstats.tsv")
 
     log.info("Parsing %s (sample_id=%s)", args.so.name, args.sample_id)
-    df = compute_indelstats(args.so, args.sample_id)
-
-    df.to_csv(outfile, sep="\t", index=False)
-    log.info("Indels → %s  (%d events)", outfile, len(df))
+    n = compute_indelstats(args.so, args.sample_id, outfile)
+    log.info("Indels → %s  (%d events)", outfile, n)
 
 
 if __name__ == "__main__":
