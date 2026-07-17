@@ -271,6 +271,9 @@ Competition sequences are internally suffixed with `_comp` to distinguish them f
 | Step / Setting | Default | Description |
 |---|---|---|
 | `seqvista` | on | Generates SO profiles — per-position coverage, SNP, and indel information — normalised into a SeqVista directory structure for per-individual TE occupancy plots and a faceted species-level comparison plot. |
+| `seqvista.settings.coverage_analysis` | `true` | When `true`, produce per-individual and species-level coverage stats, comparisons, and plots. |
+| `seqvista.settings.snp_analysis` | `false` | When `true`, produce per-individual and species-level SNP stats and comparisons. |
+| `seqvista.settings.indel_analysis` | `false` | When `true`, produce per-individual and species-level indel stats and comparisons. |
 | `seqvista.settings.individual_plots` | `plot` | `plot` — generate plotables and render per-individual plots; `plotable_only` — generate plotables only, skip rendering; `skip` — skip both. |
 | `seqvista.settings.comparison_plots` | `plot` | `plot` — generate plotables and render the faceted species comparison plot; `plotable_only` — generate plotables only, skip rendering; `skip` — skip both. |
 | `seqvista.settings.y_axis_log_scale_threshold_individual` | `25` | Y-axis value above which per-individual plots switch to a log scale. |
@@ -458,6 +461,9 @@ pipeline:
     seqvista:
       execute: true
       settings:
+        coverage_analysis: true
+        snp_analysis: false
+        indel_analysis: false
         individual_plots: "plot"
         comparison_plots: "plot"
         y_axis_log_scale_threshold_individual: 25

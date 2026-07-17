@@ -53,10 +53,14 @@ def get_expected_output_dynamics_processing(species):
     seqvista_settings = dyn_cfg.get("seqvista", {}).get("settings", {})
     individual_plots_mode = seqvista_settings.get("individual_plots", "plot")
     comparison_plots_mode = seqvista_settings.get("comparison_plots", "plot")
+    coverage_analysis_active = seqvista_settings.get("coverage_analysis", True)
+    snp_analysis_active = seqvista_settings.get("snp_analysis", False)
+    indel_analysis_active = seqvista_settings.get("indel_analysis", False)
 
     individuals = get_individuals_for_species(species)
 
-    all_inputs.append(f"{species}/results/dynamics/{species}_seqvista_coverage_comparison.tsv")
+    if dyn_cfg.get("seqvista", {}).get("execute", True) and coverage_analysis_active:
+        all_inputs.append(f"{species}/results/dynamics/{species}_seqvista_coverage_comparison.tsv")
 
     keep_mapped_bam = dyn_cfg.get("mapping", {}).get("settings", {}).get("keep_mapped_bam", False)
 
@@ -73,68 +77,77 @@ def get_expected_output_dynamics_processing(species):
 
         if dyn_cfg.get("seqvista", {}).get("execute", True):
 
-            # Species-level stats (always produced when seqvista is enabled)
-            all_inputs.append(
-                f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_{feature_library}_coverage_comparison.tsv.gz"
-            )
-            all_inputs.append(
-                f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_{feature_library}_flagged_seqids.tsv"
-            )
-
-            if comparison_plots_mode == "plot":
+            if coverage_analysis_active:
+                # Species-level coverage stats
                 all_inputs.append(
-                    f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_plots_facet/"
+                    f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_{feature_library}_coverage_comparison.tsv.gz"
                 )
                 all_inputs.append(
-                    f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_plotables_facet.tar.gz"
-                )
-            elif comparison_plots_mode == "plotable_only":
-                all_inputs.append(
-                    f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_plotables_facet.tar.gz"
+                    f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_{feature_library}_flagged_seqids.tsv"
                 )
 
-            all_inputs.append(
-                f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_{feature_library}_snp_comparison.tsv.gz"
-            )
-            all_inputs.append(
-                f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_{feature_library}_indel_comparison.tsv.gz"
-            )
+                if comparison_plots_mode == "plot":
+                    all_inputs.append(
+                        f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_plots_facet/"
+                    )
+                    all_inputs.append(
+                        f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_plotables_facet.tar.gz"
+                    )
+                elif comparison_plots_mode == "plotable_only":
+                    all_inputs.append(
+                        f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_plotables_facet.tar.gz"
+                    )
+
+            if snp_analysis_active:
+                all_inputs.append(
+                    f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_{feature_library}_snp_comparison.tsv.gz"
+                )
+
+            if indel_analysis_active:
+                all_inputs.append(
+                    f"{species}/results/dynamics/{feature_library}/seqvista/species_level/{species}_{feature_library}_indel_comparison.tsv.gz"
+                )
 
             for individual in individuals:
-                all_inputs.append(
-                    f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_coverage.tsv.gz"
-                )
-                all_inputs.append(
-                    f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_coverage.normalized.tsv.gz"
-                )
-                all_inputs.append(
-                    f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_coverage.normalized.stats.tsv"
-                )
-                all_inputs.append(
-                    f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_snpstats.tsv.gz"
-                )
-                all_inputs.append(
-                    f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_indelstats.tsv.gz"
-                )
-
-                if individual_plots_mode == "plot":
+                if coverage_analysis_active:
                     all_inputs.append(
-                        f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_plotable.tar.gz"
+                        f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_coverage.tsv.gz"
                     )
                     all_inputs.append(
-                        f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_plots/"
+                        f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_coverage.normalized.tsv.gz"
                     )
-                elif individual_plots_mode == "plotable_only":
                     all_inputs.append(
-                        f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_plotable.tar.gz"
+                        f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_coverage.normalized.stats.tsv"
                     )
 
-        if dyn_cfg.get("pf_normalization", {}).get("execute", False):
-            all_inputs.append(
-                f"{species}/results/dynamics/{feature_library}/normalization/plots/"
-            )
-            all_inputs.append(
-                f"{species}/results/dynamics/{feature_library}/normalization/{species}_normalized_coverage.combined.tsv"
-            )
+                    if individual_plots_mode == "plot":
+                        all_inputs.append(
+                            f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_plotable.tar.gz"
+                        )
+                        all_inputs.append(
+                            f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_plots/"
+                        )
+                    elif individual_plots_mode == "plotable_only":
+                        all_inputs.append(
+                            f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_plotable.tar.gz"
+                        )
+
+                if snp_analysis_active:
+                    all_inputs.append(
+                        f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_snpstats.tsv.gz"
+                    )
+
+                if indel_analysis_active:
+                    all_inputs.append(
+                        f"{species}/results/dynamics/{feature_library}/seqvista/individual_level/{individual}_indelstats.tsv.gz"
+                    )
+
+        # if dyn_cfg.get("pf_normalization", {}).get("execute", False):
+        #     all_inputs.append(
+        #         f"{species}/results/dynamics/{feature_library}/normalization/plots/"
+        #     )
+        #     all_inputs.append(
+        #         f"{species}/results/dynamics/{feature_library}/normalization/{species}_normalized_coverage.combined.tsv"
+        #     )
 
     return all_inputs

@@ -1184,7 +1184,29 @@
               <div class="when-hint"><span class="def-pill on">Default: ON</span>Turn off if you only need normalised abundance counts and do not require per-position TE occupancy profiles. SeqVista is more computationally intensive than PF Normalization alone.</div>
             </div>
             <div class="subsection-body open">
-              <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin:0 0 8px">Plot settings</p>
+              <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin:0 0 8px">Output selection</p>
+              <div class="toggle-wrap">
+                <label class="toggle">
+                  <input type="checkbox" id="sv_coverage_analysis" checked onchange="render()">
+                  <span class="slider"></span>
+                </label>
+                <label class="lbl" for="sv_coverage_analysis">Coverage analysis <span style="color:var(--text-muted);font-size:.75em">(default: on — per-individual and species-level coverage stats, comparisons, and plots)</span></label>
+              </div>
+              <div class="toggle-wrap" style="margin-top:8px">
+                <label class="toggle">
+                  <input type="checkbox" id="sv_snp_analysis" onchange="render()">
+                  <span class="slider"></span>
+                </label>
+                <label class="lbl" for="sv_snp_analysis">SNP analysis <span style="color:var(--text-muted);font-size:.75em">(default: off — per-individual and species-level SNP stats and comparisons)</span></label>
+              </div>
+              <div class="toggle-wrap" style="margin-top:8px">
+                <label class="toggle">
+                  <input type="checkbox" id="sv_indel_analysis" onchange="render()">
+                  <span class="slider"></span>
+                </label>
+                <label class="lbl" for="sv_indel_analysis">Indel analysis <span style="color:var(--text-muted);font-size:.75em">(default: off — per-individual and species-level indel stats and comparisons)</span></label>
+              </div>
+              <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin:14px 0 8px;border-top:1px solid var(--border);padding-top:12px">Plot settings</p>
               <div class="field">
                 <label>Individual plots</label>
                 <select id="sv_individual_plots" onchange="render()">
@@ -1552,6 +1574,9 @@ function buildYAML() {
   p(4, 'seqvista:');
   kv(6, 'execute', gb('sv_exec'));
   p(6, 'settings:');
+  kv(8, 'coverage_analysis', gb('sv_coverage_analysis'));
+  kv(8, 'snp_analysis', gb('sv_snp_analysis'));
+  kv(8, 'indel_analysis', gb('sv_indel_analysis'));
   kv(8, 'individual_plots', gv('sv_individual_plots'));
   kv(8, 'comparison_plots', gv('sv_comparison_plots'));
   kv(8, 'y_axis_log_scale_threshold_individual', gn('sv_log_thresh_ind'));
@@ -1819,6 +1844,9 @@ function populateForm(c) {
   sv('dyn_min_mapq_fle', dym.min_mapq_fle != null ? dym.min_mapq_fle : 0);
   sb('sv_exec',  (dyn.seqvista||{}).execute);                     dot('sv_exec','d_sv');
   const svs = (dyn.seqvista||{}).settings||{};
+  sb('sv_coverage_analysis',   svs.coverage_analysis);
+  sb('sv_snp_analysis',       svs.snp_analysis);
+  sb('sv_indel_analysis',     svs.indel_analysis);
   sv('sv_individual_plots', svs.individual_plots || 'plot');
   sv('sv_comparison_plots', svs.comparison_plots || 'plot');
   sv('sv_log_thresh_ind',  svs.y_axis_log_scale_threshold_individual != null ? svs.y_axis_log_scale_threshold_individual : 25);
@@ -1891,7 +1919,7 @@ function resetDefaults() {
         execute: true,
         scg_selector: { execute: true, settings: { num_top_scgs: 20, min_length_scg: 4000, max_length_scg: 8000 } },
         mapping: { settings: { mapper: 'bwa-aln' } },
-        seqvista: { execute: true, settings: { individual_plots: 'plot', comparison_plots: 'plot', y_axis_log_scale_threshold_individual: 25, y_axis_log_scale_threshold_species: 25, mapping_quality_threshold: 5, minimum_count_snp: 5, minimum_frequency_snp: 0.1, minimum_count_indel: 3, minimum_frequency_indel: 0.01, end_distance: 100, exclude_quantile: 25 } }
+        seqvista: { execute: true, settings: { coverage_analysis: true, snp_analysis: false, indel_analysis: false, individual_plots: 'plot', comparison_plots: 'plot', y_axis_log_scale_threshold_individual: 25, y_axis_log_scale_threshold_species: 25, mapping_quality_threshold: 5, minimum_count_snp: 5, minimum_frequency_snp: 0.1, minimum_count_indel: 3, minimum_frequency_indel: 0.01, end_distance: 100, exclude_quantile: 25 } }
       },
       summary_processing: { execute: true, settings: { individual_multiqc: true, species_multiqc: true } }
     },

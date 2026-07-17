@@ -243,6 +243,15 @@ pipeline:
       # When true, this sub-stage will be executed (Default: true)
       execute: true
       settings:
+        # When true, produce per-individual and species-level coverage stats,
+        # comparisons, and plots (Default: true)
+        coverage_analysis: true
+        # When true, produce per-individual and species-level SNP stats
+        # and comparisons (Default: false)
+        snp_analysis: false
+        # When true, produce per-individual and species-level indel stats
+        # and comparisons (Default: false)
+        indel_analysis: false
         # Controls plotting for individual-level seqvista output.
         # Options:
         #   "plot"          — generate plotables AND render plots (Default)
