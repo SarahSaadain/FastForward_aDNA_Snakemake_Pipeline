@@ -25,6 +25,8 @@ rule download_centrifuge_index:
     params:
         url = "https://genome-idx.s3.amazonaws.com/centrifuge/p%2Bh%2Bv.tar.gz",
         outdir = "resources/centrifuge_index"
+    conda:
+        "../../../../envs/wget.yaml"
     message: "Downloading Centrifuge index"
     shell:
         """
