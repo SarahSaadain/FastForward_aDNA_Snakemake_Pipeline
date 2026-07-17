@@ -18,41 +18,41 @@ logger = logging.getLogger(__name__)
 def extract_busco_sequences(df, reference_fasta, min_length_scg, max_length_scg) -> List[Tuple[str, str]]:
     fasta_entries = []
 
-    for i, row in df.iterrows():
-        try:
-            busco_id = row["Busco_id"]
-            chrom = row["Sequence"]
-            start = int(row["Gene_Start"])
-            end = int(row["Gene_End"])
-            strand = row["Strand"]
+    with pysam.FastaFile(reference_fasta) as fasta:
+        for i, row in df.iterrows():
+            try:
+                busco_id = row["Busco_id"]
+                chrom = row["Sequence"]
+                start = int(row["Gene_Start"])
+                end = int(row["Gene_End"])
+                strand = row["Strand"]
 
-            if pd.isna(chrom) or pd.isna(start) or pd.isna(end):
-                logger.warning(f"Skipping {busco_id}: missing coordinates.")
-                continue
+                if pd.isna(chrom) or pd.isna(start) or pd.isna(end):
+                    logger.warning(f"Skipping {busco_id}: missing coordinates.")
+                    continue
 
-            if strand == "-":
-                start, end = end, start
+                if strand == "-":
+                    start, end = end, start
 
-            if end - start <= min_length_scg:
-                logger.warning(f"Skipping {busco_id}: length {end - start} is less than minimum length ({min_length_scg}).")
-                continue
+                if end - start <= min_length_scg:
+                    logger.warning(f"Skipping {busco_id}: length {end - start} is less than minimum length ({min_length_scg}).")
+                    continue
 
-            if end - start >= max_length_scg:
-                logger.warning(f"Skipping {busco_id}: length {end - start} exceeds maximum length ({max_length_scg}).")
-                continue
+                if end - start >= max_length_scg:
+                    logger.warning(f"Skipping {busco_id}: length {end - start} exceeds maximum length ({max_length_scg}).")
+                    continue
 
-            seq = extract_sequence(reference_fasta, chrom, start, end)
-            header = f"{busco_id}_{chrom}_{start}_{end}_scg"
-            fasta_entries.append((header, seq))
+                seq = extract_sequence(fasta, chrom, start, end)
+                header = f"{busco_id}_{chrom}_{start}_{end}_scg"
+                fasta_entries.append((header, seq))
 
-        except Exception as e:
-            logger.error(f"Error processing {busco_id}: {e}")
+            except Exception as e:
+                logger.error(f"Error processing {busco_id}: {e}")
 
     return fasta_entries
 
 
-def extract_sequence(reference_fasta: str, chrom: str, start: int, end: int) -> str:
-    fasta = pysam.FastaFile(reference_fasta)
+def extract_sequence(fasta: pysam.FastaFile, chrom: str, start: int, end: int) -> str:
     try:
         sequence = fasta.fetch(chrom, start, end)
     except Exception as e:
