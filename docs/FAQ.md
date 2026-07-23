@@ -89,7 +89,7 @@ species:
 
 Each entry must match the reference ID derived from the filename: basename without extension, with dots replaced by underscores (e.g. `EquCab3.0.fna` → `EquCab3_0`). If omitted, all references in `{species}/raw/ref/` are used.
 
-**Q: Can I use only specific feature libraries for the Dynamics stage?**
+**Q: Can I use only specific feature libraries for the REVEAL stage?**
 Yes. Add a `feature_libraries` list under the species entry:
 
 ```yaml
@@ -100,7 +100,7 @@ species:
       - my_lib
 ```
 
-Same ID format as references (filename stem, dots → underscores). If omitted, all libraries in `{species}/raw/dynamics/feature_library/` are used.
+Same ID format as references (filename stem, dots → underscores). If omitted, all libraries in `{species}/raw/reveal/feature_library/` are used.
 
 **Q: What happens if I list an individual, reference, or feature library that does not exist on disk?**
 pastForward raises an error at startup and aborts before any processing starts. The error message lists which IDs were not found and shows all available IDs, so you can correct the config. This prevents silent misconfiguration where a typo would cause a run to silently skip data.
@@ -252,8 +252,8 @@ When you are ready to resume, simply run pastForward again with the same command
 
 Set the mapper via `pipeline.reference_processing.mapping.settings.mapper`.
 
-**Q: Can I use different mappers for reference processing and dynamics processing?**
-Yes. The mapper is configured independently under `pipeline.reference_processing.mapping.settings.mapper` and `pipeline.dynamics.mapping.settings.mapper`.
+**Q: Can I use different mappers for reference processing and REVEAL processing?**
+Yes. The mapper is configured independently under `pipeline.reference_processing.mapping.settings.mapper` and `pipeline.reveal.mapping.settings.mapper`.
 
 ---
 
@@ -304,13 +304,13 @@ You can even share the same Centrifuge index across different projects or specie
 
 ---
 
-## Dynamics Module
+## REVEAL Module
 
 **Q: What goes in the feature library?**
-A FASTA file of genomic features sequences (e.g. transposable element, genes, ...) you want to quantify. Place it under `<species>/raw/dynamics/feature_library/`. Multiple feature libraries per species are supported and each is processed independently.
+A FASTA file of genomic features sequences (e.g. transposable element, genes, ...) you want to quantify. Place it under `<species>/raw/reveal/feature_library/`. Multiple feature libraries per species are supported and each is processed independently.
 
 **Q: Do I need to provide SCG sequences?**
-Not necessarily. If a FASTA file is placed under `<species>/raw/dynamics/scg/` it is used directly. Otherwise, if `pipeline.dynamics.scg_selector.execute: true` (the default) and a BUSCO lineage is configured under `species.<key>.scg_selector.settings.lineage`, pastForward determines SCGs automatically from the reference genome.
+Not necessarily. If a FASTA file is placed under `<species>/raw/reveal/scg/` it is used directly. Otherwise, if `pipeline.reveal.scg_selector.execute: true` (the default) and a BUSCO lineage is configured under `species.<key>.scg_selector.settings.lineage`, pastForward determines SCGs automatically from the reference genome.
 
 **Q: How are SCGs selected automatically?**
 BUSCO identifies complete single-copy genes in the reference genome. Candidate sequences are filtered by length (`min_length_scg` / `max_length_scg`, defaults 4,000–8,000 bp), then scored on coverage breadth, depth evenness, and cross-individual consistency. The top-ranked sequences (`num_top_scgs`, default 20) are selected. See [scg_determination.md](scg_determination.md) for the full scoring methodology.
@@ -320,7 +320,7 @@ pastForward will try to use the reference from the folder `<species>/raw/ref/`. 
 
 In case multiple references are available in `<species>/raw/ref/`, pastForward will raise an error asking you to specify which one to use for SCG selection by setting `species.<key>.reference` to the filename of the desired reference.
 
-**Q: What does the copy number fold-change flag mean in the SeqVista output?**
+**Q: What does the copy number fold-change flag mean in the REVEAL output?**
 Sequences are flagged if the log₂ fold-change in median coverage across individuals exceeds `CN_FC` (default ≥ 2) or the absolute difference exceeds `CN_ABS` (default Δ ≥ 10). Flagged sequences are sorted to the top of the comparison table and written to a companion `_flagged_seqids.tsv` file.
 
 ---

@@ -1,0 +1,154 @@
+
+import logging
+
+
+def get_expected_output_reveal_processing(species):
+    all_inputs = []
+
+    if config.get("pipeline", {}).get("reveal", {}).get("execute", True) == False:
+        logging.info(f"Skipping REVEAL processing for {species}. Disabled in config.")
+        return []
+
+    reveal_cfg = config.get("pipeline", {}).get("reveal", {})
+    scg_sel_cfg = reveal_cfg.get("scg_selector", {})
+    scg_sel_active = scg_sel_cfg.get("execute", False)
+
+    # ── SCG selector outputs ──────────────────────────────────────────────────
+    # Requested whenever scg_selector.execute is true AND no user-provided SCG
+    # exists.  This supports "only create SCGs" workflows (no feature libraries
+    # required) as well as the full REVEAL pipeline.
+    if scg_sel_active and should_auto_determine_scg(species):
+        all_inputs.append(f"{species}/results/reveal/scg/{species}_scg_ranked.tsv")
+        all_inputs.append(f"{species}/results/reveal/scg/{species}_scg_ranked.json")
+
+    # ── Feature-library / visualization outputs ───────────────────────────────
+    try:
+        feature_libraries = get_feature_library_ids_for_species(species)
+    except Exception:
+        logging.warning(
+            f"No feature libraries found for {species}. "
+            f"Skipping REVEAL analysis."
+        )
+        return all_inputs  # may still contain SCG ranking outputs
+
+    # Determine whether an SCG library is available (user-provided or auto-determined)
+    user_scgs = get_scg_library_file_list_for_species(species)
+    has_scg = bool(user_scgs) or scg_sel_active
+
+    if not has_scg:
+        logging.warning(
+            f"No SCG library available for {species} and scg_selector.execute is false. "
+            f"Skipping REVEAL analysis. Provide a FASTA in "
+            f"{species}/raw/reveal/scg/ or set pipeline.reveal.scg_selector.execute: true."
+        )
+        return all_inputs
+
+    # Only one user-provided SCG library is supported
+    if len(user_scgs) > 1:
+        raise ValueError(
+            f"Multiple SCG libraries provided for {species}. "
+            f"Only one SCG library is supported at a time."
+        )
+
+    visualization_settings = reveal_cfg.get("visualization", {}).get("settings", {})
+    analysis_settings = reveal_cfg.get("analysis", {}).get("settings", {})
+    individual_plots_mode = visualization_settings.get("individual_plots", "plot")
+    comparison_plots_mode = visualization_settings.get("comparison_plots", "plot")
+    coverage_analysis_active = analysis_settings.get("coverage_analysis", True)
+    snp_analysis_active = analysis_settings.get("snp_analysis", False)
+    indel_analysis_active = analysis_settings.get("indel_analysis", False)
+
+    individuals = get_individuals_for_species(species)
+
+    if reveal_cfg.get("visualization", {}).get("execute", True) and coverage_analysis_active:
+        all_inputs.append(f"{species}/results/reveal/{species}_reveal_coverage_comparison.tsv")
+
+    keep_mapped_bam = reveal_cfg.get("mapping", {}).get("settings", {}).get("keep_mapped_bam", False)
+
+    for feature_library in feature_libraries:
+
+        if keep_mapped_bam:
+            for individual in individuals:
+                all_inputs.append(
+                    f"{species}/processed/reveal/{feature_library}/mapped/{individual}_{feature_library}_and_scg.sorted.bam"
+                )
+                all_inputs.append(
+                    f"{species}/processed/reveal/{feature_library}/mapped/{individual}_{feature_library}_and_scg.sorted.bam.bai"
+                )
+
+        if reveal_cfg.get("visualization", {}).get("execute", True):
+
+            if coverage_analysis_active:
+                # Species-level coverage stats
+                all_inputs.append(
+                    f"{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv.gz"
+                )
+                all_inputs.append(
+                    f"{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_flagged_seqids.tsv"
+                )
+
+                if comparison_plots_mode == "plot":
+                    all_inputs.append(
+                        f"{species}/results/reveal/{feature_library}/visualization/species_level/{species}_plots_facet/"
+                    )
+                    all_inputs.append(
+                        f"{species}/results/reveal/{feature_library}/visualization/species_level/{species}_plotables_facet.tar.gz"
+                    )
+                elif comparison_plots_mode == "plotable_only":
+                    all_inputs.append(
+                        f"{species}/results/reveal/{feature_library}/visualization/species_level/{species}_plotables_facet.tar.gz"
+                    )
+
+            if snp_analysis_active:
+                all_inputs.append(
+                    f"{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_snp_comparison.tsv.gz"
+                )
+
+            if indel_analysis_active:
+                all_inputs.append(
+                    f"{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_indel_comparison.tsv.gz"
+                )
+
+            for individual in individuals:
+                if coverage_analysis_active:
+                    all_inputs.append(
+                        f"{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_coverage.tsv.gz"
+                    )
+                    all_inputs.append(
+                        f"{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.tsv.gz"
+                    )
+                    all_inputs.append(
+                        f"{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.stats.tsv"
+                    )
+
+                    if individual_plots_mode == "plot":
+                        all_inputs.append(
+                            f"{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_plotable.tar.gz"
+                        )
+                        all_inputs.append(
+                            f"{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_plots/"
+                        )
+                    elif individual_plots_mode == "plotable_only":
+                        all_inputs.append(
+                            f"{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_plotable.tar.gz"
+                        )
+
+                if snp_analysis_active:
+                    all_inputs.append(
+                        f"{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_snpstats.tsv.gz"
+                    )
+
+                if indel_analysis_active:
+                    all_inputs.append(
+                        f"{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_indelstats.tsv.gz"
+                    )
+
+        # if reveal_cfg.get("pf_normalization", {}).get("execute", False):
+        #     all_inputs.append(
+        #         f"{species}/results/reveal/{feature_library}/normalization/plots/"
+        #     )
+        #     all_inputs.append(
+        #         f"{species}/results/reveal/{feature_library}/normalization/{species}_normalized_coverage.combined.tsv"
+        #     )
+
+    return all_inputs

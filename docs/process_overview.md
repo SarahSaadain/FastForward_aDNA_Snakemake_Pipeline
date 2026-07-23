@@ -1,5 +1,5 @@
 # Past Forward aDNA Pipeline — Process Overview
-This document describes the processing logic of the Past Forward aDNA Pipeline across its three main modules: raw read processing, reference processing, and dynamics processing. A fourth module handles summary reporting across all results. All pipeline behaviour is controlled through `config/config.yaml`.
+This document describes the processing logic of the Past Forward aDNA Pipeline across its three main modules: raw read processing, reference processing, and REVEAL processing. A fourth module handles summary reporting across all results. All pipeline behaviour is controlled through `config/config.yaml`.
 
 ![Pipeline Overview](img/pf_pipeline_process.svg)
 
@@ -25,7 +25,7 @@ After adapter removal, reads go through a second dedicated quality filtering ste
 
 ### Merge by Individual
 
-Many sequencing projects split a single individual across multiple sequencing runs or lanes, each producing a separate FASTQ file. This step concatenates all quality-filtered samples belonging to the same individual into a single merged FASTQ. Individual identity is derived from the sample filename — everything before the first underscore is treated as the individual identifier. The merged file serves as the single input to all downstream reference mapping and dynamics analyses.
+Many sequencing projects split a single individual across multiple sequencing runs or lanes, each producing a separate FASTQ file. This step concatenates all quality-filtered samples belonging to the same individual into a single merged FASTQ. Individual identity is derived from the sample filename — everything before the first underscore is treated as the individual identifier. The merged file serves as the single input to all downstream reference mapping and REVEAL analyses.
 
 ### Read Count Statistics
 
@@ -119,39 +119,39 @@ A set of R-based plots summarise the mapping results visually. Coverage breadth 
 
 All QC outputs for a given individual and reference are aggregated into a single **MultiQC** HTML report. This includes the fastp reports from adapter removal and quality filtering, FastQC of merged reads, contamination analysis outputs, Preseq curves, the Qualimap directory, samtools stats, the custom coverage and reads processing summary tables, the mapDamage2 output directory, and the DeDup JSON summary. Each input type is only requested if its corresponding config toggle is enabled — disabled steps are silently omitted, keeping the report self-consistent.
 
-## Module 3 — Dynamics Processing
+## Module 3 — REVEAL Processing
 
 This module quantifies the relative abundance and activity of transposable elements (TEs) and other genomic features across individuals. It works by mapping reads to a purpose-built reference consisting of TE sequences combined with single-copy genes (SCGs). The SCGs serve as a stable normalisation reference, making TE abundance estimates comparable across individuals regardless of differences in sequencing depth.
 
 ### SCG Determination
 
-Single-copy genes can either be provided directly or determined automatically from the reference genome. If a FASTA file is placed under `{species}/raw/dynamics/scg/`, it is used as-is. If no file is present and **`pipeline.dynamics.scg_selector.execute`** is `true` (the default), the pipeline runs an automatic SCG determination step — provided a BUSCO lineage is configured for the species under **`species.<key>.scg_selector.settings.lineage`**.
+Single-copy genes can either be provided directly or determined automatically from the reference genome. If a FASTA file is placed under `{species}/raw/reveal/scg/`, it is used as-is. If no file is present and **`pipeline.reveal.scg_selector.execute`** is `true` (the default), the pipeline runs an automatic SCG determination step — provided a BUSCO lineage is configured for the species under **`species.<key>.scg_selector.settings.lineage`**.
 
-Automatic SCG determination runs in three steps. First, **BUSCO** is run against the reference genome in genome mode to identify Complete single-copy genes within the configured lineage database. BUSCO's coordinates are used to extract each gene's nucleotide sequence from the reference, applying minimum (**`settings.min_length_scg`**, default 4,000 bp) and maximum (**`settings.max_length_scg`**, default 8,000 bp) length filters. Second, the merged per-individual reads are mapped to this candidate SCG library and per-position coverage statistics are computed for every SCG in every individual. Third, SCGs are scored on three criteria — breadth of coverage, evenness of depth, and consistency of depth relative to the global SCG population — and the top-ranked sequences (**`settings.num_top_scgs`**, default 20) are selected. The ranking table is written to `{species}/results/dynamics/scg/` as a permanent result; the filtered FASTA is passed to the Library Preparation step.
+Automatic SCG determination runs in three steps. First, **BUSCO** is run against the reference genome in genome mode to identify Complete single-copy genes within the configured lineage database. BUSCO's coordinates are used to extract each gene's nucleotide sequence from the reference, applying minimum (**`settings.min_length_scg`**, default 4,000 bp) and maximum (**`settings.max_length_scg`**, default 8,000 bp) length filters. Second, the merged per-individual reads are mapped to this candidate SCG library and per-position coverage statistics are computed for every SCG in every individual. Third, SCGs are scored on three criteria — breadth of coverage, evenness of depth, and consistency of depth relative to the global SCG population — and the top-ranked sequences (**`settings.num_top_scgs`**, default 20) are selected. The ranking table is written to `{species}/results/reveal/scg/` as a permanent result; the filtered FASTA is passed to the Library Preparation step.
 
-The mapper used for SCG read mapping is configured via **`pipeline.dynamics.scg_selector.settings.mapper`** and defaults to the same mapper set for the main Dynamics mapping step. The mapping BAMs produced during SCG determination are temporary and deleted once coverage statistics have been computed. For a detailed description of the scoring methodology see [docs/scg_determination.md](scg_determination.md).
+The mapper used for SCG read mapping is configured via **`pipeline.reveal.scg_selector.settings.mapper`** and defaults to the same mapper set for the main REVEAL mapping step. The mapping BAMs produced during SCG determination are temporary and deleted once coverage statistics have been computed. For a detailed description of the scoring methodology see [docs/scg_determination.md](scg_determination.md).
 
 ### Library Preparation
 
-The Dynamics pipeline requires a **feature library** containing the TE or other feature sequences of interest, placed under `{species}/raw/dynamics/feature_library/`. Both `.fna`, `.fasta`, and `.fa` formats are supported. The SCG library is either user-provided (placed under `{species}/raw/dynamics/scg/`) or produced by the SCG Determination step described above.
+The REVEAL pipeline requires a **feature library** containing the TE or other feature sequences of interest, placed under `{species}/raw/reveal/feature_library/`. Both `.fna`, `.fasta`, and `.fa` formats are supported. The SCG library is either user-provided (placed under `{species}/raw/reveal/scg/`) or produced by the SCG Determination step described above.
 
 Before mapping, sequence headers in both libraries are standardised and suffixed to make TE and SCG sequences distinguishable in the alignments — `_fle` is appended to every feature library header, and `_scg` to every SCG header. The two processed libraries are then concatenated into a single combined FASTA, which is indexed in preparation for mapping using the indexer that matches the configured mapper. Multiple feature libraries per species are supported; each produces an entirely independent set of downstream results.
 
 ### Mapping to the Combined Library
 
-Merged per-individual reads (from Module 1) are mapped to the combined SCG + TE library using a configurable mapper, set via **`pipeline.dynamics.mapping.settings.mapper`** (default `bwa-mem2`). The same three options are available as in reference processing: **bwa-aln**, **bwa-mem2**, and **minimap2**. Additional flags can be supplied via **`settings.mapper_extra_params`**. After conversion from SAM to BAM, unmapped reads are immediately discarded to reduce file sizes. The filtered BAM is then sorted and indexed. Intermediate files are cleaned up automatically.
+Merged per-individual reads (from Module 1) are mapped to the combined SCG + TE library using a configurable mapper, set via **`pipeline.reveal.mapping.settings.mapper`** (default `bwa-mem2`). The same three options are available as in reference processing: **bwa-aln**, **bwa-mem2**, and **minimap2**. Additional flags can be supplied via **`settings.mapper_extra_params`**. After conversion from SAM to BAM, unmapped reads are immediately discarded to reduce file sizes. The filtered BAM is then sorted and indexed. Intermediate files are cleaned up automatically.
 
 ### Normalisation
 
 For each individual, the pipeline calculates read coverage across both the SCG and TE sequences in the combined library. The SCG coverage serves as the normalisation factor, accounting for differences in sequencing depth and mapping efficiency between individuals. This normalisation is critical for making meaningful comparisons of TE abundance across a population. Per-individual coverage files are combined into a species-level table, and an R-based plot is generated showing normalised TE abundance across all individuals. The order and labels of individuals in the plot are derived from the individual list for the species.
 
-### SeqVista Analysis
+### REVEAL Visualization
 
-**SeqVista** (formerly TEplotter) provides a complementary view focusing on a sequence overview (SO) — a tab-delimited file containing coverage, SNP, and indel information for each reference sequence. The analysis runs through a multi-step pipeline:
+**REVEAL** (formerly TEplotter) provides a complementary view focusing on a sequence overview (SO) — a tab-delimited file containing coverage, SNP, and indel information for each reference sequence. The analysis runs through a multi-step pipeline:
 
-First, the sorted BAM is converted into a sequence overview (`.so`) profile using `seqvista bam2so`, with sequence lengths derived from the combined library FASTA. The raw SO values are then normalised against SCG coverage using `seqvista normalize`, and per-sequence statistics are estimated using `seqvista estimate`. The normalised profiles are converted into a plotable directory structure using `seqvista so2plotable`, processing all sequences and labelling outputs with the individual's identifier.
+First, the sorted BAM is converted into a sequence overview (`.so`) profile using `REVEAL bam2so`, with sequence lengths derived from the combined library FASTA. The raw SO values are then normalised against SCG coverage using `REVEAL normalize`, and per-sequence statistics are estimated using `REVEAL estimate`. The normalised profiles are converted into a plotable directory structure using `REVEAL so2plotable`, processing all sequences and labelling outputs with the individual's identifier.
 
-From the plotable directories, per-individual TE occupancy plots are generated using `seqvista plot`. A second pass combines all individual plotable directories to produce a faceted species-level comparison plot, allowing side-by-side visual comparison of TE dynamics across all individuals simultaneously.
+From the plotable directories, per-individual TE occupancy plots are generated using `REVEAL plot`. A second pass combines all individual plotable directories to produce a faceted species-level comparison plot, allowing side-by-side visual comparison of TE dynamics across all individuals simultaneously.
 
 #### Per-Individual Stats Files
 
@@ -170,7 +170,7 @@ After all individual stats files are produced, **`compare_stats`** pivots the pe
 
 Sequences are flagged if they show a relative copy number shift exceeding the **`CN_FC`** threshold (default log₂FC ≥ 2) or an absolute shift exceeding the **`CN_ABS`** threshold (default Δ ≥ 10). Flagged sequences are written to a companion file `{species}_{feature_library}_flagged_seqids.tsv` and sorted to the top of the comparison table.
 
-A top-level cross-library summary (`{species}_seqvista_coverage_comparison.tsv`) aggregates the flagged sequence lists across all feature libraries into a single file for rapid inspection.
+A top-level cross-library summary (`{species}_reveal_coverage_comparison.tsv`) aggregates the flagged sequence lists across all feature libraries into a single file for rapid inspection.
 
 ## Module 4 — Processing Summary
 

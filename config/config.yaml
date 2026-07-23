@@ -13,8 +13,8 @@ species:
   Dmel:
     name: "Drosophila melanogaster"
 
-    # Required only when using the Dynamics stage with SCG auto-determination
-    # (i.e. no pre-built SCG FASTA is placed in {species}/raw/dynamics/scg/).
+    # Required only when using the REVEAL stage with SCG auto-determination
+    # (i.e. no pre-built SCG FASTA is placed in {species}/raw/reveal/scg/).
     # Find available lineages at https://busco.ezlab.org/
     scg_selector:
       settings:

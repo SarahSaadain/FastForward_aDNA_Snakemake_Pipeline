@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 
 
+## [Unreleased]
+
+> ⚠️ NOTE: This release renames the `dynamics` pipeline stage to `reveal` and replaces the vendored SeqVista scripts with the standalone [REVEAL](https://github.com/SarahSaadain/REVEAL) toolkit. Existing configs and output directories must be updated to match.
+
+### Breaking Changes
+
+- **Module rename**: The `dynamics` pipeline stage is now `reveal` (`pipeline.dynamics` → `pipeline.reveal`; `{species}/raw|processed/results/dynamics/` → `{species}/raw|processed/results/reveal/`)
+- **Config structure**: The former `seqvista` sub-section is now `visualization` (`pipeline.reveal.seqvista` → `pipeline.reveal.visualization`); output subfolder renamed to match (`.../reveal/<feature_library>/seqvista/` → `.../reveal/<feature_library>/visualization/`)
+- **Config structure**: `coverage_analysis`, `snp_analysis`, and `indel_analysis` moved out of `visualization.settings` into their own sibling section, `pipeline.reveal.analysis.settings`
+- **Config structure**: bam2so thresholds (`mapping_quality_threshold`, `minimum_count_snp`, `minimum_frequency_snp`, `minimum_count_indel`, `minimum_frequency_indel`) moved into a new `pipeline.reveal.sequence_overview.settings` section; normalize-so thresholds (`end_distance`, `exclude_quantile`) moved into a new `pipeline.reveal.normalization.settings` section — `visualization.settings` now holds only plot-rendering options
+- **REVEAL as external dependency**: The vendored SeqVista scripts under `workflow/scripts/dynamics/seqvista/` have been removed. Rules now call the `REVEAL` CLI from the `reveal-tools` bioconda package (new `workflow/envs/reveal.yaml` conda environment) instead of invoking local copies of `bam2so.py`, `normalize-so.py`, `estimate-so.py`, `so2plotable.py`, `plot.py`, and the stats/compare scripts
+
+### Other Changes
+
+- Config designer updated to match the `reveal`/`visualization` naming
+
 ## [2.0.0] - 2026-06-02
 
 > ⚠️ NOTE: This release includes significant changes to the pipeline's configuration structure and output organization. Users will need to update their existing configurations and reorganize outputs to align with the new structure.

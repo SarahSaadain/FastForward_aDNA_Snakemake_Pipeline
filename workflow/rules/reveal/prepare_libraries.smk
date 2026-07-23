@@ -2,15 +2,15 @@
 # Python helper functions for rules
 ####################################################
 
-_comp_execute = config.get("pipeline", {}).get("dynamics", {}).get("mapping", {}).get("settings", {}).get("competitive_mapping", False)
+_comp_execute = config.get("pipeline", {}).get("reveal", {}).get("mapping", {}).get("settings", {}).get("competitive_mapping", False)
 
 
 def get_competition_fasta_input(wildcards):
     path = get_competition_fasta_for_species(wildcards.species)
     if not path:
         raise ValueError(
-            f"pipeline.dynamics.mapping.competitive_mapping.execute is true, but no competition "
-            f"FASTA was found in '{wildcards.species}/raw/dynamics/competition/' for species "
+            f"pipeline.reveal.mapping.competitive_mapping.execute is true, but no competition "
+            f"FASTA was found in '{wildcards.species}/raw/reveal/competition/' for species "
             f"'{wildcards.species}'. Place exactly one FASTA file there to use competitive mapping."
         )
     return path
@@ -18,7 +18,7 @@ def get_competition_fasta_input(wildcards):
 
 def _comp_library_input(wildcards):
     if _comp_execute:
-        return f"{wildcards.species}/processed/dynamics/competition/competition.suffixed.fasta"
+        return f"{wildcards.species}/processed/reveal/competition/competition.suffixed.fasta"
     return []
 
 
@@ -40,7 +40,7 @@ def clean_scg_library_name_input(wildcards):
     # Fall back to auto-determined SCG output
     auto_id = get_effective_scg_library_id_for_species(species)
     if scg_library == auto_id:
-        return f"{species}/processed/dynamics/scg/{species}_relevant_scg.fasta"
+        return f"{species}/processed/reveal/scg/{species}_relevant_scg.fasta"
 
     raise ValueError(f"No SCG library file could be determined for species {species} and library {scg_library}.")
 
@@ -67,7 +67,7 @@ rule clean_feature_library_name:
     input:
         clean_feature_library_name_input
     output:
-        temp("{species}/processed/dynamics/{feature_library}/library/{feature_library}.clean.fasta")
+        temp("{species}/processed/reveal/{feature_library}/library/{feature_library}.clean.fasta")
     message: "Preparing TE library for {wildcards.species}"
     shell:
         """
@@ -76,9 +76,9 @@ rule clean_feature_library_name:
 
 rule prepare_feature_library:
     input:
-        "{species}/processed/dynamics/{feature_library}/library/{feature_library}.clean.fasta"
+        "{species}/processed/reveal/{feature_library}/library/{feature_library}.clean.fasta"
     output:
-        temp("{species}/processed/dynamics/{feature_library}/library/{feature_library}.suffixed.fasta")
+        temp("{species}/processed/reveal/{feature_library}/library/{feature_library}.suffixed.fasta")
     message: "Preparing TE library for {wildcards.species}"
     shell:
         # remove trailing whitespace from headers and append _fle to each header
@@ -90,7 +90,7 @@ rule clean_scg_library_name:
     input:
         clean_scg_library_name_input
     output:
-        temp("{species}/processed/dynamics/scg/library/{scg_library}.clean.fasta")
+        temp("{species}/processed/reveal/scg/library/{scg_library}.clean.fasta")
     message: "Preparing SCG library for {wildcards.species}"
     shell:
         """
@@ -99,9 +99,9 @@ rule clean_scg_library_name:
 
 rule prepare_scg_library:
     input:
-        "{species}/processed/dynamics/scg/library/{scg_library}.clean.fasta"
+        "{species}/processed/reveal/scg/library/{scg_library}.clean.fasta"
     output:
-        temp("{species}/processed/dynamics/scg/library/{scg_library}.suffixed.fasta")
+        temp("{species}/processed/reveal/scg/library/{scg_library}.suffixed.fasta")
     message: "Preparing SCG library for {wildcards.species}"
     shell:
         # remove trailing whitespace from headers and append _scg to each header
@@ -112,10 +112,10 @@ rule prepare_scg_library:
 if _comp_execute:
     rule create_no_comp_library:
         input:
-            "{species}/processed/dynamics/{feature_library}/library/{feature_library}_and_scg.suffixed.fasta"
+            "{species}/processed/reveal/{feature_library}/library/{feature_library}_and_scg.suffixed.fasta"
         output:
-            "{species}/processed/dynamics/{feature_library}/library/{feature_library}_and_scg.no_comp.suffixed.fasta"
-        message: "Removing competition sequences from combined library for SeqVista ({wildcards.species})"
+            "{species}/processed/reveal/{feature_library}/library/{feature_library}_and_scg.no_comp.suffixed.fasta"
+        message: "Removing competition sequences from combined library for REVEAL ({wildcards.species})"
         shell:
             # Skip any FASTA entry whose header ends in _comp (header + its sequence lines)
             """
@@ -126,7 +126,7 @@ if _comp_execute:
         input:
             get_competition_fasta_input
         output:
-            temp("{species}/processed/dynamics/competition/competition.suffixed.fasta")
+            temp("{species}/processed/reveal/competition/competition.suffixed.fasta")
         message: "Preparing competition library for {wildcards.species}"
         shell:
             # remove trailing whitespace from headers and append _comp to each header
@@ -136,11 +136,11 @@ if _comp_execute:
 
 rule combine_scg_and_ref_library:
     input:
-        scg=lambda wildcards: f"{wildcards.species}/processed/dynamics/scg/library/{get_effective_scg_library_id_for_species(wildcards.species)}.suffixed.fasta",
-        fl="{species}/processed/dynamics/{feature_library}/library/{feature_library}.suffixed.fasta",
+        scg=lambda wildcards: f"{wildcards.species}/processed/reveal/scg/library/{get_effective_scg_library_id_for_species(wildcards.species)}.suffixed.fasta",
+        fl="{species}/processed/reveal/{feature_library}/library/{feature_library}.suffixed.fasta",
         comp=_comp_library_input
     output:
-        library="{species}/processed/dynamics/{feature_library}/library/{feature_library}_and_scg.suffixed.fasta"
+        library="{species}/processed/reveal/{feature_library}/library/{feature_library}_and_scg.suffixed.fasta"
     message: "Concatenating SCG and Feature libraries for {wildcards.species}"
     shell:
         """

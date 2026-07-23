@@ -172,41 +172,13 @@ pipeline:
         samtools_stats: true
 
 
-  dynamics:
+  reveal:
     # When true, this stage will be executed (Default: true)
     execute: true
-    mapping:
-      settings:
-        # Options: "bwa-mem2" (default), "bwa-aln" or "minimap2"
-        # bwa-aln: classic seed-and-extend, well-suited for short aDNA reads
-        # bwa-mem2: faster modern reimplementation of bwa-mem
-        # minimap2: fast versatile aligner, uses preset "-ax sr" for short reads
-        mapper: "bwa-mem2"
-        # Optional: extra parameters passed directly to the mapper
-        # For bwa-aln, defaults to "-n 0.01 -k 2 -l 1024 -o 2" (Oliva et al. 2021, 10.1093/bib/bbab076)
-        #mapper_extra_params: ""
-        # When true, the filtered sorted BAM (and its index) produced by the dynamics mapping step
-        # are kept as permanent outputs in {species}/processed/dynamics/{feature_library}/mapped/.
-        # When false (default), they are marked as temporary and deleted after SeqVista consumes them.
-        # Set to true to inspect the BAM or to run the mapping step independently of SeqVista.
-        keep_mapped_bam: false
-        # When true, competitive mapping is enabled: sequences from {species}/raw/dynamics/competition/
-        # are combined with the SCG and feature library before mapping. Competition sequences are
-        # suffixed with _comp, and reads mapping to them are removed after mapping — only SCG and
-        # feature library sequences are retained for downstream analysis. (Default: false)
-        competitive_mapping: false
-        # Minimum mapping quality score applied to SCG sequences (_scg) in the combined library.
-        # Reads mapping to SCG references with MAPQ below this value are removed after mapping.
-        # Set to 0 to disable.
-        min_mapq_scg: 0
-        # Minimum mapping quality score applied to feature library sequences (_fle) in the combined library.
-        # Reads mapping to feature references with MAPQ below this value are removed after mapping.
-        # SCG reads (_scg) are not affected. Set to 0 (default) to disable.
-        min_mapq_fle: 0
 
     # ── SCG Selector ──────────────────────────────────────────────────────────
     # Automatically determines single-copy genes (SCGs) via BUSCO when no SCG
-    # FASTA is provided in {species}/raw/dynamics/scg/.
+    # FASTA is provided in {species}/raw/reveal/scg/.
     # If a FASTA is already present there, this section is ignored and the
     # user-provided file is used instead.
     # Setting execute: true also enables an "SCG-only" run (ranking output is
@@ -214,14 +186,14 @@ pipeline:
     scg_selector:
       # When true, run SCG determination if no user-provided SCG file exists (Default: true)
       # Automatically skipped when a user-provided SCG FASTA is found in
-      # {species}/raw/dynamics/scg/ or when no lineage is configured for the species.
+      # {species}/raw/reveal/scg/ or when no lineage is configured for the species.
       execute: true
       settings:
-        # Mapper for SCG library mapping. Defaults to pipeline.dynamics.mapping.settings.mapper.
+        # Mapper for SCG library mapping. Defaults to pipeline.reveal.mapping.settings.mapper.
         # Uncomment to override. Options: "bwa-mem2", "bwa-aln", "minimap2"
         #mapper: "minimap2"
         # Extra parameters passed directly to the mapper.
-        # Defaults to pipeline.dynamics.mapping.settings.mapper_extra_params if set,
+        # Defaults to pipeline.reveal.mapping.settings.mapper_extra_params if set,
         # otherwise falls back to mapper-specific defaults (bwa-aln: Oliva et al. 2021, minimap2: "-ax sr").
         #mapper_extra_params: ""
         # Number of top-ranked SCGs to keep (Default: 20; per-species setting takes precedence if set)
@@ -235,13 +207,86 @@ pipeline:
         # Also used as the threshold when computing per-contig coverage stats. Set to 0 to disable.
         min_mapq: 15
         # When true, the filtered sorted SCG BAM and its index are kept as permanent outputs in
-        # {species}/processed/dynamics/scg/reads_mapped/. When false (default), they are
+        # {species}/processed/reveal/scg/reads_mapped/. When false (default), they are
         # marked as temporary and deleted after SCG ranking consumes them.
         keep_mapped_bam: false
 
-    seqvista:
+    mapping:
+      settings:
+        # Options: "bwa-mem2" (default), "bwa-aln" or "minimap2"
+        # bwa-aln: classic seed-and-extend, well-suited for short aDNA reads
+        # bwa-mem2: faster modern reimplementation of bwa-mem
+        # minimap2: fast versatile aligner, uses preset "-ax sr" for short reads
+        mapper: "bwa-mem2"
+        # Optional: extra parameters passed directly to the mapper
+        # For bwa-aln, defaults to "-n 0.01 -k 2 -l 1024 -o 2" (Oliva et al. 2021, 10.1093/bib/bbab076)
+        #mapper_extra_params: ""
+        # When true, the filtered sorted BAM (and its index) produced by the REVEAL mapping step
+        # are kept as permanent outputs in {species}/processed/reveal/{feature_library}/mapped/.
+        # When false (default), they are marked as temporary and deleted after REVEAL consumes them.
+        # Set to true to inspect the BAM or to run the mapping step independently of REVEAL.
+        keep_mapped_bam: false
+        # When true, competitive mapping is enabled: sequences from {species}/raw/reveal/competition/
+        # are combined with the SCG and feature library before mapping. Competition sequences are
+        # suffixed with _comp, and reads mapping to them are removed after mapping — only SCG and
+        # feature library sequences are retained for downstream analysis. (Default: false)
+        competitive_mapping: false
+        # Minimum mapping quality score applied to SCG sequences (_scg) in the combined library.
+        # Reads mapping to SCG references with MAPQ below this value are removed after mapping.
+        # Set to 0 to disable.
+        min_mapq_scg: 0
+        # Minimum mapping quality score applied to feature library sequences (_fle) in the combined library.
+        # Reads mapping to feature references with MAPQ below this value are removed after mapping.
+        # SCG reads (_scg) are not affected. Set to 0 (default) to disable.
+        min_mapq_fle: 0
+
+    # ── Sequence Overview (bam2so) ──────────────────────────────────────────────
+    # Thresholds used when converting the mapped BAM into a sequence overview (.so)
+    # profile — coverage, SNP, and indel calls per reference position.
+    sequence_overview:
+      settings:
+        # Mapping quality threshold; reads below this are considered ambiguous (Default: 5)
+        mapping_quality_threshold: 5
+        # Minimum count of SNPs to call a SNP (Default: 5)
+        minimum_count_snp: 5
+        # Minimum frequency of SNPs to call a SNP (Default: 0.1)
+        minimum_frequency_snp: 0.1
+        # Minimum count of indels to call an indel (Default: 3)
+        minimum_count_indel: 3
+        # Minimum frequency of indels to call an indel (Default: 0.01)
+        minimum_frequency_indel: 0.01
+
+    # ── Normalization (normalize-so) ────────────────────────────────────────────
+    # Settings used to normalise sequence overview coverage against single-copy
+    # gene (SCG) depth.
+    normalization:
+      settings:
+        # Distance from sequence ends excluded from normalization (Default: 100)
+        end_distance: 100
+        # Exclude the most extreme coverage quantiles for normalization (Default: 25)
+        exclude_quantile: 25
+
+    visualization:
       # When true, this sub-stage will be executed (Default: true)
       execute: true
+      settings:
+        # Controls plotting for individual-level REVEAL visualization output.
+        # Options:
+        #   "plot"          — generate plotables AND render plots (Default)
+        #   "plotable_only" — generate plotables only, skip rendering plots
+        #   "skip"          — skip both plotables and plots
+        individual_plots: "plot"
+        # Controls plotting for species-level (comparison) REVEAL visualization output.
+        # Options:
+        #   "plot"          — generate plotables AND render the facet comparison plot (Default)
+        #   "plotable_only" — generate plotables only, skip rendering the comparison plot
+        #   "skip"          — skip both plotables and the comparison plot
+        comparison_plots: "plot"
+        # Y-axis value above which the plot switches to log scale (individual and species level) (Default: 25)
+        y_axis_log_scale_threshold_individual: 25
+        y_axis_log_scale_threshold_species: 25
+    
+    analysis:
       settings:
         # When true, produce per-individual and species-level coverage stats,
         # comparisons, and plots (Default: true)
@@ -252,35 +297,6 @@ pipeline:
         # When true, produce per-individual and species-level indel stats
         # and comparisons (Default: false)
         indel_analysis: false
-        # Controls plotting for individual-level seqvista output.
-        # Options:
-        #   "plot"          — generate plotables AND render plots (Default)
-        #   "plotable_only" — generate plotables only, skip rendering plots
-        #   "skip"          — skip both plotables and plots
-        individual_plots: "plot"
-        # Controls plotting for species-level (comparison) seqvista output.
-        # Options:
-        #   "plot"          — generate plotables AND render the facet comparison plot (Default)
-        #   "plotable_only" — generate plotables only, skip rendering the comparison plot
-        #   "skip"          — skip both plotables and the comparison plot
-        comparison_plots: "plot"
-        # Y-axis value above which the plot switches to log scale (individual and species level) (Default: 25)
-        y_axis_log_scale_threshold_individual: 25
-        y_axis_log_scale_threshold_species: 25
-        # bam2so: mapping quality threshold; reads below this are considered ambiguous (Default: 5)
-        mapping_quality_threshold: 5
-        # bam2so: minimum count of SNPs to call a SNP (Default: 5)
-        minimum_count_snp: 5
-        # bam2so: minimum frequency of SNPs to call a SNP (Default: 0.1)
-        minimum_frequency_snp: 0.1
-        # bam2so: minimum count of indels to call an indel (Default: 3)
-        minimum_count_indel: 3
-        # bam2so: minimum frequency of indels to call an indel (Default: 0.01)
-        minimum_frequency_indel: 0.01
-        # normalize-so: distance from sequence ends excluded from normalization (Default: 100)
-        end_distance: 100
-        # normalize-so: exclude the most extreme coverage quantiles for normalization (Default: 25)
-        exclude_quantile: 25
   
   summary_processing:
     # When true, this stage will be executed (Default: true)
@@ -321,7 +337,7 @@ species:
     #  - genome
 
     # Optional: restrict which feature libraries to use for this species.
-    # If omitted, all libraries discovered in {species}/raw/dynamics/feature_library/ are used.
+    # If omitted, all libraries discovered in {species}/raw/reveal/feature_library/ are used.
     # Each entry must match the library ID derived from the filename:
     # basename without extension, dots replaced by underscores
     # (e.g. "genes.fna" → "genes", "my.lib.fna" → "my_lib").
@@ -330,8 +346,8 @@ species:
     #  - genes
 
     # Per-species SCG selector settings (only relevant when
-    # pipeline.dynamics.scg_selector.execute is true AND no user-provided SCG
-    # file exists in {species}/raw/dynamics/scg/).
+    # pipeline.reveal.scg_selector.execute is true AND no user-provided SCG
+    # file exists in {species}/raw/reveal/scg/).
     scg_selector:
       # Optional: exact path to the reference genome to use for SCG determination.
       # Required when multiple FASTA files exist in {species}/raw/ref/.

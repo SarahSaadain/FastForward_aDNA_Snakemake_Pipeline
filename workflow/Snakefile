@@ -22,7 +22,7 @@ include: "scripts/preview.py"
 
 # expected_output_manager.py: Manages expected output of pipeline 
 # and requests the files for rule all
-include: "scripts/expected_output/expected_output_manager_dynamics_processing.py"
+include: "scripts/expected_output/expected_output_manager_reveal_processing.py"
 include: "scripts/expected_output/expected_output_manager_reads_processing.py"
 include: "scripts/expected_output/expected_output_manager_ref_processing.py"
 include: "scripts/expected_output/expected_output_manager_summary_processing.py"
@@ -34,8 +34,8 @@ include: "rules/raw_reads_processing.smk"
 # rules/reads_to_reference_processing.smk: Contains rules for mapping reads to reference.
 include: "rules/reads_to_reference_processing.smk"
 
-# rules/dynamic_processing.smk: Contains rules for dynamic processing steps that depend on the results of previous steps.
-include: "rules/dynamics_processing.smk"
+# rules/reveal_processing.smk: Contains rules for REVEAL-based TE dynamics analysis steps that depend on the results of previous steps.
+include: "rules/reveal_processing.smk"
 
 # create_multiqc_species_individual.smk
 # Contains rules for generating MultiQC reports for each species and individual.

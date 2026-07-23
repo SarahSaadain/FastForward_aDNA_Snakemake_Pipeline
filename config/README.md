@@ -211,28 +211,28 @@ Optionally removes or extracts reads that did not map to the reference. Default:
 | `analysis.settings.qualimap` | on | Include Qualimap BAM QC data in MultiQC reports. |
 | `analysis.settings.samtools_stats` | on | Include samtools stats data in MultiQC reports. |
 
-### Stage: `dynamics`
+### Stage: `reveal`
 
 TE and genomic feature abundance analysis — maps to a combined SCG + feature library for depth-normalised comparisons.
 
-Place feature libraries in `{species}/raw/dynamics/feature_library/` and, optionally, a pre-built SCG FASTA in `{species}/raw/dynamics/scg/`. If no SCG FASTA is provided and `scg_selector.execute` is `true`, SCGs are determined automatically via BUSCO (requires a lineage configured per species). To use competitive mapping, place a single competition FASTA in `{species}/raw/dynamics/competition/`.
+Place feature libraries in `{species}/raw/reveal/feature_library/` and, optionally, a pre-built SCG FASTA in `{species}/raw/reveal/scg/`. If no SCG FASTA is provided and `scg_selector.execute` is `true`, SCGs are determined automatically via BUSCO (requires a lineage configured per species). To use competitive mapping, place a single competition FASTA in `{species}/raw/reveal/competition/`.
 
 #### `scg_selector`
 
-Automatically identifies single-copy genes (SCGs) from the reference genome using BUSCO. SCGs serve as coverage normalisers for the Dynamics pipeline. Skipped automatically when a user-provided SCG FASTA is already present in `{species}/raw/dynamics/scg/` or when no BUSCO lineage is configured for the species.
+Automatically identifies single-copy genes (SCGs) from the reference genome using BUSCO. SCGs serve as coverage normalisers for the REVEAL pipeline. Skipped automatically when a user-provided SCG FASTA is already present in `{species}/raw/reveal/scg/` or when no BUSCO lineage is configured for the species.
 
 Can also be used standalone (without feature libraries) to produce an SCG ranking table as the sole output.
 
 | Setting | Default | Description |
 |---|---|---|
 | `execute` | `true` | Enable SCG auto-determination when no user-provided FASTA is present. |
-| `settings.mapper` | *(inherits from `dynamics.mapping.settings.mapper`)* | Mapper for reads-to-SCG-library mapping. Uncomment to override. Options: `bwa-mem2`, `bwa-aln`, `minimap2`. |
-| `settings.mapper_extra_params` | *(inherits from `dynamics.mapping.settings.mapper_extra_params`)* | Optional extra parameters for the mapper. Falls back to mapper-specific defaults if not set. |
+| `settings.mapper` | *(inherits from `reveal.mapping.settings.mapper`)* | Mapper for reads-to-SCG-library mapping. Uncomment to override. Options: `bwa-mem2`, `bwa-aln`, `minimap2`. |
+| `settings.mapper_extra_params` | *(inherits from `reveal.mapping.settings.mapper_extra_params`)* | Optional extra parameters for the mapper. Falls back to mapper-specific defaults if not set. |
 | `settings.num_top_scgs` | `20` | Number of top-ranked SCGs to retain as normalisers. Per-species setting overrides this global default. |
 | `settings.min_length_scg` | `4000` | Minimum SCG sequence length in bp to include from BUSCO results. Per-species setting overrides this. |
 | `settings.max_length_scg` | `8000` | Maximum SCG sequence length in bp to include from BUSCO results. Per-species setting overrides this. |
 | `settings.min_mapq` | `15` | Minimum mapping quality for reads in the SCG library BAM. Reads with MAPQ below this value are removed after unmapped-read removal. The same threshold is applied when computing per-contig coverage stats for ranking. Set to `0` to disable MAPQ filtering. |
-| `settings.keep_mapped_bam` | `false` | When `true`, the filtered sorted SCG BAM and its index (`{species}/processed/dynamics/scg/reads_mapped/{individual}_scg_library.sorted.bam[.bai]`) are kept as permanent outputs. When `false` (default), they are marked as temporary and deleted after SCG ranking consumes them. |
+| `settings.keep_mapped_bam` | `false` | When `true`, the filtered sorted SCG BAM and its index (`{species}/processed/reveal/scg/reads_mapped/{individual}_scg_library.sorted.bam[.bai]`) are kept as permanent outputs. When `false` (default), they are marked as temporary and deleted after SCG ranking consumes them. |
 
 **Per-species SCG settings** (under `species.<key>.scg_selector`):
 
@@ -250,7 +250,7 @@ Can also be used standalone (without feature libraries) to produce an SCG rankin
 |---|---|---|
 | `settings.mapper` | `bwa-mem2` | Mapper for feature-library mapping. Same options as `reference_processing.mapping`. |
 | `settings.mapper_extra_params` | — | Optional extra parameters passed directly to the mapper. |
-| `settings.keep_mapped_bam` | `false` | When `true`, the filtered sorted BAM and its index (`{species}/processed/dynamics/{feature_library}/mapped/{individual}_{feature_library}_and_scg.sorted.bam[.bai]`) are kept as permanent outputs and explicitly requested by the pipeline. When `false` (default), they are marked as temporary and deleted after SeqVista consumes them. Set to `true` to inspect the mapped BAM or to run the mapping step independently of SeqVista. |
+| `settings.keep_mapped_bam` | `false` | When `true`, the filtered sorted BAM and its index (`{species}/processed/reveal/{feature_library}/mapped/{individual}_{feature_library}_and_scg.sorted.bam[.bai]`) are kept as permanent outputs and explicitly requested by the pipeline. When `false` (default), they are marked as temporary and deleted after REVEAL consumes them. Set to `true` to inspect the mapped BAM or to run the mapping step independently of REVEAL. |
 | `settings.min_mapq_scg` | `0` | Minimum mapping quality applied selectively to SCG sequences (`_scg` suffix) in the combined library BAM. Reads mapping to SCG references with MAPQ below this value are removed after mapping. Feature library reads are not affected. Set to `0` (default) to disable. |
 | `settings.min_mapq_fle` | `0` | Minimum mapping quality applied selectively to feature library sequences (`_fle` suffix) in the combined library BAM. Reads mapping to feature references with MAPQ below this value are removed after mapping. SCG reads are not affected. Set to `0` (default) to disable. |
 
@@ -258,33 +258,33 @@ Can also be used standalone (without feature libraries) to produce an SCG rankin
 
 Competitive mapping adds a competition FASTA to the combined reference (alongside SCG and feature library sequences) before mapping. Reads mapping to competition sequences are removed after mapping, so only SCG and feature library reads reach downstream analysis. This is useful for reducing false-positive mappings when reads originate from competing sources (e.g. a host genome fragment).
 
-To use competitive mapping, place exactly one FASTA file in `{species}/raw/dynamics/competition/`. The pipeline auto-discovers it — no path needs to be specified in the config.
+To use competitive mapping, place exactly one FASTA file in `{species}/raw/reveal/competition/`. The pipeline auto-discovers it — no path needs to be specified in the config.
 
 Competition sequences are internally suffixed with `_comp` to distinguish them from SCG (`_scg`) and feature library (`_fle`) sequences.
 
 | Setting | Default | Description |
 |---|---|---|
-| `settings.competitive_mapping` | `false` | When `true`, the FASTA in `{species}/raw/dynamics/competition/` is included in the combined reference. Reads mapping to `_comp` sequences are filtered out after mapping. |
+| `settings.competitive_mapping` | `false` | When `true`, the FASTA in `{species}/raw/reveal/competition/` is included in the combined reference. Reads mapping to `_comp` sequences are filtered out after mapping. |
 
-#### Other `dynamics` steps
+#### Other `reveal` steps
 
 | Step / Setting | Default | Description |
 |---|---|---|
-| `seqvista` | on | Generates SO profiles — per-position coverage, SNP, and indel information — normalised into a SeqVista directory structure for per-individual TE occupancy plots and a faceted species-level comparison plot. |
-| `seqvista.settings.coverage_analysis` | `true` | When `true`, produce per-individual and species-level coverage stats, comparisons, and plots. |
-| `seqvista.settings.snp_analysis` | `false` | When `true`, produce per-individual and species-level SNP stats and comparisons. |
-| `seqvista.settings.indel_analysis` | `false` | When `true`, produce per-individual and species-level indel stats and comparisons. |
-| `seqvista.settings.individual_plots` | `plot` | `plot` — generate plotables and render per-individual plots; `plotable_only` — generate plotables only, skip rendering; `skip` — skip both. |
-| `seqvista.settings.comparison_plots` | `plot` | `plot` — generate plotables and render the faceted species comparison plot; `plotable_only` — generate plotables only, skip rendering; `skip` — skip both. |
-| `seqvista.settings.y_axis_log_scale_threshold_individual` | `25` | Y-axis value above which per-individual plots switch to a log scale. |
-| `seqvista.settings.y_axis_log_scale_threshold_species` | `25` | Y-axis value above which the species comparison plot switches to a log scale. |
-| `seqvista.settings.mapping_quality_threshold` | `5` | Mapping quality threshold for bam2so; reads below this value are treated as ambiguously mapped and excluded. |
-| `seqvista.settings.minimum_count_snp` | `5` | Minimum number of reads supporting a variant for it to be called as a SNP. |
-| `seqvista.settings.minimum_frequency_snp` | `0.1` | Minimum allele frequency (0–1) for a SNP call. |
-| `seqvista.settings.minimum_count_indel` | `3` | Minimum number of reads supporting an indel for it to be reported. |
-| `seqvista.settings.minimum_frequency_indel` | `0.01` | Minimum allele frequency (0–1) for an indel call. |
-| `seqvista.settings.end_distance` | `100` | Number of positions from each end of a sequence excluded when computing the normalisation factor, to avoid edge-coverage artefacts. |
-| `seqvista.settings.exclude_quantile` | `25` | Percentile used to exclude the most extreme coverage values from normalisation (excludes both the top and bottom tail). |
+| `visualization` | on | Generates SO profiles — per-position coverage, SNP, and indel information — normalised into a REVEAL directory structure for per-individual TE occupancy plots and a faceted species-level comparison plot. |
+| `analysis.settings.coverage_analysis` | `true` | When `true`, produce per-individual and species-level coverage stats, comparisons, and plots. |
+| `analysis.settings.snp_analysis` | `false` | When `true`, produce per-individual and species-level SNP stats and comparisons. |
+| `analysis.settings.indel_analysis` | `false` | When `true`, produce per-individual and species-level indel stats and comparisons. |
+| `visualization.settings.individual_plots` | `plot` | `plot` — generate plotables and render per-individual plots; `plotable_only` — generate plotables only, skip rendering; `skip` — skip both. |
+| `visualization.settings.comparison_plots` | `plot` | `plot` — generate plotables and render the faceted species comparison plot; `plotable_only` — generate plotables only, skip rendering; `skip` — skip both. |
+| `visualization.settings.y_axis_log_scale_threshold_individual` | `25` | Y-axis value above which per-individual plots switch to a log scale. |
+| `visualization.settings.y_axis_log_scale_threshold_species` | `25` | Y-axis value above which the species comparison plot switches to a log scale. |
+| `sequence_overview.settings.mapping_quality_threshold` | `5` | Mapping quality threshold for bam2so; reads below this value are treated as ambiguously mapped and excluded. |
+| `sequence_overview.settings.minimum_count_snp` | `5` | Minimum number of reads supporting a variant for it to be called as a SNP. |
+| `sequence_overview.settings.minimum_frequency_snp` | `0.1` | Minimum allele frequency (0–1) for a SNP call. |
+| `sequence_overview.settings.minimum_count_indel` | `3` | Minimum number of reads supporting an indel for it to be reported. |
+| `sequence_overview.settings.minimum_frequency_indel` | `0.01` | Minimum allele frequency (0–1) for an indel call. |
+| `normalization.settings.end_distance` | `100` | Number of positions from each end of a sequence excluded when computing the normalisation factor, to avoid edge-coverage artefacts. |
+| `normalization.settings.exclude_quantile` | `25` | Percentile used to exclude the most extreme coverage values from normalisation (excludes both the top and bottom tail). |
 
 ### Stage: `summary_processing`
 
@@ -305,7 +305,7 @@ Each entry under `species:` in the config corresponds to a species folder in the
 | `name` | — | Human-readable species name used in reports. |
 | `individuals` | *(all discovered)* | Optional list of individual IDs to process. Each ID must match the part of a read filename before the first `_` (e.g. `IND001` from `IND001_L001_R1.fastq.gz`). If omitted, all individuals discovered in `{species}/raw/reads/` are used. An error is raised if any listed ID is not found on disk. |
 | `references` | *(all discovered)* | Optional list of reference IDs to process. IDs are derived from filenames: basename without extension, dots replaced by underscores (e.g. `EquCab3.0.fna` → `EquCab3_0`). If omitted, all references in `{species}/raw/ref/` are used. An error is raised if any listed ID is not found on disk. |
-| `feature_libraries` | *(all discovered)* | Optional list of feature library IDs to use for the Dynamics stage. Same ID format as `references`. If omitted, all libraries in `{species}/raw/dynamics/feature_library/` are used. An error is raised if any listed ID is not found on disk. |
+| `feature_libraries` | *(all discovered)* | Optional list of feature library IDs to use for the REVEAL stage. Same ID format as `references`. If omitted, all libraries in `{species}/raw/reveal/feature_library/` are used. An error is raised if any listed ID is not found on disk. |
 | `scg_selector.settings.lineage` | — | Required for SCG auto-determination. BUSCO lineage name (e.g. `drosophilidae_odb12`). Browse available lineages at [busco.ezlab.org](https://busco.ezlab.org/). |
 | `scg_selector.reference` | auto-detect | Explicit path to the reference FASTA used by BUSCO. Required when multiple FASTAs exist in `{species}/raw/ref/`; auto-detected and logged when exactly one is present. |
 | `scg_selector.settings.num_top_scgs` | *(pipeline default)* | Per-species override for the number of top-ranked SCGs to retain. |
@@ -440,13 +440,13 @@ pipeline:
         qualimap: true
         samtools_stats: true
 
-  dynamics:
+  reveal:
     execute: true
 
     scg_selector:
       execute: true
       settings:
-        # mapper and mapper_extra_params default to dynamics.mapping.settings values if not set
+        # mapper and mapper_extra_params default to reveal.mapping.settings values if not set
         num_top_scgs: 20
         min_length_scg: 4000
         max_length_scg: 8000
@@ -458,23 +458,32 @@ pipeline:
         # Optional: extra parameters passed directly to the mapper
         #mapper_extra_params: ""
 
-    seqvista:
-      execute: true
+    analysis:
       settings:
         coverage_analysis: true
         snp_analysis: false
         indel_analysis: false
-        individual_plots: "plot"
-        comparison_plots: "plot"
-        y_axis_log_scale_threshold_individual: 25
-        y_axis_log_scale_threshold_species: 25
+
+    sequence_overview:
+      settings:
         mapping_quality_threshold: 5
         minimum_count_snp: 5
         minimum_frequency_snp: 0.1
         minimum_count_indel: 3
         minimum_frequency_indel: 0.01
+
+    normalization:
+      settings:
         end_distance: 100
         exclude_quantile: 25
+
+    visualization:
+      execute: true
+      settings:
+        individual_plots: "plot"
+        comparison_plots: "plot"
+        y_axis_log_scale_threshold_individual: 25
+        y_axis_log_scale_threshold_species: 25
 
   summary_processing:
     execute: true

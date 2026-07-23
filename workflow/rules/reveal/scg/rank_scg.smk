@@ -7,7 +7,7 @@ def _scg_ranking_input_stats(wildcards):
     """Collect per-individual SCG stats JSON files for ranking."""
     individuals = get_individuals_for_species(wildcards.species)
     return expand(
-        "{species}/processed/dynamics/scg/stats/{individual}_scg_stats.json",
+        "{species}/processed/reveal/scg/stats/{individual}_scg_stats.json",
         species=wildcards.species,
         individual=individuals
     )
@@ -18,44 +18,44 @@ def _scg_ranking_input_stats(wildcards):
 
 rule compute_scg_stats_for_bam:
     input:
-        bam="{species}/processed/dynamics/scg/reads_mapped/{individual}_scg_library.sorted.bam",
-        bai="{species}/processed/dynamics/scg/reads_mapped/{individual}_scg_library.sorted.bam.bai"
+        bam="{species}/processed/reveal/scg/reads_mapped/{individual}_scg_library.sorted.bam",
+        bai="{species}/processed/reveal/scg/reads_mapped/{individual}_scg_library.sorted.bam.bai"
     output:
-        stats="{species}/processed/dynamics/scg/stats/{individual}_scg_stats.json"
+        stats="{species}/processed/reveal/scg/stats/{individual}_scg_stats.json"
     log:
-        "{species}/processed/dynamics/scg/stats/{individual}_scg_stats.log"
+        "{species}/processed/reveal/scg/stats/{individual}_scg_stats.log"
     message: "Computing SCG coverage stats for {wildcards.individual} of {wildcards.species}"
     conda:
         "../../../envs/python_and_r.yaml"
     script:
-        "../../../scripts/dynamics/scg/compute_scg_stats_for_bam.py"
+        "../../../scripts/reveal/scg/compute_scg_stats_for_bam.py"
 
 # Ranking TSV/JSON go to results/ — they are primary outputs the user cares about
 rule determine_scg_ranking:
     input:
         stats=_scg_ranking_input_stats
     output:
-        ranked_tsv="{species}/results/dynamics/scg/{species}_scg_ranked.tsv",
-        ranked_json="{species}/results/dynamics/scg/{species}_scg_ranked.json"
+        ranked_tsv="{species}/results/reveal/scg/{species}_scg_ranked.tsv",
+        ranked_json="{species}/results/reveal/scg/{species}_scg_ranked.json"
     log:
-        "{species}/results/dynamics/scg/{species}_scg_ranked.log"
+        "{species}/results/reveal/scg/{species}_scg_ranked.log"
     message: "Ranking SCGs across individuals for {wildcards.species}"
     conda:
         "../../../envs/python_and_r.yaml"
     script:
-        "../../../scripts/dynamics/scg/determine_scg_ranking.py"
+        "../../../scripts/reveal/scg/determine_scg_ranking.py"
 
 # Intermediate selection files stay in processed/
 rule filter_top_scgs:
     input:
-        ranked_scgs="{species}/results/dynamics/scg/{species}_scg_ranked.tsv"
+        ranked_scgs="{species}/results/reveal/scg/{species}_scg_ranked.tsv"
     output:
-        relevant_contigs="{species}/processed/dynamics/scg/{species}_relevant_scg.txt",
-        relevant_contigs_bed="{species}/processed/dynamics/scg/{species}_relevant_scg.bed"
+        relevant_contigs="{species}/processed/reveal/scg/{species}_relevant_scg.txt",
+        relevant_contigs_bed="{species}/processed/reveal/scg/{species}_relevant_scg.bed"
     params:
         num_top_scgs=lambda wildcards: (
             config.get("species", {}).get(wildcards.species, {}).get("scg_selector", {}).get("settings", {}).get("num_top_scgs")
-            or config.get("pipeline", {}).get("dynamics", {}).get("scg_selector", {}).get("settings", {}).get("num_top_scgs", 20)
+            or config.get("pipeline", {}).get("reveal", {}).get("scg_selector", {}).get("settings", {}).get("num_top_scgs", 20)
         )
     message: "Selecting top {params.num_top_scgs} SCGs for {wildcards.species}"
     shell:
@@ -64,13 +64,13 @@ rule filter_top_scgs:
         awk '{{print $1 "\t0\t1000000000"}}' "{output.relevant_contigs}" | sort -u > "{output.relevant_contigs_bed}"
         """
 
-# The filtered FASTA stays in processed/ — it feeds into the seqvista prepare_libraries pipeline
+# The filtered FASTA stays in processed/ — it feeds into the REVEAL prepare_libraries pipeline
 rule filter_scg_fasta:
     input:
-        fasta="{species}/processed/dynamics/scg/{species}_scg_library.fasta",
-        id_list="{species}/processed/dynamics/scg/{species}_relevant_scg.txt"
+        fasta="{species}/processed/reveal/scg/{species}_scg_library.fasta",
+        id_list="{species}/processed/reveal/scg/{species}_relevant_scg.txt"
     output:
-        filtered="{species}/processed/dynamics/scg/{species}_relevant_scg.fasta"
+        filtered="{species}/processed/reveal/scg/{species}_relevant_scg.fasta"
     message: "Filtering SCG FASTA to top-ranked sequences for {wildcards.species}"
     run:
         with open(input.id_list) as f:
