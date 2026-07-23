@@ -12,6 +12,6 @@ rule analyze_bam_with_samtools_stats:
         "{species}/results/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats"
     message: "Generating samtools stats for {input.bam}"
     log:
-        "{species}/processed/{reference}/statistics/{individual}/{individual}_{reference}_final.bam.stats.log"
+        "{species}/processed/reference_module/{reference}/statistics/{individual}/{individual}_{reference}_final.bam.stats.log"
     wrapper:
         "v9.3.0/bio/samtools/stats"

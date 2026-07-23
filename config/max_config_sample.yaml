@@ -20,7 +20,7 @@ pipeline:
   # Raw reads processing
   # Includes quality checking, adapter removal, quality filtering, merging, 
   # contamination analysis, and statistical analysis
-  raw_reads_processing:
+  read_module:
     # When true, this stage will be executed. (Default: true)
     execute: true
 
@@ -107,7 +107,7 @@ pipeline:
         create_plots: true
 
   # Reference processing
-  reference_processing:
+  reference_module:
     # When true, this stage will be executed (Default: true)
     execute: true
 
@@ -172,13 +172,13 @@ pipeline:
         samtools_stats: true
 
 
-  reveal:
+  reveal_module:
     # When true, this stage will be executed (Default: true)
     execute: true
 
     # ── SCG Selector ──────────────────────────────────────────────────────────
     # Automatically determines single-copy genes (SCGs) via BUSCO when no SCG
-    # FASTA is provided in {species}/raw/reveal/scg/.
+    # FASTA is provided in {species}/raw/reveal_module/scg/.
     # If a FASTA is already present there, this section is ignored and the
     # user-provided file is used instead.
     # Setting execute: true also enables an "SCG-only" run (ranking output is
@@ -186,14 +186,14 @@ pipeline:
     scg_selector:
       # When true, run SCG determination if no user-provided SCG file exists (Default: true)
       # Automatically skipped when a user-provided SCG FASTA is found in
-      # {species}/raw/reveal/scg/ or when no lineage is configured for the species.
+      # {species}/raw/reveal_module/scg/ or when no lineage is configured for the species.
       execute: true
       settings:
-        # Mapper for SCG library mapping. Defaults to pipeline.reveal.mapping.settings.mapper.
+        # Mapper for SCG library mapping. Defaults to pipeline.reveal_module.mapping.settings.mapper.
         # Uncomment to override. Options: "bwa-mem2", "bwa-aln", "minimap2"
         #mapper: "minimap2"
         # Extra parameters passed directly to the mapper.
-        # Defaults to pipeline.reveal.mapping.settings.mapper_extra_params if set,
+        # Defaults to pipeline.reveal_module.mapping.settings.mapper_extra_params if set,
         # otherwise falls back to mapper-specific defaults (bwa-aln: Oliva et al. 2021, minimap2: "-ax sr").
         #mapper_extra_params: ""
         # Number of top-ranked SCGs to keep (Default: 20)
@@ -207,7 +207,7 @@ pipeline:
         # Also used as the threshold when computing per-contig coverage stats. Set to 0 to disable. (Default: 0)
         min_mapq: 0
         # When true, the filtered sorted SCG BAM and its index are kept as permanent outputs in
-        # {species}/processed/reveal/scg/reads_mapped/. When false (default), they are
+        # {species}/processed/reveal_module/scg/reads_mapped/. When false (default), they are
         # marked as temporary and deleted after SCG ranking consumes them.
         keep_mapped_bam: false
 
@@ -222,11 +222,11 @@ pipeline:
         # For bwa-aln, defaults to "-n 0.01 -k 2 -l 1024 -o 2" (Oliva et al. 2021, 10.1093/bib/bbab076)
         #mapper_extra_params: ""
         # When true, the filtered sorted BAM (and its index) produced by the REVEAL mapping step
-        # are kept as permanent outputs in {species}/processed/reveal/{feature_library}/mapped/.
+        # are kept as permanent outputs in {species}/processed/reveal_module/{feature_library}/mapped/.
         # When false (default), they are marked as temporary and deleted after REVEAL consumes them.
         # Set to true to inspect the BAM or to run the mapping step independently of REVEAL.
         keep_mapped_bam: false
-        # When true, competitive mapping is enabled: sequences from {species}/raw/reveal/competition/
+        # When true, competitive mapping is enabled: sequences from {species}/raw/reveal_module/competition/
         # are combined with the SCG and feature library before mapping. Competition sequences are
         # suffixed with _comp, and reads mapping to them are removed after mapping — only SCG and
         # feature library sequences are retained for downstream analysis. (Default: false)
@@ -300,7 +300,7 @@ pipeline:
         # and comparisons (Default: false)
         indel_analysis: false
   
-  summary_processing:
+  summary_module:
     # When true, this stage will be executed (Default: true)
     execute: true
     settings:
@@ -321,8 +321,8 @@ species:
     name: "Dmel Demo"
 
     # BUSCO lineage database name (required for SCG auto-determination, only
-    # relevant when pipeline.reveal.scg_selector.execute is true AND no
-    # user-provided SCG file exists in {species}/raw/reveal/scg/).
+    # relevant when pipeline.reveal_module.scg_selector.execute is true AND no
+    # user-provided SCG file exists in {species}/raw/reveal_module/scg/).
     # Find available lineages at https://busco.ezlab.org/
     # Example: "drosophilidae_odb12", "diptera_odb10", "insecta_odb10"
     lineage: "drosophilidae_odb12"
@@ -351,7 +351,7 @@ species:
     #  - genome
 
     # Optional: restrict which feature libraries to use for this species.
-    # If omitted, all libraries discovered in {species}/raw/reveal/feature_library/ are used.
+    # If omitted, all libraries discovered in {species}/raw/reveal_module/feature_library/ are used.
     # Each entry must match the library ID derived from the filename:
     # basename without extension, dots replaced by underscores
     # (e.g. "genes.fna" → "genes", "my.lib.fna" → "my_lib").

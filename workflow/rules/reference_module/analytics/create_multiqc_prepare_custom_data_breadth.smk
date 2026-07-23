@@ -10,4 +10,4 @@ rule prepare_custom_data_breadth:
     conda:
         "../../../envs/python_and_r.yaml",
     script:
-        "../../../scripts/processing_summary/prepare_custom_data_breadth.py"
+        "../../../scripts/summary_module/prepare_custom_data_breadth.py"

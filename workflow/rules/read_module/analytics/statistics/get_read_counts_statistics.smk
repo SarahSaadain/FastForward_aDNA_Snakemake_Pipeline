@@ -46,7 +46,7 @@ rule count_reads_raw:
     input:
         fastq=lambda wc: get_raw_reads_for_sample(wc.species, wc.sample), 
     output:
-        counted="{species}/processed/reads/statistics/{sample}_raw.count"
+        counted="{species}/processed/reads_module/statistics/{sample}_raw.count"
     message: "Counting reads in raw FASTQ file(s) {input.fastq}"
     conda:
         "../../../../envs/python_and_r.yaml",
@@ -61,12 +61,12 @@ rule count_reads_raw:
 rule count_reads_trimmed:
     input:
         source=lambda wc: (
-            f"{wc.species}/processed/reads/reads_trimmed/{wc.sample}_trimmed_final.fastq.gz"
-            if config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('execute', True)
-            else f"{wc.species}/processed/reads/statistics/{wc.sample}_raw.count"
+            f"{wc.species}/processed/reads_module/reads_trimmed/{wc.sample}_trimmed_final.fastq.gz"
+            if config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('execute', True)
+            else f"{wc.species}/processed/reads_module/statistics/{wc.sample}_raw.count"
         )
     output:
-        counted="{species}/processed/reads/statistics/{sample}_trimmed.count"
+        counted="{species}/processed/reads_module/statistics/{sample}_trimmed.count"
     message: "Counting reads in {input.source}"
     conda:
         "../../../../envs/python_and_r.yaml",
@@ -78,12 +78,12 @@ rule count_reads_trimmed:
 rule count_reads_quality_filtered:
     input:
         source=lambda wc: (
-            f"{wc.species}/processed/reads/reads_quality_filtered/{wc.sample}_quality_filtered_final.fastq.gz"
-            if config.get('pipeline', {}).get('raw_reads_processing', {}).get('quality_filtering', {}).get('execute', True)
-            else f"{wc.species}/processed/reads/statistics/{wc.sample}_trimmed.count"
+            f"{wc.species}/processed/reads_module/reads_quality_filtered/{wc.sample}_quality_filtered_final.fastq.gz"
+            if config.get('pipeline', {}).get('read_module', {}).get('quality_filtering', {}).get('execute', True)
+            else f"{wc.species}/processed/reads_module/statistics/{wc.sample}_trimmed.count"
         )
     output:
-        counted="{species}/processed/reads/statistics/{sample}_quality_filtered.count"
+        counted="{species}/processed/reads_module/statistics/{sample}_quality_filtered.count"
     message: "Counting reads in {input.source}"
     conda:
         "../../../../envs/python_and_r.yaml",
@@ -93,11 +93,11 @@ rule count_reads_quality_filtered:
 # Rule: Combine read counts per sample
 rule combine_counts_per_sample:
     input:
-        raw_reads="{species}/processed/reads/statistics/{sample}_raw.count",
-        trimmed_reads="{species}/processed/reads/statistics/{sample}_trimmed.count",
-        quality_filtered_reads="{species}/processed/reads/statistics/{sample}_quality_filtered.count"
+        raw_reads="{species}/processed/reads_module/statistics/{sample}_raw.count",
+        trimmed_reads="{species}/processed/reads_module/statistics/{sample}_trimmed.count",
+        quality_filtered_reads="{species}/processed/reads_module/statistics/{sample}_quality_filtered.count"
     output:
-        counts="{species}/processed/reads/statistics/{sample}_reads_counts.csv"
+        counts="{species}/processed/reads_module/statistics/{sample}_reads_counts.csv"
     message: "Combining read counts for sample {wildcards.sample}"
     conda:
         "../../../../envs/python_and_r.yaml",
@@ -119,7 +119,7 @@ rule combine_counts_per_sample:
 # Rule: Combine read counts per species
 rule combine_counts_per_species:
     input:
-        lambda wildcards: expand("{species}/processed/reads/statistics/{sample}_reads_counts.csv",
+        lambda wildcards: expand("{species}/processed/reads_module/statistics/{sample}_reads_counts.csv",
             sample=get_sample_ids_for_species(wildcards.species),
             species=wildcards.species)
     output:

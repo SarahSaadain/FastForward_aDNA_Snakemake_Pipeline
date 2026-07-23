@@ -14,7 +14,7 @@ rule run_fastqc_raw:
         extra="--quiet",
         mem_overhead_factor=0.1,
     log:
-        "{species}/processed/reads/reads_raw/fastqc/{sample}_fastqc.log"
+        "{species}/processed/reads_module/reads_raw/fastqc/{sample}_fastqc.log"
     threads: 1
     resources:
         mem_mb = 1024,
@@ -24,7 +24,7 @@ rule run_fastqc_raw:
 # Rule: Run FastQC on adapter-trimmed reads
 rule run_fastqc_adapter_removed:
     input:
-        "{species}/processed/reads/reads_trimmed/{sample}_trimmed_final.fastq.gz"
+        "{species}/processed/reads_module/reads_trimmed/{sample}_trimmed_final.fastq.gz"
     output:
         html="{species}/results/reads/reads_trimmed/fastqc/{sample}_trimmed_fastqc.html",
         zip="{species}/results/reads/reads_trimmed/fastqc/{sample}_trimmed_fastqc.zip"
@@ -33,7 +33,7 @@ rule run_fastqc_adapter_removed:
         extra="--quiet",
         mem_overhead_factor=0.1,
     log:
-        "{species}/processed/reads/reads_trimmed/fastqc/{sample}_trimmed_fastqc.log"
+        "{species}/processed/reads_module/reads_trimmed/fastqc/{sample}_trimmed_fastqc.log"
     threads: 1
     resources:
         mem_mb = 1024,
@@ -43,7 +43,7 @@ rule run_fastqc_adapter_removed:
 # Rule: Run FastQC on quality-filtered reads
 rule run_fastqc_quality_filtered:
     input:
-        "{species}/processed/reads/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz"
+        "{species}/processed/reads_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz"
     output:
         html="{species}/results/reads/reads_quality_filtered/fastqc/{sample}_quality_filtered_fastqc.html",
         zip="{species}/results/reads/reads_quality_filtered/fastqc/{sample}_quality_filtered_fastqc.zip"
@@ -52,7 +52,7 @@ rule run_fastqc_quality_filtered:
         extra="--quiet",
         mem_overhead_factor=0.1,
     log:
-        "{species}/processed/reads/reads_quality_filtered/fastqc/{sample}_quality_filtered_fastqc.log"
+        "{species}/processed/reads_module/reads_quality_filtered/fastqc/{sample}_quality_filtered_fastqc.log"
     threads: 1
     resources:
         mem_mb = 1024,
@@ -62,7 +62,7 @@ rule run_fastqc_quality_filtered:
 # Rule: Run FastQC on merged reads
 rule run_fastqc_merged:
     input:
-        merged="{species}/processed/reads/reads_merged/{individual}.fastq.gz"
+        merged="{species}/processed/reads_module/reads_merged/{individual}.fastq.gz"
     output:
         html="{species}/results/reads/reads_merged/fastqc/{individual}_merged_fastqc.html",
         zip="{species}/results/reads/reads_merged/fastqc/{individual}_merged_fastqc.zip"
@@ -71,7 +71,7 @@ rule run_fastqc_merged:
         extra="--quiet",
         mem_overhead_factor=0.1,
     log:
-        "{species}/processed/reads/reads_merged/fastqc/{individual}_fastqc.log"
+        "{species}/processed/reads_module/reads_merged/fastqc/{individual}_fastqc.log"
     threads: 1
     resources:
         mem_mb = 1024,

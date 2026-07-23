@@ -86,7 +86,7 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
             for lib_id, lib_path in scg_libs:
                 lines.append(f"      - {lib_id}: {lib_path}")
         else:
-            _scg_sel_active = config.get("pipeline", {}).get("reveal", {}).get("scg_selector", {}).get("execute", True)
+            _scg_sel_active = config.get("pipeline", {}).get("reveal_module", {}).get("scg_selector", {}).get("execute", True)
             _lineage = config.get("species", {}).get(sname, {}).get("lineage")
             if not _scg_sel_active:
                 lines.append("    SCG Libraries: (none provided; scg_selector disabled)")
@@ -115,14 +115,14 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
                     except Exception as e:
                         lines.append(f"    SCG Libraries: (will be auto-determined via BUSCO [{_lineage}] — WARNING: {e})")
 
-        _comp_enabled = config.get("pipeline", {}).get("reveal", {}).get("mapping", {}).get("settings", {}).get("competitive_mapping", False)
+        _comp_enabled = config.get("pipeline", {}).get("reveal_module", {}).get("mapping", {}).get("settings", {}).get("competitive_mapping", False)
         if _comp_enabled:
             try:
                 comp_fasta = get_competition_fasta_for_species(sname)
                 if comp_fasta:
                     lines.append(f"    Competition FASTA: {comp_fasta}")
                 else:
-                    lines.append(f"    Competition FASTA: (MISSING — place a FASTA in {sname}/raw/reveal/competition/)")
+                    lines.append(f"    Competition FASTA: (MISSING — place a FASTA in {sname}/raw/reveal_module/competition/)")
             except ValueError as e:
                 lines.append(f"    Competition FASTA: (ERROR — {e})")
 

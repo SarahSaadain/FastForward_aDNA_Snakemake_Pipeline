@@ -6,7 +6,7 @@
 
 rule preseq_c_curve:
     input:
-        bam="{species}/processed/{reference}/mapped/{individual}_{reference}_sorted.bam"
+        bam="{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted.bam"
     output:
         txt="{species}/results/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt"
     log:

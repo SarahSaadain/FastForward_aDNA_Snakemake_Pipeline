@@ -12,10 +12,10 @@ def helper_get_bam_for_damage_analysis(wildcards):
     # if deduplication is enabled, return the dedupped bam
     # if map_reads_to_reference is enabled, return the sorted bam
 
-    if config.get("pipeline", {}).get("reference_processing", {}).get("deduplication", {}).get("execute", True) == True:
-        return f"{species}/processed/{reference}/mapped/{individual}_{reference}_sorted_dedupped.bam"
+    if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
+        return f"{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped.bam"
 
-    return f"{species}/processed/{reference}/mapped/{individual}_{reference}_sorted.bam"
+    return f"{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted.bam"
 
 def analyze_mapdamage_and_rescale_bam_input_bam(wildcards):
     return helper_get_bam_for_damage_analysis(wildcards)
@@ -55,7 +55,7 @@ rule analyze_mapdamage_and_rescale_bam:
     message:
         "Analyze damage and rescale {input.bam}"
     log:
-        "{species}/processed/{reference}/analytics/{individual}/mapdamage/{individual}_{reference}.rule.log",
+        "{species}/processed/reference_module/{reference}/analytics/{individual}/mapdamage/{individual}_{reference}.rule.log",
     wrapper:
         "v9.3.0/bio/mapdamage2"
 
@@ -67,7 +67,7 @@ rule sort_rescaled_bam:
     output:
         temp("{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam")
     log:
-        "{species}/processed/{reference}/analytics/{individual}/mapdamage/{individual}_{reference}_sorted.bam.log"
+        "{species}/processed/reference_module/{reference}/analytics/{individual}/mapdamage/{individual}_{reference}_sorted.bam.log"
     message:
         "Sort rescaled BAM for {input}",
     threads: 10
@@ -82,7 +82,7 @@ rule index_rescaled_bam:
     output:
         temp("{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam.bai")
     log:
-        "{species}/processed/{reference}/analytics/{individual}/mapdamage/{individual}_{reference}_sorted.bam.bai.log"
+        "{species}/processed/reference_module/{reference}/analytics/{individual}/mapdamage/{individual}_{reference}_sorted.bam.bai.log"
     message:
         "Index rescaled BAM for {input}",
     threads: 10
@@ -95,8 +95,8 @@ rule move_rescaled_bam:
         sorted_bam="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam",
         bam_index ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam.bai"
     output:
-        sorted_bam=temp("{species}/processed/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled.bam"),
-        bam_index =temp("{species}/processed/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled.bam.bai")
+        sorted_bam=temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled.bam"),
+        bam_index =temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled.bam.bai")
     message:
         "Move rescaled BAM and index to processed directory for {input.sorted_bam}",
     shell:

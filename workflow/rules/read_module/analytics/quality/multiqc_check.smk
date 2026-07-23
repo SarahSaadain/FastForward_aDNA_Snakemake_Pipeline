@@ -28,7 +28,7 @@ rule run_multiqc_raw:
     params:
         extra="--verbose",  # Optional: extra parameters for multiqc.
     log:
-        "{species}/processed/reads/{species}_multiqc_raw.log"
+        "{species}/processed/reads_module/{species}_multiqc_raw.log"
     message: "Running MultiQC on raw FastQC outputs for species {wildcards.species}"
     wrapper:
         "v9.3.0/bio/multiqc"
@@ -42,7 +42,7 @@ rule run_multiqc_trimmed:
     params:
         extra="--verbose",  # Optional: extra parameters for multiqc.
     log:
-        "{species}/processed/reads/{species}_multiqc_trimmed.log"
+        "{species}/processed/reads_module/{species}_multiqc_trimmed.log"
     message: "Running MultiQC on trimmed FastQC outputs for species {wildcards.species}"
     wrapper:
         "v9.3.0/bio/multiqc"
@@ -56,7 +56,7 @@ rule run_multiqc_quality_filtered:
     params:
         extra="--verbose",  # Optional: extra parameters for multiqc.
     log:
-        "{species}/processed/reads/{species}_multiqc_quality_filtered.log"
+        "{species}/processed/reads_module/{species}_multiqc_quality_filtered.log"
     message: "Running MultiQC on quality-filtered FastQC outputs for species {wildcards.species}"
     wrapper:
         "v9.3.0/bio/multiqc"
@@ -70,7 +70,7 @@ rule run_multiqc_merged:
     params:
         extra="--verbose",  # Optional: extra parameters for multiqc.
     log:
-        "{species}/processed/reads/{species}_multiqc_merged.log"
+        "{species}/processed/reads_module/{species}_multiqc_merged.log"
     message: "Running MultiQC on merged FastQC outputs for species {wildcards.species}"
     wrapper:
         "v9.3.0/bio/multiqc"

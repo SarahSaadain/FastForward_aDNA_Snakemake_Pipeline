@@ -14,7 +14,7 @@ species:
     name: "Drosophila melanogaster"
 
     # Required only when using the REVEAL stage with SCG auto-determination
-    # (i.e. no pre-built SCG FASTA is placed in {species}/raw/reveal/scg/).
+    # (i.e. no pre-built SCG FASTA is placed in {species}/raw/reveal_module/scg/).
     # Find available lineages at https://busco.ezlab.org/
     lineage: "drosophilidae_odb12"
 

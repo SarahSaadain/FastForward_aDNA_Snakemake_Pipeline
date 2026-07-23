@@ -4,7 +4,7 @@
 # Determine index path: use config if provided, otherwise use downloaded
 # We use the index from https://benlangmead.github.io/aws-indexes/centrifuge
 # Refseq: bacteria, archaea, viral, human
-_configured_index = config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("index")
+_configured_index = config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("index")
 
 def get_centrifuge_index(wildcards):
     if _configured_index:
@@ -45,7 +45,7 @@ rule download_centrifuge_index:
 
 rule analyze_contamination_with_centrifuge:
     input:
-        fastq = "{species}/processed/reads/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
+        fastq = "{species}/processed/reads_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
         index = get_centrifuge_index_input
     output:
         output = temp("{species}/results/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv"),
@@ -54,7 +54,7 @@ rule analyze_contamination_with_centrifuge:
     params:
         index = get_centrifuge_index,
     conda:
-        config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("conda_env", "../../../../envs/centrifuge.yaml")
+        config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("conda_env", "../../../../envs/centrifuge.yaml")
     message: "Running Centrifuge contamination analysis for {input.fastq}"
     shell:
         """
@@ -84,13 +84,13 @@ rule analyze_centrifuge_report_taxon_counts:
 rule analyze_centrifuge_report_proportions:
     input:
         report = "{species}/results/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
-        count_reads = "{species}/processed/reads/statistics/{sample}_quality_filtered.count"
+        count_reads = "{species}/processed/reads_module/statistics/{sample}_quality_filtered.count"
     output:
         "{species}/results/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_centrifuge_proportions.tsv",
     params:
         sample = "{sample}"
     script:
-        "../../../../scripts/raw_reads/analytics/contamination/check_contamination_ecmsd_script_analyze_centrifuge_report_proportions.py"
+        "../../../../scripts/read_module/analytics/contamination/check_contamination_ecmsd_script_analyze_centrifuge_report_proportions.py"
 
 rule analyze_centrifuge_report_top_taxa:
     input:
@@ -100,9 +100,9 @@ rule analyze_centrifuge_report_top_taxa:
         top10_total = "{species}/results/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
     params:
         sample = "{sample}",
-        include_human = config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("include_human_taxid", False)
+        include_human = config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("include_human_taxid", False)
     script:
-        "../../../../scripts/raw_reads/analytics/contamination/check_contamination_ecmsd_script_analyze_centrifuge_report_top_taxa.py"
+        "../../../../scripts/read_module/analytics/contamination/check_contamination_ecmsd_script_analyze_centrifuge_report_top_taxa.py"
 
 rule compress_centrifuge_output:
     input:

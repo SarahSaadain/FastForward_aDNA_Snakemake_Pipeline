@@ -1,7 +1,7 @@
 ####################################################
 # Snakemake rules
 ####################################################
-_ref_mapper = config.get("pipeline", {}).get("reference_processing", {}).get("mapping", {}).get("settings", {}).get("mapper", "bwa-mem2")
+_ref_mapper = config.get("pipeline", {}).get("reference_module", {}).get("mapping", {}).get("settings", {}).get("mapper", "bwa-mem2")
 
 rule standardize_reference_extension_to_fa:
     output:
@@ -51,7 +51,7 @@ if _ref_mapper == "minimap2":
             "{species}/raw/ref/{reference}.mmi",
         message: "Indexing reference {wildcards.reference} with minimap2"
         log:
-            "{species}/processed/{reference}/index/{reference}_minimap2_index.log"
+            "{species}/processed/reference_module/{reference}/index/{reference}_minimap2_index.log"
         resources:
             mem_mb=16000,
         cache: True
@@ -67,7 +67,7 @@ elif _ref_mapper == "bwa-aln":
             multiext("{species}/raw/ref/{reference}.fa", ".amb", ".ann", ".bwt", ".pac", ".sa"),
         message: "Indexing reference {wildcards.reference} with BWA (for BWA ALN)"
         log:
-            "{species}/processed/{reference}/index/{reference}_bwa_aln_index.log"
+            "{species}/processed/reference_module/{reference}/index/{reference}_bwa_aln_index.log"
         resources:
             mem_mb=369000,
         cache: True
@@ -83,7 +83,7 @@ else:
             multiext("{species}/raw/ref/{reference}.fa", ".0123", ".amb", ".ann", ".bwt.2bit.64", ".pac"),
         message: "Indexing reference {wildcards.reference} with BWA-MEM2"
         log:
-            "{species}/processed/{reference}/index/{reference}_bwa_mem2_index.log"
+            "{species}/processed/reference_module/{reference}/index/{reference}_bwa_mem2_index.log"
         resources:
             mem_mb=369000,
         cache: True

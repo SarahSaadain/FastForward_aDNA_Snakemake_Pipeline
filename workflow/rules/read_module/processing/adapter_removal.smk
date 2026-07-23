@@ -8,15 +8,15 @@ def determine_reads_trimmed_final_input(wildcards):
     species = wildcards.species
     sample = wildcards.sample
     
-    adapter_removal_active = config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('execute', True)
+    adapter_removal_active = config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('execute', True)
     reads = get_raw_reads_for_sample(species, sample)
     if adapter_removal_active:
         if len(reads) == 2:
             # Paired-end: use the merged reads from fastp_pe
-            return f"{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.merged.fastq.gz"
+            return f"{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.merged.fastq.gz"
         else:
             # Single-end: use the trimmed reads from fastp_se
-            return f"{species}/processed/reads/reads_trimmed/{sample}_trimmed.se.fastq.gz"
+            return f"{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.se.fastq.gz"
     else:
         # Adapter removal inactive: pass raw reads through directly (SE: 1 file, PE: 2 files)
         return reads
@@ -30,26 +30,26 @@ rule remove_adapters_single_with_fastp:
     input:
         sample=lambda wc: get_raw_reads_for_sample(wc.species, wc.sample),  # Get the single read file for SE
     output:
-        trimmed=temp("{species}/processed/reads/reads_trimmed/{sample}_trimmed.se.fastq.gz"),
-        failed=temp("{species}/processed/reads/reads_trimmed/{sample}_trimmed.se.failed.fastq.gz"),
+        trimmed=temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.se.fastq.gz"),
+        failed=temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.se.failed.fastq.gz"),
         html="{species}/results/reads/reads_trimmed/fastp_report/{sample}_trimmed.se.html",
         json="{species}/results/reads/reads_trimmed/fastp_report/{sample}_trimmed.se.json",
     message: "Trimming adapters from single-end reads in {input.sample}"
     log:
-        "{species}/processed/reads/reads_trimmed/{sample}_trimmed.se.log",
+        "{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.se.log",
     params:
         adapters=lambda wc: (
-            f"--adapter_sequence {config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('settings', {}).get('adapters_sequences', {}).get('r1')}"
-            if config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('settings', {}).get('adapters_sequences', {}).get('r1')
+            f"--adapter_sequence {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('adapters_sequences', {}).get('r1')}"
+            if config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('adapters_sequences', {}).get('r1')
             else ""
         ),  
         extra=lambda wc: (
-            f"--length_required {config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('settings', {}).get('min_length',0)} "
+            f"--length_required {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('min_length',0)} "
             f"--trim_poly_x 5 "
-            f"--qualified_quality_phred {config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('settings', {}).get('min_quality',0)} "
+            f"--qualified_quality_phred {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('min_quality',0)} "
             f"--unqualified_percent_limit 40 "
             f"--n_base_limit 5 "
-            f"{config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('settings', {}).get('extra_params', '')}"
+            f"{config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('extra_params', '')}"
         ),
     threads: 10
     wrapper:
@@ -62,34 +62,34 @@ rule remove_adapters_paired_with_fastp:
         sample=lambda wc: get_raw_reads_for_sample(wc.species, wc.sample),
     output:
         trimmed=[
-            temp("{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.R1.fastq.gz"),
-            temp("{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.R2.fastq.gz"),
+            temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.R1.fastq.gz"),
+            temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.R2.fastq.gz"),
         ],
         # Unpaired reads separately
-        unpaired1=temp("{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.unpaired.R1.fastq.gz"),
-        unpaired2=temp("{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.unpaired.R2.fastq.gz"),
-        merged=temp("{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.fastq.gz"),
-        failed=temp("{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.failed.fastq.gz"),
+        unpaired1=temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.unpaired.R1.fastq.gz"),
+        unpaired2=temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.unpaired.R2.fastq.gz"),
+        merged=temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.fastq.gz"),
+        failed=temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.failed.fastq.gz"),
         html="{species}/results/reads/reads_trimmed/fastp_report/{sample}_trimmed.pe.html",
         json="{species}/results/reads/reads_trimmed/fastp_report/{sample}_trimmed.pe.json",
     message: "Trimming adapters from paired-end reads and merging for {input.sample}"
     log:
-        "{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.log",
+        "{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.log",
     params:
         adapters=lambda wc: (
-            f"--adapter_sequence {config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('settings', {}).get('adapters_sequences', {}).get('r1','')} "
-            f"--adapter_sequence_r2 {config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('settings', {}).get('adapters_sequences', {}).get('r2','')}"
-            if config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('settings', {}).get('adapters_sequences')
+            f"--adapter_sequence {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('adapters_sequences', {}).get('r1','')} "
+            f"--adapter_sequence_r2 {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('adapters_sequences', {}).get('r2','')}"
+            if config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('adapters_sequences')
             else "--detect_adapter_for_pe"
         ),
         extra=lambda wc: (
-            f"--length_required {config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('settings', {}).get('min_length',0)} "
+            f"--length_required {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('min_length',0)} "
             f"--trim_poly_x 5 "
-            f"--qualified_quality_phred {config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('settings', {}).get('min_quality',0)} "
+            f"--qualified_quality_phred {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('min_quality',0)} "
             f"--unqualified_percent_limit 40 "
             f"--n_base_limit 5 "
             f"--merge "
-            f"{config.get('pipeline', {}).get('raw_reads_processing', {}).get('adapter_removal', {}).get('settings', {}).get('extra_params', '')}"
+            f"{config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('extra_params', '')}"
         ),   
     threads: 10
     wrapper:
@@ -99,9 +99,9 @@ rule get_adapter_removal_final:
     input:
         determine_reads_trimmed_final_input,
     output:
-        temp("{species}/processed/reads/reads_trimmed/{sample}_trimmed_final.fastq.gz"),
+        temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed_final.fastq.gz"),
     log:
-        "{species}/processed/reads/reads_trimmed/{sample}_determine_trimmed_final.log",
+        "{species}/processed/reads_module/reads_trimmed/{sample}_determine_trimmed_final.log",
     message: "Getting trimmed reads in {wildcards.sample}"
     shell:
         """
@@ -114,15 +114,15 @@ rule get_adapter_removal_final:
 
 rule merge_reads_adapter_removal_pe:
     input:
-        merged="{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.fastq.gz",
-        trimmed1="{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.R1.fastq.gz",
-        trimmed2="{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.R2.fastq.gz",
-        unpaired1="{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.unpaired.R1.fastq.gz",
-        unpaired2="{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.unpaired.R2.fastq.gz",
+        merged="{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.fastq.gz",
+        trimmed1="{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.R1.fastq.gz",
+        trimmed2="{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.R2.fastq.gz",
+        unpaired1="{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.unpaired.R1.fastq.gz",
+        unpaired2="{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.unpaired.R2.fastq.gz",
     output:
-        temp("{species}/processed/reads/reads_trimmed/{sample}_trimmed.pe.merged.fastq.gz"),
+        temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.merged.fastq.gz"),
     log:
-        "{species}/processed/reads/reads_trimmed/{sample}_merge_trimmed_pe.log",
+        "{species}/processed/reads_module/reads_trimmed/{sample}_merge_trimmed_pe.log",
     message: "Merging trimmed reads for paired-end"
     shell:
         """

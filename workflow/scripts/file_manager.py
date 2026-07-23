@@ -261,7 +261,7 @@ def get_samples_for_species_individual(species, individual):
 # (internal) Discover all feature library files from disk without applying any config filter
 def _discover_all_feature_library_file_list_for_species(species: str) -> list[tuple[str, str]]:
     species_folder = species
-    feature_library_folder = f"{species_folder}/raw/reveal/feature_library"
+    feature_library_folder = f"{species_folder}/raw/reveal_module/feature_library"
     library_files = []
     try:
         logger.debug(f"Looking for feature library files in {feature_library_folder} for species {species}.")
@@ -324,7 +324,7 @@ def get_scg_library_file_list_for_species(species: str) -> list[tuple[str, str]]
     # Construct reference folder path
     species_folder = species
 
-    scg_library_folder = os.path.join(f"{species_folder}/raw/reveal/scg")
+    scg_library_folder = os.path.join(f"{species_folder}/raw/reveal_module/scg")
     library_files = []
     try:
         # Collect all supported reference files
@@ -417,10 +417,10 @@ def get_scg_determination_reference_path(species):
 # -----------------------------------------------------------------------------------------------
 # Return True when all of the following hold:
 #   1. scg_selector.execute is true in pipeline config
-#   2. No user-provided SCG FASTA exists in {species}/raw/reveal/scg/
+#   2. No user-provided SCG FASTA exists in {species}/raw/reveal_module/scg/
 #   3. A BUSCO lineage is configured for the species (required to run BUSCO)
 def should_auto_determine_scg(species):
-    if not config.get("pipeline", {}).get("reveal", {}).get("scg_selector", {}).get("execute", True):
+    if not config.get("pipeline", {}).get("reveal_module", {}).get("scg_selector", {}).get("execute", True):
         return False
     if get_scg_library_file_list_for_species(species):
         return False
@@ -441,14 +441,14 @@ def get_effective_scg_library_path_for_species(species):
     user_scgs = get_scg_library_file_list_for_species(species)
     if user_scgs:
         return user_scgs[0][1]
-    return f"{species}/processed/reveal/scg/{species}_relevant_scg.fasta"
+    return f"{species}/processed/reveal_module/scg/{species}_relevant_scg.fasta"
 
 # -----------------------------------------------------------------------------------------------
-# Get the competition FASTA file for a species from {species}/raw/reveal/competition/.
+# Get the competition FASTA file for a species from {species}/raw/reveal_module/competition/.
 # Returns None when no file is found (competitive mapping not configured).
 # Raises ValueError when more than one FASTA is found.
 def get_competition_fasta_for_species(species):
-    competition_folder = f"{species}/raw/reveal/competition"
+    competition_folder = f"{species}/raw/reveal_module/competition"
     files = []
     try:
         logger.debug(f"Looking for competition FASTA in {competition_folder} for species {species}.")

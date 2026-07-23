@@ -9,7 +9,7 @@
 # (defined in get_final_bam.smk) so that unmapped-read metrics are
 # always captured regardless of the chosen action.
 #
-# Config option (reference_processing.filter_unmapped_reads):
+# Config option (reference_module.filter_unmapped_reads):
 #   execute: false          # set to true to enable
 #   action: "remove"        # "remove" | "extract_fastq" | "extract_fasta"
 #
@@ -35,12 +35,12 @@ rule filter_mapped_only_bam:
         bam = _pre_filter_bam,
         bai = _pre_filter_bam + ".bai"
     output:
-        temp("{species}/processed/{reference}/mapped/{individual}_{reference}_mapped_only.bam")
+        temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam")
     params:
         extra="-F 4"   # exclude unmapped reads
     threads: 4
     log:
-        "{species}/processed/{reference}/mapped/{individual}_{reference}_mapped_only.log"
+        "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.log"
     message:
         "Filtering unmapped reads from BAM for {wildcards.individual} mapped to {wildcards.reference}."
     wrapper:
@@ -48,14 +48,14 @@ rule filter_mapped_only_bam:
 
 rule index_mapped_only_bam:
     input:
-        "{species}/processed/{reference}/mapped/{individual}_{reference}_mapped_only.bam"
+        "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam"
     output:
-        temp("{species}/processed/{reference}/mapped/{individual}_{reference}_mapped_only.bam.bai")
+        temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam.bai")
     params:
         extra=""
     threads: 4
     log:
-        "{species}/processed/{reference}/mapped/{individual}_{reference}_mapped_only.bam.bai.log"
+        "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam.bai.log"
     message:
         "Indexing mapped-only BAM for {wildcards.individual} mapped to {wildcards.reference}."
     wrapper:
@@ -70,13 +70,13 @@ rule convert_unmapped_reads_to_fastq:
     input:
         _pre_filter_bam
     output:
-        "{species}/processed/{reference}/unmapped/{individual}_{reference}_unmapped.fastq.gz"
+        "{species}/processed/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped.fastq.gz"
     params:
         outputtype="fastq",
         extra="-f 4"
     threads: 4
     log:
-        "{species}/processed/{reference}/unmapped/{individual}_{reference}_unmapped_fastq.log"
+        "{species}/processed/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped_fastq.log"
     message:
         "Extracting unmapped reads to FASTQ for {wildcards.individual} mapped to {wildcards.reference}."
     wrapper:
@@ -91,13 +91,13 @@ rule convert_unmapped_reads_to_fasta:
     input:
         _pre_filter_bam
     output:
-        "{species}/processed/{reference}/unmapped/{individual}_{reference}_unmapped.fasta.gz"
+        "{species}/processed/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped.fasta.gz"
     params:
         outputtype="fasta",
         extra="-f 4"
     threads: 4
     log:
-        "{species}/processed/{reference}/unmapped/{individual}_{reference}_unmapped_fasta.log"
+        "{species}/processed/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped_fasta.log"
     message:
         "Extracting unmapped reads to FASTA for {wildcards.individual} mapped to {wildcards.reference}."
     wrapper:

@@ -12,11 +12,11 @@ rule plot_mapped_reads_coverage_breadth_violin:
         species="{species}"
     message: "Plotting coverage breadth violin for species {wildcards.species} and reference {wildcards.reference}"
     log:
-        "{species}/processed/{reference}/plots/coverage/{species}_{reference}_individual_coverage_breadth_violin.log"
+        "{species}/processed/reference_module/{reference}/plots/coverage/{species}_{reference}_individual_coverage_breadth_violin.log"
     conda:
         "../../../envs/python_and_r.yaml"
     script:
-        "../../../scripts/reads_to_reference/plotting/plot_coverage_breadth_by_individuals_violin.R"
+        "../../../scripts/reference_module/plotting/plot_coverage_breadth_by_individuals_violin.R"
 
 # Rule: Plot coverage breadth bar by individual
 rule plot_mapped_reads_coverage_breadth_bar:
@@ -30,4 +30,4 @@ rule plot_mapped_reads_coverage_breadth_bar:
     conda:
         "../../../envs/python_and_r.yaml"
     script:
-        "../../../scripts/reads_to_reference/plotting/plot_coverage_breadth_by_individuals_bar.R"
+        "../../../scripts/reference_module/plotting/plot_coverage_breadth_by_individuals_bar.R"

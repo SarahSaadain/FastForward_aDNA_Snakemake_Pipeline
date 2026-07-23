@@ -4,17 +4,17 @@
 
 def prepare_custom_data_reads_processing_dedup(wildcards):
 
-    if config.get("pipeline", {}).get("reference_processing", {}).get("execute", True) == False:
+    if config.get("pipeline", {}).get("reference_module", {}).get("execute", True) == False:
         return []
     
-    if config.get("pipeline", {}).get("reference_processing", {}).get("deduplication", {}).get("execute", True) == True:
+    if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
         return f"{wildcards.species}/results/{wildcards.reference}/analytics/individual_level/{wildcards.individual}/dedup/{wildcards.individual}_{wildcards.reference}_final.dedup.json"
     else:
         return []
 
 def prepare_custom_data_reads_processing_endogenous(wildcards):
     
-    if config.get("pipeline", {}).get("reference_processing", {}).get("execute", True) == True:
+    if config.get("pipeline", {}).get("reference_module", {}).get("execute", True) == True:
         #"{species}/results/{reference}/analytics/individual_level/{individual}/endogenous/{individual}_{reference}.endogenous.csv"
         return f"{wildcards.species}/results/{wildcards.reference}/analytics/individual_level/{wildcards.individual}/endogenous/{wildcards.individual}_{wildcards.reference}.endogenous.csv"
     else:
@@ -37,7 +37,7 @@ rule prepare_custom_data_reads_processing_absolute_values:
         individual="{individual}",
         reference="{reference}",
     script:
-        "../../../scripts/processing_summary/prepare_custom_data_reads_processing.py"
+        "../../../scripts/summary_module/prepare_custom_data_reads_processing.py"
         
 rule combine_custom_data_reads_processing_absolute_values:
     input:

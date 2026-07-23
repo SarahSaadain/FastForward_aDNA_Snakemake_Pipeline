@@ -5,19 +5,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-> ⚠️ NOTE: This release renames the `dynamics` pipeline stage to `reveal` and replaces the vendored SeqVista scripts with the standalone [REVEAL](https://github.com/SarahSaadain/REVEAL) toolkit. Existing configs and output directories must be updated to match.
+> ⚠️ NOTE: This release renames the `dynamics` pipeline stage to `reveal_module` and replaces the vendored SeqVista scripts with the standalone [REVEAL](https://github.com/SarahSaadain/REVEAL) toolkit. It also renames the other three pipeline stages for naming consistency. Existing configs and output directories must be updated to match.
 
 ### Breaking Changes
 
-- **Module rename**: The `dynamics` pipeline stage is now `reveal` (`pipeline.dynamics` → `pipeline.reveal`; `{species}/raw|processed/results/dynamics/` → `{species}/raw|processed/results/reveal/`)
-- **Config structure**: The former `seqvista` sub-section is now `visualization` (`pipeline.reveal.seqvista` → `pipeline.reveal.visualization`); output subfolder renamed to match (`.../reveal/<feature_library>/seqvista/` → `.../reveal/<feature_library>/visualization/`)
-- **Config structure**: `coverage_analysis`, `snp_analysis`, and `indel_analysis` moved out of `visualization.settings` into their own sibling section, `pipeline.reveal.analysis.settings`
-- **Config structure**: bam2so thresholds (`mapping_quality_threshold`, `minimum_count_snp`, `minimum_frequency_snp`, `minimum_count_indel`, `minimum_frequency_indel`) moved into a new `pipeline.reveal.sequence_overview.settings` section; normalize-so thresholds (`end_distance`, `exclude_quantile`) moved into a new `pipeline.reveal.normalization.settings` section — `visualization.settings` now holds only plot-rendering options
-- **REVEAL as external dependency**: The vendored SeqVista scripts under `workflow/scripts/dynamics/seqvista/` have been removed. Rules now call the `REVEAL` CLI from the `reveal-tools` bioconda package (new `workflow/envs/reveal.yaml` conda environment) instead of invoking local copies of `bam2so.py`, `normalize-so.py`, `estimate-so.py`, `so2plotable.py`, `plot.py`, and the stats/compare scripts
+- **Module rename**: The `dynamics` pipeline stage is now `reveal_module` (`pipeline.dynamics` → `pipeline.reveal_module`; `{species}/raw|processed/results/dynamics/` → `{species}/raw|processed/results/reveal_module/`)
+- **Config structure**: The former `seqvista` sub-section is now `visualization` (`pipeline.reveal_module.seqvista` → `pipeline.reveal_module.visualization`); output subfolder renamed to match (`.../reveal_module/<feature_library>/seqvista/` → `.../reveal_module/<feature_library>/visualization/`)
+- **Config structure**: `coverage_analysis`, `snp_analysis`, and `indel_analysis` moved out of `visualization.settings` into their own sibling section, `pipeline.reveal_module.analysis.settings`
+- **Config structure**: bam2so thresholds (`mapping_quality_threshold`, `minimum_count_snp`, `minimum_frequency_snp`, `minimum_count_indel`, `minimum_frequency_indel`) moved into a new `pipeline.reveal_module.sequence_overview.settings` section; normalize-so thresholds (`end_distance`, `exclude_quantile`) moved into a new `pipeline.reveal_module.normalization.settings` section — `visualization.settings` now holds only plot-rendering options
+- **REVEAL as external dependency**: The vendored SeqVista scripts under `workflow/scripts/dynamics/seqvista/` have been removed. Rules now call the `REVEAL` CLI from the `reveal-tools` bioconda package (new `workflow/envs/reveal_module.yaml` conda environment) instead of invoking local copies of `bam2so.py`, `normalize-so.py`, `estimate-so.py`, `so2plotable.py`, `plot.py`, and the stats/compare scripts
+- **Module rename (naming consistency)**: The remaining three pipeline stages are renamed to match the `_module` convention: `raw_reads_processing` → `read_module`, `reference_processing` → `reference_module`, `summary_processing` → `summary_module`. Rule/script directories under `workflow/rules/` and `workflow/scripts/` are renamed accordingly (e.g. `raw_read/` → `read_module/`, `reads_to_reference/` → `reference_module/`, `processing_summary/` → `summary_module/`); existing configs must update the corresponding `pipeline.*` keys.
 
 ### Other Changes
 
-- Config designer updated to match the `reveal`/`visualization` naming
+- Config designer updated to match the `reveal_module`/`visualization` naming and the `read_module`/`reference_module`/`summary_module` renames
 
 ## [2.0.0] - 2026-06-02
 

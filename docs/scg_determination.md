@@ -4,9 +4,9 @@ The pastForward REVEAL pipeline normalises TE and feature-library coverage again
 
 ## Overview
 
-When `pipeline.reveal.scg_selector.execute: true` is set and no FASTA file is found in `{species}/raw/reveal/scg/`, pastForward runs the SCG determination pipeline automatically. The result — a ranked list and a filtered FASTA of the top-scoring SCGs — is placed in `{species}/results/reveal/scg/` and fed directly into the REVEAL mapping step.
+When `pipeline.reveal_module.scg_selector.execute: true` is set and no FASTA file is found in `{species}/raw/reveal_module/scg/`, pastForward runs the SCG determination pipeline automatically. The result — a ranked list and a filtered FASTA of the top-scoring SCGs — is placed in `{species}/results/reveal_module/scg/` and fed directly into the REVEAL mapping step.
 
-If a FASTA is provided in `{species}/raw/reveal/scg/`, this step is skipped entirely and the user-supplied file is used.
+If a FASTA is provided in `{species}/raw/reveal_module/scg/`, this step is skipped entirely and the user-supplied file is used.
 
 See [config/README.md](../config/README.md) for all configuration options (`lineage`, `num_top_scgs`, `min_length_scg`, `max_length_scg`, etc.).
 
@@ -29,7 +29,7 @@ Two length filters are applied at this stage:
 | `min_length_scg` | 4,000 bp | Exclude genes too short to yield reliable coverage estimates |
 | `max_length_scg` | 8,000 bp | Exclude very long genes that increase mapping runtime without benefit |
 
-The result is a FASTA library (`{species}/processed/reveal/scg/{species}_scg_library.fasta`) used in Step 2.
+The result is a FASTA library (`{species}/processed/reveal_module/scg/{species}_scg_library.fasta`) used in Step 2.
 
 ---
 
@@ -48,7 +48,7 @@ Per-individual merged reads (`reads_merged/{individual}.fastq.gz`) are mapped to
 
 > `count_coverage()` counts per-base observations (A/C/G/T) rather than spanning reads. Reads with a deletion at a given position contribute 0 depth there — marginally different from `samtools depth`, but negligible for coverage estimation.
 
-Stats are stored as per-individual JSON files in `{species}/processed/reveal/scg/stats/`. The mapping BAMs are marked temporary and deleted once statistics are written.
+Stats are stored as per-individual JSON files in `{species}/processed/reveal_module/scg/stats/`. The mapping BAMs are marked temporary and deleted once statistics are written.
 
 ---
 
@@ -136,8 +136,8 @@ score = score_breadth + score_depth_variation + score_depth_consistency
 
 | Path | Description |
 |---|---|
-| `{species}/results/reveal/scg/{species}_scg_ranked.tsv` | Full ranked table with all scoring components; `mean_depth_ratio` column is the per-individual-normalised depth (1.0 = expected SCG level) |
-| `{species}/results/reveal/scg/{species}_scg_ranked.json` | Detailed JSON with per-individual raw stats, per-individual baselines, depth ratios, and scoring breakdown; `global_stats.individual_baselines` records each sample's normalisation baseline |
-| `{species}/processed/reveal/scg/{species}_relevant_scg.fasta` | Top-ranked SCG sequences passed to the REVEAL mapping step |
-| `{species}/processed/reveal/scg/{species}_relevant_scg.txt` | Plain list of retained SCG IDs |
-| `{species}/processed/reveal/scg/{species}_relevant_scg.bed` | BED file of retained SCG regions |
+| `{species}/results/reveal_module/scg/{species}_scg_ranked.tsv` | Full ranked table with all scoring components; `mean_depth_ratio` column is the per-individual-normalised depth (1.0 = expected SCG level) |
+| `{species}/results/reveal_module/scg/{species}_scg_ranked.json` | Detailed JSON with per-individual raw stats, per-individual baselines, depth ratios, and scoring breakdown; `global_stats.individual_baselines` records each sample's normalisation baseline |
+| `{species}/processed/reveal_module/scg/{species}_relevant_scg.fasta` | Top-ranked SCG sequences passed to the REVEAL mapping step |
+| `{species}/processed/reveal_module/scg/{species}_relevant_scg.txt` | Plain list of retained SCG IDs |
+| `{species}/processed/reveal_module/scg/{species}_relevant_scg.bed` | BED file of retained SCG regions |

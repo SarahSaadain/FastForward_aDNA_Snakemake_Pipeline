@@ -10,7 +10,7 @@ rule summarize_coverage:
     conda:
         "../../../envs/python_and_r.yaml",
     script:
-        "../../../scripts/processing_summary/summarize_coverage.py"
+        "../../../scripts/summary_module/summarize_coverage.py"
 
 rule prepare_custom_data_depth:
     input:
@@ -21,4 +21,4 @@ rule prepare_custom_data_depth:
     conda:
         "../../../envs/python_and_r.yaml",
     script:
-        "../../../scripts/processing_summary/prepare_custom_data_depth.py"
+        "../../../scripts/summary_module/prepare_custom_data_depth.py"

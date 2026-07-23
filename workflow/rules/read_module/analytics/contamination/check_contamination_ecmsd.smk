@@ -3,14 +3,14 @@
 ####################################################
 
 def get_ecmsd_database(wildcards):
-    configured_db = config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("database")
+    configured_db = config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("database")
     if configured_db:
         return configured_db
     else:
         return "resources/ecmsd_database"
 
 def get_ecmsd_taxonomic_hierarchy():
-     return config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("taxonomic_hierarchy", "species")
+     return config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("taxonomic_hierarchy", "species")
 
 _ecmsd_taxonomic_hierarchy = get_ecmsd_taxonomic_hierarchy()
 
@@ -37,7 +37,7 @@ rule ecmsd_database_setup:
 
 rule ecmsd_analyze_contamination:
     input:
-        fastq = "{species}/processed/reads/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
+        fastq = "{species}/processed/reads_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
         database = get_ecmsd_database
     output:
         summary                         = "{species}/results/contamination_analysis/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.txt",
@@ -49,10 +49,10 @@ rule ecmsd_analyze_contamination:
         tax_hierarchy_readlength        = _ecmsd_tax_hierarchy_readlength_output,
         tax_hierarchy_proportions_png   = _ecmsd_tax_hierarchy_proportions_png_output,
     params:
-        cov_threshold = config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("cov_threshold", 50),
-        top_n = config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("top_n", 25),
-        mapping_quality = config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("mapping_quality", 20),
-        taxonomic_hierarchy = config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("taxonomic_hierarchy", "species"),
+        cov_threshold = config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("cov_threshold", 50),
+        top_n = config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("top_n", 25),
+        mapping_quality = config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("mapping_quality", 20),
+        taxonomic_hierarchy = config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("taxonomic_hierarchy", "species"),
         prefix = "{sample}"
     threads: 15
     conda:
@@ -92,15 +92,15 @@ rule ecmsd_merge_hits_per_individual:
     params:
         taxonomic_hierarchy = _ecmsd_taxonomic_hierarchy
     script:
-        "../../../../scripts/raw_reads/analytics/contamination/check_contamination_ecmsd_script_ecmsd_merge_hits_per_individual.py"
+        "../../../../scripts/read_module/analytics/contamination/check_contamination_ecmsd_script_ecmsd_merge_hits_per_individual.py"
 
 rule ecmsd_analyze_proportions:
     input:
         report = _ecmsd_tax_hierarchy_proportions_txt_output,
-        count_reads = "{species}/processed/reads/statistics/{sample}_quality_filtered.count"
+        count_reads = "{species}/processed/reads_module/statistics/{sample}_quality_filtered.count"
     output:
         "{species}/results/contamination_analysis/ecmsd/{individual}/{sample}/pipeline/{sample}_ecmsd_proportions.tsv"
     params:
         sample = "{sample}"
     script:
-        "../../../../scripts/raw_reads/analytics/contamination/check_contamination_ecmsd_script_ecmsd_analyze_proportions.py"
+        "../../../../scripts/read_module/analytics/contamination/check_contamination_ecmsd_script_ecmsd_analyze_proportions.py"

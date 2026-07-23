@@ -1019,7 +1019,7 @@
           </label>
           <label class="lbl" for="rv_exec">Execute REVEAL</label>
         </div>
-        <p class="exec-note"><span class="def-pill on">Default: ON</span>Turn off if you are not performing TE or genomic feature abundance analysis, or if the feature library and SCG library are not yet prepared. Requires both libraries placed in <code style="font-size:.68rem;background:#e9ecf0;padding:1px 4px;border-radius:3px">{species}/raw/reveal/</code>.</p>
+        <p class="exec-note"><span class="def-pill on">Default: ON</span>Turn off if you are not performing TE or genomic feature abundance analysis, or if the feature library and SCG library are not yet prepared. Requires both libraries placed in <code style="font-size:.68rem;background:#e9ecf0;padding:1px 4px;border-radius:3px">{species}/raw/reveal_module/</code>.</p>
 
         <div id="rv_body">
 
@@ -1037,7 +1037,7 @@
             <div class="adv-content">
             <div class="step-desc">
               <span class="tool-pill green">BUSCO</span>
-              Automatically identifies <strong>single-copy genes (SCGs)</strong> from the reference genome via BUSCO when no user-provided SCG FASTA is placed in <code>{species}/raw/reveal/scg/</code>. SCGs act as coverage normalisers for the REVEAL pipeline. Skipped automatically when a user-provided file is found <em>or</em> when no BUSCO lineage is configured for the species (set per species in the Species section above).
+              Automatically identifies <strong>single-copy genes (SCGs)</strong> from the reference genome via BUSCO when no user-provided SCG FASTA is placed in <code>{species}/raw/reveal_module/scg/</code>. SCGs act as coverage normalisers for the REVEAL pipeline. Skipped automatically when a user-provided file is found <em>or</em> when no BUSCO lineage is configured for the species (set per species in the Species section above).
               <div class="when-hint"><span class="def-pill on">Default: ON</span>Can also be used standalone (without any feature library) to produce an SCG ranking table as the sole output. Set the <strong>BUSCO Lineage</strong> per species in the Species section; if exactly one reference exists in <code>{species}/raw/ref/</code> it is auto-detected, otherwise specify it explicitly.</div>
             </div>
             <div class="subsection-body open">
@@ -1147,7 +1147,7 @@
                   <input type="checkbox" id="rv_comp_mapping" onchange="render()">
                   <span class="slider"></span>
                 </label>
-                <label class="lbl" for="rv_comp_mapping">Enable competitive mapping <span style="color:var(--text-muted);font-size:.75em">(default: off — place a FASTA in <code>{species}/raw/reveal/competition/</code>; sequences suffixed <code>_comp</code> are removed after mapping)</span></label>
+                <label class="lbl" for="rv_comp_mapping">Enable competitive mapping <span style="color:var(--text-muted);font-size:.75em">(default: off — place a FASTA in <code>{species}/raw/reveal_module/competition/</code>; sequences suffixed <code>_comp</code> are removed after mapping)</span></label>
               </div>
               <div class="field" style="margin-top:8px">
                 <label>Min MAPQ for SCG reads</label>
@@ -1471,7 +1471,7 @@ function buildYAML() {
   p(0, '');
   p(2, '# Stages of the pipeline'); p(0, '');
   p(2, '# Raw reads processing');
-  p(2, 'raw_reads_processing:');
+  p(2, 'read_module:');
   kv(4, 'execute', gb('rrp_exec'));
   p(0, '');
   p(4, 'analysis:');
@@ -1524,7 +1524,7 @@ function buildYAML() {
   if (gb('ca_idx_en')   && gv('ca_idx').trim())   kv(12, 'index',     gv('ca_idx'));
   p(0, '');
   p(2, '# Reference processing');
-  p(2, 'reference_processing:');
+  p(2, 'reference_module:');
   kv(4, 'execute', gb('rp_exec'));
   p(0, '');
   p(4, 'mapping:');
@@ -1557,7 +1557,7 @@ function buildYAML() {
   kv(8, 'qualimap', gb('cov_qualimap'));
   kv(8, 'samtools_stats', gb('cov_samtools_stats'));
   p(0, ''); p(0, '');
-  p(2, 'reveal:');
+  p(2, 'reveal_module:');
   kv(4, 'execute', gb('rv_exec'));
   p(4, 'scg_selector:');
   kv(6, 'execute', gb('scg_exec'));
@@ -1603,7 +1603,7 @@ function buildYAML() {
   kv(8, 'y_axis_log_scale_threshold_individual', gn('viz_log_thresh_ind'));
   kv(8, 'y_axis_log_scale_threshold_species',    gn('viz_log_thresh_sp'));
   p(0, '');
-  p(2, 'summary_processing:');
+  p(2, 'summary_module:');
   kv(4, 'execute', gb('sp_exec'));
   p(4, 'settings:');
   kv(6, 'individual_multiqc', gb('sp_individual'));
@@ -1753,10 +1753,10 @@ function parseVal(raw) {
 function populateForm(c) {
   const pipe = c.pipeline || {};
   const glob = pipe.global || {};
-  const rrp  = pipe.raw_reads_processing || {};
-  const rp   = pipe.reference_processing || {};
-  const reveal = pipe.reveal || {};
-  const sp   = pipe.summary_processing || {};
+  const rrp  = pipe.read_module || {};
+  const rp   = pipe.reference_module || {};
+  const reveal = pipe.reveal_module || {};
+  const sp   = pipe.summary_module || {};
 
   sv('project_name', c.project_name);
   sb('global_skip',  glob.skip_existing_files);
@@ -1906,7 +1906,7 @@ function resetDefaults() {
     project_name: 'pastForward_Project',
     pipeline: {
       global: { skip_existing_files: true },
-      raw_reads_processing: {
+      read_module: {
         execute: true,
         analysis: { execute: true, settings: { multiqc_raw_reads: true, multiqc_trimmed_reads: true, multiqc_quality_filtered_reads: true, multiqc_merged_reads: true, create_plots: true } },
         adapter_removal: { execute: true, settings: { min_quality: 0, min_length: 0 } },
@@ -1919,7 +1919,7 @@ function resetDefaults() {
           }
         },
       },
-      reference_processing: {
+      reference_module: {
         execute: true,
         mapping: { settings: { mapper: 'bwa-aln' } },
         deduplication: { execute: false, settings: { min_contigs_per_cluster: 1, max_contigs_per_cluster: 500 } },
@@ -1927,7 +1927,7 @@ function resetDefaults() {
         filter_unmapped_reads: { execute: false, settings: { action: 'keep' } },
         analysis: { execute: true, settings: { damage_analysis: true, create_plots: true, individual_multiqc: true, species_multiqc: true, c_curve: true, qualimap: true, samtools_stats: true } }
       },
-      reveal: {
+      reveal_module: {
         execute: true,
         scg_selector: { execute: true, settings: { num_top_scgs: 20, min_length_scg: 4000, max_length_scg: 8000 } },
         mapping: { settings: { mapper: 'bwa-aln' } },
@@ -1936,7 +1936,7 @@ function resetDefaults() {
         normalization: { settings: { end_distance: 100, exclude_quantile: 25 } },
         visualization: { execute: true, settings: { individual_plots: 'plot', comparison_plots: 'plot', y_axis_log_scale_threshold_individual: 25, y_axis_log_scale_threshold_species: 25 } }
       },
-      summary_processing: { execute: true, settings: { individual_multiqc: true, species_multiqc: true } }
+      summary_module: { execute: true, settings: { individual_multiqc: true, species_multiqc: true } }
     },
     species: { demo: { name: 'Dmel Demo' } }
   });

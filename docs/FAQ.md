@@ -100,7 +100,7 @@ species:
       - my_lib
 ```
 
-Same ID format as references (filename stem, dots → underscores). If omitted, all libraries in `{species}/raw/reveal/feature_library/` are used.
+Same ID format as references (filename stem, dots → underscores). If omitted, all libraries in `{species}/raw/reveal_module/feature_library/` are used.
 
 **Q: What happens if I list an individual, reference, or feature library that does not exist on disk?**
 pastForward raises an error at startup and aborts before any processing starts. The error message lists which IDs were not found and shows all available IDs, so you can correct the config. This prevents silent misconfiguration where a typo would cause a run to silently skip data.
@@ -132,7 +132,7 @@ Additionally, it will print all the files that will be requested by pastForward 
 Lastly, you can also see the rules that will be executed and their inputs/outputs. This allows you to verify that pastForward is correctly set up to process your data before actually running it.
 
 **Q: Can I provide the adapter sequences for adapter removal?**
-Yes. If you want to provide custom adapter sequences for adapter removal, you can provide a FASTA file containing the adapter sequences and specify its path in the config under `pipeline.raw_reads_processing.adapter_removal.settings.adapters_sequences.[r1|r2]`. 
+Yes. If you want to provide custom adapter sequences for adapter removal, you can provide a FASTA file containing the adapter sequences and specify its path in the config under `pipeline.read_module.adapter_removal.settings.adapters_sequences.[r1|r2]`. 
 
 In case they are not provided, fastp will try to auto-detect adapters based on the read data.
 
@@ -143,7 +143,7 @@ To skip the adapter removal and quality filtering steps, set the `execute` flag 
 
 ```yaml
 pipeline:
-  raw_reads_processing:
+  read_module:
     adapter_removal:
       execute: false
     quality_filtering:
@@ -177,7 +177,7 @@ Set its `execute` flag to `false` in `config/config.yaml`. For example, to skip 
 
 ```yaml
 pipeline:
-  raw_reads_processing:
+  read_module:
     contamination_analysis:
       execute: false
 ```
@@ -250,10 +250,10 @@ When you are ready to resume, simply run pastForward again with the same command
 - **bwa-mem2** — default; faster and suitable for longer reads.
 - **minimap2** — versatile; uses the `-ax sr` preset for short reads. If you want to get a "quick and dirty" mapping to check your aDNA data, minimap2 is a good choice. However, it is not optimised for the specific challenges of aDNA and may produce lower-quality alignments compared to bwa-aln or bwa-mem2.
 
-Set the mapper via `pipeline.reference_processing.mapping.settings.mapper`.
+Set the mapper via `pipeline.reference_module.mapping.settings.mapper`.
 
 **Q: Can I use different mappers for reference processing and REVEAL processing?**
-Yes. The mapper is configured independently under `pipeline.reference_processing.mapping.settings.mapper` and `pipeline.reveal.mapping.settings.mapper`.
+Yes. The mapper is configured independently under `pipeline.reference_module.mapping.settings.mapper` and `pipeline.reveal_module.mapping.settings.mapper`.
 
 ---
 
@@ -307,10 +307,10 @@ You can even share the same Centrifuge index across different projects or specie
 ## REVEAL Module
 
 **Q: What goes in the feature library?**
-A FASTA file of genomic features sequences (e.g. transposable element, genes, ...) you want to quantify. Place it under `<species>/raw/reveal/feature_library/`. Multiple feature libraries per species are supported and each is processed independently.
+A FASTA file of genomic features sequences (e.g. transposable element, genes, ...) you want to quantify. Place it under `<species>/raw/reveal_module/feature_library/`. Multiple feature libraries per species are supported and each is processed independently.
 
 **Q: Do I need to provide SCG sequences?**
-Not necessarily. If a FASTA file is placed under `<species>/raw/reveal/scg/` it is used directly. Otherwise, if `pipeline.reveal.scg_selector.execute: true` (the default) and a BUSCO lineage is configured under `species.<key>.scg_selector.settings.lineage`, pastForward determines SCGs automatically from the reference genome.
+Not necessarily. If a FASTA file is placed under `<species>/raw/reveal_module/scg/` it is used directly. Otherwise, if `pipeline.reveal_module.scg_selector.execute: true` (the default) and a BUSCO lineage is configured under `species.<key>.scg_selector.settings.lineage`, pastForward determines SCGs automatically from the reference genome.
 
 **Q: How are SCGs selected automatically?**
 BUSCO identifies complete single-copy genes in the reference genome. Candidate sequences are filtered by length (`min_length_scg` / `max_length_scg`, defaults 4,000–8,000 bp), then scored on coverage breadth, depth evenness, and cross-individual consistency. The top-ranked sequences (`num_top_scgs`, default 20) are selected. See [scg_determination.md](scg_determination.md) for the full scoring methodology.

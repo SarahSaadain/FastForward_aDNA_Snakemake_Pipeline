@@ -11,7 +11,7 @@ import logging
 # Get expected output file paths for FastQC (raw reads)
 def get_expected_output_fastqc_raw(species):
 
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("settings", {}).get("multiqc_raw_reads", True) == False:
+    if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_raw_reads", True) == False:
         logging.info(f"Skipping FastQC for raw reads for {species}. Disabled in config.")
         return []
 
@@ -29,7 +29,7 @@ def get_expected_output_fastqc_raw(species):
 # -----------------------------------------------------------------------------------------------
 # Get expected output file paths for FastQC (adapter trimmed reads)
 def get_expected_output_fastqc_trimmed(species):
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("settings", {}).get("multiqc_trimmed_reads", True) == False:
+    if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_trimmed_reads", True) == False:
         logging.info(f"Skipping FastQC for trimmed reads for {species}. Disabled in config.")
         return []
 
@@ -41,7 +41,7 @@ def get_expected_output_fastqc_trimmed(species):
 # -----------------------------------------------------------------------------------------------
 # Get expected output file paths for FastQC (adapter removed reads)
 def get_expected_output_fastqc_quality_filtered(species):
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("settings", {}).get("multiqc_quality_filtered_reads", True) == False:
+    if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_quality_filtered_reads", True) == False:
         logging.info(f"Skipping FastQC for quality filtered reads for {species}. Disabled in config.")
         return []
 
@@ -62,7 +62,7 @@ def get_expected_output_fastqc_merged(species):
 # Get expected output file paths for contamination analysis (ECMSD)
 def get_expected_output_contamination_ecmsd(species):  
 
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("execute", True) == False:
+    if config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("execute", True) == False:
         logging.info(f"Skipping contamination analysis with ECMSD for {species}. Disabled in config.")
         return []
 
@@ -78,7 +78,7 @@ def get_expected_output_contamination_ecmsd(species):
 # Get expected output file paths for contamination analysis (Centrifuge)
 def get_expected_output_contamination_centrifuge(species):
 
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("tools", {}).get("centrifuge", {}).get("execute", True) == False:
+    if config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("tools", {}).get("centrifuge", {}).get("execute", True) == False:
         logging.info(f"Skipping contamination analysis with Centrifuge for {species}. Disabled in config.")
         return []
 
@@ -96,7 +96,7 @@ def get_expected_output_contamination_centrifuge(species):
 # Get expected output file paths for contamination analysis (all tools)
 def get_expected_output_contamination(species):  
 
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("contamination_analysis", {}).get("execute", True) == False:
+    if config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("execute", True) == False:
         logging.info(f"Skipping contamination analysis for {species}. Disabled in config.")
         return []
 
@@ -117,22 +117,22 @@ def get_expected_output_multiqc(species):
     expected_outputs = []
 
     # Add MultiQC reports for different read processing stages
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("settings", {}).get("multiqc_raw_reads", True) == True:
+    if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_raw_reads", True) == True:
         expected_outputs.append(f"{species}/results/reads/{species}_multiqc_raw.html")
     else:
         logging.info(f"Skipping MultiQC report for raw reads for {species}. Disabled in config.")
 
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("settings", {}).get("multiqc_trimmed_reads", True) == True:
+    if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_trimmed_reads", True) == True:
         expected_outputs.append(f"{species}/results/reads/{species}_multiqc_trimmed.html")
     else:
         logging.info(f"Skipping MultiQC report for trimmed reads for {species}. Disabled in config.")
 
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("settings", {}).get("multiqc_quality_filtered_reads", True) == True:
+    if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_quality_filtered_reads", True) == True:
         expected_outputs.append(f"{species}/results/reads/{species}_multiqc_quality_filtered.html")
     else:
         logging.info(f"Skipping MultiQC report for quality filtered reads for {species}. Disabled in config.")
     
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("settings", {}).get("multiqc_merged_reads", True) == True:
+    if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_merged_reads", True) == True:
         expected_outputs.append(f"{species}/results/reads/{species}_multiqc_merged.html")
     else:
         logging.info(f"Skipping MultiQC report for merged reads for {species}. Disabled in config.")
@@ -142,7 +142,7 @@ def get_expected_output_multiqc(species):
 # -----------------------------------------------------------------------------------------------
 # Get expected output file paths for read count plots
 def get_expected_output_reads_plots(species):
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("settings", {}).get("create_plots", True) == False:
+    if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("create_plots", True) == False:
         logging.info(f"Skipping read plots generation for {species}. Disabled in config.")
         return []
 
@@ -158,13 +158,13 @@ def get_expected_output_read_merging(species):
     # read merging is should always be the result of raw read processing, so we don't check config for this step.
     expected_outputs = []
     for individual in get_individuals_for_species(species):
-        expected_outputs.append(f"{species}/processed/reads/reads_merged/{individual}.fastq.gz")
+        expected_outputs.append(f"{species}/processed/reads_module/reads_merged/{individual}.fastq.gz")
 
     return expected_outputs
 
 def get_expected_output_analytics(species):
 
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("analysis", {}).get("execute", True) == False:
+    if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("execute", True) == False:
         logging.info(f"Skipping analytics for {species}. Disabled in config.")
         return []
 
@@ -180,9 +180,9 @@ def get_expected_output_analytics(species):
 
 # -----------------------------------------------------------------------------------------------
 # Get all expected output file paths for raw read processing
-def get_expected_output_raw_read_processing(species):
+def get_expected_output_read_module(species):
 
-    if config.get("pipeline", {}).get("raw_reads_processing", {}).get("execute", True) == False:
+    if config.get("pipeline", {}).get("read_module", {}).get("execute", True) == False:
         logging.info(f"Skipping raw read processing for {species}. Disabled in config.")
         return []
     

@@ -5,11 +5,11 @@
 # Rule: Calculate coverage depth using samtools
 rule determine_mapped_reads_coverage:
     input:
-        bams=["{species}/processed/{reference}/mapped/{individual}_{reference}_final.bam"]
+        bams=["{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_final.bam"]
     output:
-        temp("{species}/processed/{reference}/coverage/{individual}/{individual}_{reference}_depth.tsv")
+        temp("{species}/processed/reference_module/{reference}/coverage/{individual}/{individual}_{reference}_depth.tsv")
     log:
-        "{species}/processed/{reference}/coverage/{individual}/{individual}_{reference}_depth.log"
+        "{species}/processed/reference_module/{reference}/coverage/{individual}/{individual}_{reference}_depth.log"
     message: "Calculating coverage depth for {input.bams}"
     params:
         # optional bed file passed to -b
@@ -20,14 +20,14 @@ rule determine_mapped_reads_coverage:
 # Rule: Analyze coverage depth and breadth
 rule analyze_mapped_reads_coverage:
     input:
-        depth_txt="{species}/processed/{reference}/coverage/{individual}/{individual}_{reference}_depth.tsv"
+        depth_txt="{species}/processed/reference_module/{reference}/coverage/{individual}/{individual}_{reference}_depth.tsv"
     output:
         analysis="{species}/results/{reference}/analytics/individual_level/{individual}/coverage/{individual}_{reference}_coverage_analysis.csv"
     message: "Analyzing coverage depth and breadth for {input.depth_txt}"
     conda:
         "../../../envs/python_and_r.yaml",
     script:
-        "../../../scripts/reads_to_reference/analytics/statistics/analyze_samtools_depth_individual_file.py"
+        "../../../scripts/reference_module/analytics/statistics/analyze_samtools_depth_individual_file.py"
 
 # Rule: Combine coverage analysis files
 rule combine_analyzed_mapped_reads_coverage:
@@ -47,4 +47,4 @@ rule combine_analyzed_mapped_reads_coverage:
     params:
         species="{species}"
     script:
-        "../../../scripts/reads_to_reference/analytics/statistics/combine_analyzed_depth_breadth_files.py"
+        "../../../scripts/reference_module/analytics/statistics/combine_analyzed_depth_breadth_files.py"

@@ -18,7 +18,7 @@ def merge_reads_by_individual_input(wildcards):
     # for each raw R1 file, generate the corresponding quality-filtered filename
     quality_filtered_files = []
     for sample in samples_of_individual:
-        qf_file = f"{species}/processed/reads/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz"
+        qf_file = f"{species}/processed/reads_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz"
         quality_filtered_files.append(qf_file)
     
     return quality_filtered_files
@@ -32,9 +32,9 @@ rule merge_reads_by_individual:
     input:
         merge_reads_by_individual_input
     output:
-        "{species}/processed/reads/reads_merged/{individual}.fastq.gz"
+        "{species}/processed/reads_module/reads_merged/{individual}.fastq.gz"
     log:
-        "{species}/processed/reads/reads_merged/{individual}_merge_reads.log"
+        "{species}/processed/reads_module/reads_merged/{individual}_merge_reads.log"
     message: 
         "Merging individual {wildcards.individual} of species {wildcards.species}."
     shell:

@@ -10,8 +10,8 @@ rule plot_mapped_reads_endogenous_bar:
         plot = "{species}/results/{reference}/plots/endogenous_reads/{species}_{reference}_endogenous_reads_bar_chart.png"
     message: "Plotting endogenous reads bar chart for species {wildcards.species} and reference {wildcards.reference}"
     log:
-        "{species}/processed/{reference}/plots/endogenous_reads/{species}_{reference}_endogenous_reads_bar_chart.log"
+        "{species}/processed/reference_module/{reference}/plots/endogenous_reads/{species}_{reference}_endogenous_reads_bar_chart.log"
     conda:
         "../../../envs/python_and_r.yaml"
     script:
-        "../../../scripts/reads_to_reference/plotting/plot_endogenous_reads_bar.R"
+        "../../../scripts/reference_module/plotting/plot_endogenous_reads_bar.R"

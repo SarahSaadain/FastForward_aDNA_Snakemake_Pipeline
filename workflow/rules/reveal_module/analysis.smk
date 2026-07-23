@@ -11,7 +11,7 @@ def combine_visualizations_for_species_input_coverage_files(wildcards):
     list_of_visualization_files_of_individuals = []
 
     for individual in individuals:
-        list_of_visualization_files_of_individuals.append(f"{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_estimation.tsv")
+        list_of_visualization_files_of_individuals.append(f"{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_estimation.tsv")
 
     if not list_of_visualization_files_of_individuals:
         raise ValueError(f"No visualization files could be determined for species {species}.")
@@ -21,7 +21,7 @@ def combine_visualizations_for_species_input_coverage_files(wildcards):
 def combine_visualization_coverage_stats_across_feature_libraries_input(wildcards):
     feature_libraries = get_feature_library_ids_for_species(wildcards.species)
     return expand(
-        "{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv.gz",
+        "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv.gz",
         species=wildcards.species,
         feature_library=feature_libraries
     )
@@ -32,11 +32,11 @@ def combine_visualization_coverage_stats_across_feature_libraries_input(wildcard
 
 rule estimate_visualization_of_individual:
     input:
-        coverage="{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_coverage.tsv.gz"
+        coverage="{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.tsv.gz"
     output:
-        estimation=temp("{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_estimation.tsv")
+        estimation=temp("{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_estimation.tsv")
     conda:
-        "../../envs/reveal.yaml"
+        "../../envs/reveal_module.yaml"
     message:
         "Estimating REVEAL coverage for {wildcards.individual} of {wildcards.species}."
     shell:
@@ -46,11 +46,11 @@ rule estimate_visualization_of_individual:
 
 rule calculate_visualization_normalized_stats_of_individual:
     input:
-        coverage="{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.tsv.gz",
+        coverage="{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.tsv.gz",
     output:
-        stats="{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.stats.tsv"
+        stats="{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.stats.tsv"
     conda:
-        "../../envs/reveal.yaml"
+        "../../envs/reveal_module.yaml"
     message:
         "Calculating normalized stats for {wildcards.individual} of {wildcards.species}."
     shell:
@@ -63,11 +63,11 @@ rule calculate_visualization_normalized_stats_of_individual:
 
 rule calculate_visualization_snp_stats_of_individual:
     input:
-        coverage="{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.tsv.gz",
+        coverage="{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.tsv.gz",
     output:
-        stats=temp("{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_snpstats.tsv")
+        stats=temp("{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_snpstats.tsv")
     conda:
-        "../../envs/reveal.yaml"
+        "../../envs/reveal_module.yaml"
     message:
         "Calculating SNP stats for {wildcards.individual} of {wildcards.species}."
     shell:
@@ -80,11 +80,11 @@ rule calculate_visualization_snp_stats_of_individual:
 
 rule calculate_visualization_indel_stats_of_individual:
     input:
-        coverage="{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.tsv.gz",
+        coverage="{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.tsv.gz",
     output:
-        stats=temp("{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_indelstats.tsv")
+        stats=temp("{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_indelstats.tsv")
     conda:
-        "../../envs/reveal.yaml"
+        "../../envs/reveal_module.yaml"
     message:
         "Calculating indel stats for {wildcards.individual} of {wildcards.species}."
     shell:
@@ -98,14 +98,14 @@ rule calculate_visualization_indel_stats_of_individual:
 rule compare_visualization_stats_accross_individuals_of_species:
     input:
         lambda wildcards: expand(
-            "{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.stats.tsv",
+            "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.stats.tsv",
             species=wildcards.species,
             feature_library=wildcards.feature_library,
             individual=get_individuals_for_species(wildcards.species))
     output:
-        stats=temp("{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv"),
+        stats=temp("{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv"),
     conda:
-        "../../envs/reveal.yaml"
+        "../../envs/reveal_module.yaml"
     message:
         "Running REVEAL coverage comparison for {wildcards.species}."
     shell:
@@ -116,14 +116,14 @@ rule compare_visualization_stats_accross_individuals_of_species:
 rule compare_visualization_snp_stats_across_individuals_of_species:
     input:
         lambda wildcards: expand(
-            "{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_snpstats.tsv.gz",
+            "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_snpstats.tsv.gz",
             species=wildcards.species,
             feature_library=wildcards.feature_library,
             individual=get_individuals_for_species(wildcards.species))
     output:
-        comparison=temp("{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_snp_comparison.tsv"),
+        comparison=temp("{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_snp_comparison.tsv"),
     conda:
-        "../../envs/reveal.yaml"
+        "../../envs/reveal_module.yaml"
     message:
         "Comparing SNP stats across individuals of {wildcards.species}."
     shell:
@@ -136,14 +136,14 @@ rule compare_visualization_snp_stats_across_individuals_of_species:
 rule compare_visualization_indel_stats_across_individuals_of_species:
     input:
         lambda wildcards: expand(
-            "{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_indelstats.tsv.gz",
+            "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_indelstats.tsv.gz",
             species=wildcards.species,
             feature_library=wildcards.feature_library,
             individual=get_individuals_for_species(wildcards.species))
     output:
-        comparison=temp("{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_indel_comparison.tsv"),
+        comparison=temp("{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_indel_comparison.tsv"),
     conda:
-        "../../envs/reveal.yaml"
+        "../../envs/reveal_module.yaml"
     message:
         "Comparing indel stats across individuals of {wildcards.species}."
     shell:
@@ -157,7 +157,7 @@ rule combine_visualization_stats_across_feature_libraries:
     input:
         combine_visualization_coverage_stats_across_feature_libraries_input
     output:
-        combined="{species}/results/reveal/{species}_reveal_coverage_comparison.tsv"
+        combined="{species}/results/reveal_module/{species}_reveal_coverage_comparison.tsv"
     conda:
         "../../envs/python_and_r.yaml"
     message:
@@ -174,9 +174,9 @@ rule combine_visualization_stats_across_feature_libraries:
 
 rule extract_flagged_seqids:
     input:
-        tsv = "{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv.gz"
+        tsv = "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv.gz"
     output:
-        txt = "{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_flagged_seqids.tsv"
+        txt = "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_flagged_seqids.tsv"
     conda:
         "../../envs/python_and_r.yaml"
     run:
@@ -187,9 +187,9 @@ rule extract_flagged_seqids:
 
 rule compress_visualization_snp_stats_of_individual:
     input:
-        source = "{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_snpstats.tsv",
+        source = "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_snpstats.tsv",
     output:
-        target = "{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_snpstats.tsv.gz"
+        target = "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_snpstats.tsv.gz"
     threads: 4
     conda:
         "../../envs/pigz.yaml"
@@ -199,9 +199,9 @@ rule compress_visualization_snp_stats_of_individual:
 
 rule compress_visualization_indel_stats_of_individual:
     input:
-        source = "{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_indelstats.tsv",
+        source = "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_indelstats.tsv",
     output:
-        target = "{species}/results/reveal/{feature_library}/visualization/individual_level/{individual}_indelstats.tsv.gz"
+        target = "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_indelstats.tsv.gz"
     threads: 4
     conda:
         "../../envs/pigz.yaml"
@@ -211,9 +211,9 @@ rule compress_visualization_indel_stats_of_individual:
 
 rule compress_visualization_coverage_comparison_of_species:
     input:
-        source = "{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv",
+        source = "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv",
     output:
-        target = "{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv.gz"
+        target = "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv.gz"
     threads: 4
     conda:
         "../../envs/pigz.yaml"
@@ -223,9 +223,9 @@ rule compress_visualization_coverage_comparison_of_species:
 
 rule compress_visualization_snp_comparison_of_species:
     input:
-        source = "{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_snp_comparison.tsv",
+        source = "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_snp_comparison.tsv",
     output:
-        target = "{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_snp_comparison.tsv.gz"
+        target = "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_snp_comparison.tsv.gz"
     threads: 4
     conda:
         "../../envs/pigz.yaml"
@@ -235,9 +235,9 @@ rule compress_visualization_snp_comparison_of_species:
 
 rule compress_visualization_indel_comparison_of_species:
     input:
-        source = "{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_indel_comparison.tsv",
+        source = "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_indel_comparison.tsv",
     output:
-        target = "{species}/results/reveal/{feature_library}/visualization/species_level/{species}_{feature_library}_indel_comparison.tsv.gz"
+        target = "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_indel_comparison.tsv.gz"
     threads: 4
     conda:
         "../../envs/pigz.yaml"

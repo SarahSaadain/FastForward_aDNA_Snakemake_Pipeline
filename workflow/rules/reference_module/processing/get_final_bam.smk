@@ -6,20 +6,20 @@
 # (filter_unmapped_reads.smk, analytics rules, etc.).
 ####################################################
 
-if config.get("pipeline", {}).get("reference_processing", {}).get("damage_rescaling", {}).get("execute", True):
-    _pre_filter_bam = "{species}/processed/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled.bam"
-elif config.get("pipeline", {}).get("reference_processing", {}).get("deduplication", {}).get("execute", True):
-    _pre_filter_bam = "{species}/processed/{reference}/mapped/{individual}_{reference}_sorted_dedupped.bam"
+if config.get("pipeline", {}).get("reference_module", {}).get("damage_rescaling", {}).get("execute", True):
+    _pre_filter_bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled.bam"
+elif config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True):
+    _pre_filter_bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped.bam"
 else:
-    _pre_filter_bam = "{species}/processed/{reference}/mapped/{individual}_{reference}_sorted.bam"
+    _pre_filter_bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted.bam"
 
 ####################################################
 # Snakemake rules
 ####################################################
 
 _filter_remove = (
-    config.get("pipeline", {}).get("reference_processing", {}).get("filter_unmapped_reads", {}).get("execute", False)
-    and config.get("pipeline", {}).get("reference_processing", {}).get("filter_unmapped_reads", {}).get("settings", {}).get("action", "remove") == "remove"
+    config.get("pipeline", {}).get("reference_module", {}).get("filter_unmapped_reads", {}).get("execute", False)
+    and config.get("pipeline", {}).get("reference_module", {}).get("filter_unmapped_reads", {}).get("settings", {}).get("action", "remove") == "remove"
 )
 
 if _filter_remove:
@@ -27,11 +27,11 @@ if _filter_remove:
     # intermediate produced by filter_mapped_only_bam + index_mapped_only_bam.
     rule get_final_bam:
         input:
-            bam = "{species}/processed/{reference}/mapped/{individual}_{reference}_mapped_only.bam",
-            bai = "{species}/processed/{reference}/mapped/{individual}_{reference}_mapped_only.bam.bai"
+            bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam",
+            bai = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam.bai"
         output:
-            bam = "{species}/processed/{reference}/mapped/{individual}_{reference}_final.bam",
-            bai = "{species}/processed/{reference}/mapped/{individual}_{reference}_final.bam.bai"
+            bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
+            bai = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai"
         message:
             "Getting final (mapped-only) BAM for {wildcards.individual} of {wildcards.species}."
         shell:
@@ -52,8 +52,8 @@ else:
             bam = _pre_filter_bam,
             bai = _pre_filter_bam + ".bai"
         output:
-            bam = "{species}/processed/{reference}/mapped/{individual}_{reference}_final.bam",
-            bai = "{species}/processed/{reference}/mapped/{individual}_{reference}_final.bam.bai"
+            bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
+            bai = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai"
         message:
             "Getting final bam for {wildcards.individual} of {wildcards.species}."
         shell:
