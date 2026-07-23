@@ -196,7 +196,7 @@ pipeline:
         # Defaults to pipeline.reveal.mapping.settings.mapper_extra_params if set,
         # otherwise falls back to mapper-specific defaults (bwa-aln: Oliva et al. 2021, minimap2: "-ax sr").
         #mapper_extra_params: ""
-        # Number of top-ranked SCGs to keep (Default: 20; per-species setting takes precedence if set)
+        # Number of top-ranked SCGs to keep (Default: 20)
         num_top_scgs: 20
         # Minimum SCG sequence length in bp to include (Default: 4000)
         min_length_scg: 4000
@@ -204,8 +204,8 @@ pipeline:
         max_length_scg: 8000
         # Minimum mapping quality score for reads mapped to the SCG library.
         # Reads with MAPQ below this value are removed from the BAM after unmapped-read removal.
-        # Also used as the threshold when computing per-contig coverage stats. Set to 0 to disable.
-        min_mapq: 15
+        # Also used as the threshold when computing per-contig coverage stats. Set to 0 to disable. (Default: 0)
+        min_mapq: 0
         # When true, the filtered sorted SCG BAM and its index are kept as permanent outputs in
         # {species}/processed/reveal/scg/reads_mapped/. When false (default), they are
         # marked as temporary and deleted after SCG ranking consumes them.
@@ -287,6 +287,8 @@ pipeline:
         y_axis_log_scale_threshold_species: 25
     
     analysis:
+      # When true, this sub-stage will be executed (Default: true)
+      execute: true
       settings:
         # When true, produce per-individual and species-level coverage stats,
         # comparisons, and plots (Default: true)
@@ -318,6 +320,18 @@ species:
     # Name of the species
     name: "Dmel Demo"
 
+    # BUSCO lineage database name (required for SCG auto-determination, only
+    # relevant when pipeline.reveal.scg_selector.execute is true AND no
+    # user-provided SCG file exists in {species}/raw/reveal/scg/).
+    # Find available lineages at https://busco.ezlab.org/
+    # Example: "drosophilidae_odb12", "diptera_odb10", "insecta_odb10"
+    lineage: "drosophilidae_odb12"
+    # Optional: exact path to the reference genome to use for SCG determination.
+    # Required when multiple FASTA files exist in {species}/raw/ref/.
+    # If omitted and exactly one reference is present, it is used automatically
+    # and an info message is written to the log.
+    #scg_reference: "/path/to/reference.fasta"
+
     # Optional: restrict which individuals to process for this species.
     # If omitted, all individuals discovered in {species}/raw/reads/ are used.
     # Each entry must match the individual ID extracted from read filenames
@@ -344,25 +358,3 @@ species:
     # An error is raised if any listed ID is not found on disk.
     #feature_libraries:
     #  - genes
-
-    # Per-species SCG selector settings (only relevant when
-    # pipeline.reveal.scg_selector.execute is true AND no user-provided SCG
-    # file exists in {species}/raw/reveal/scg/).
-    scg_selector:
-      # Optional: exact path to the reference genome to use for SCG determination.
-      # Required when multiple FASTA files exist in {species}/raw/ref/.
-      # If omitted and exactly one reference is present, it is used automatically
-      # and an info message is written to the log.
-      #reference: "/path/to/reference.fasta"
-
-      settings:
-        # BUSCO lineage database name (required for SCG determination).
-        # Find available lineages at https://busco.ezlab.org/
-        # Example: "drosophilidae_odb12", "diptera_odb10", "insecta_odb10"
-        lineage: "drosophilidae_odb12"
-        # Number of top-ranked SCGs to keep (Default: 20)
-        num_top_scgs: 20
-        # Minimum SCG sequence length in bp to include (Default: 4000)
-        min_length_scg: 4000
-        # Maximum SCG sequence length in bp to include (Default: 8000)
-        max_length_scg: 8000

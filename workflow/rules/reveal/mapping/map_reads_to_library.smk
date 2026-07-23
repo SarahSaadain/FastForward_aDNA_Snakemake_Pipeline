@@ -155,7 +155,7 @@ if _comp_execute:
             "{species}/processed/reveal/{feature_library}/mapped/{individual}_{feature_library}_filter_comp.log"
         threads: 2
         conda:
-            "../../envs/samtools.yaml"
+            "../../../envs/samtools.yaml"
         shell:
             # Stream the BAM through awk to drop @SQ headers and alignment records for _comp references.
             # No index needed because we process the stream linearly.
@@ -194,7 +194,7 @@ if _dyn_min_mapq_scg > 0 or _dyn_min_mapq_fle > 0:
             min_mapq_fle=_dyn_min_mapq_fle
         threads: 2
         conda:
-            "../../envs/samtools.yaml"
+            "../../../envs/samtools.yaml"
         shell:
             """
             samtools view -h "{input.bam}" | \

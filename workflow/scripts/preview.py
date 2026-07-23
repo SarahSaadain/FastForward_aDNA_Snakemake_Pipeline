@@ -87,13 +87,13 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
                 lines.append(f"      - {lib_id}: {lib_path}")
         else:
             _scg_sel_active = config.get("pipeline", {}).get("reveal", {}).get("scg_selector", {}).get("execute", True)
-            _lineage = config.get("species", {}).get(sname, {}).get("scg_selector", {}).get("settings", {}).get("lineage")
+            _lineage = config.get("species", {}).get(sname, {}).get("lineage")
             if not _scg_sel_active:
                 lines.append("    SCG Libraries: (none provided; scg_selector disabled)")
             elif not _lineage:
                 lines.append("    SCG Libraries: (none provided; skipping auto-determination — no lineage configured for this species)")
             else:
-                _config_ref = config.get("species", {}).get(sname, {}).get("scg_selector", {}).get("reference")
+                _config_ref = config.get("species", {}).get(sname, {}).get("scg_reference")
                 if _config_ref:
                     lines.append(f"    SCG Libraries: (will be auto-determined via BUSCO [{_lineage}]; reference: {_config_ref})")
                 else:
@@ -105,7 +105,7 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
                             lines.append(
                                 f"    SCG Libraries: (will be auto-determined via BUSCO [{_lineage}] — "
                                 f"WARNING: {len(refs)} references found, set "
-                                f"species.{sname}.scg_selector.reference in config)"
+                                f"species.{sname}.scg_reference in config)"
                             )
                         else:
                             lines.append(

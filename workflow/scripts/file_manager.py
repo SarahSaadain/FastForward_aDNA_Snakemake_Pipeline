@@ -386,16 +386,11 @@ def get_scg_library_file_for_species_and_library(species, library_id):
 
 # -----------------------------------------------------------------------------------------------
 # Resolve the reference genome path that SCG determination (BUSCO) will use.
-# Priority: species.{species}.scg_selector.reference → auto-detect from {species}/raw/ref/
+# Priority: species.{species}.scg_reference → auto-detect from {species}/raw/ref/
 # Raises ValueError when 0 or >1 references are found without an explicit config override.
 def get_scg_determination_reference_path(species):
     import logging as _log
-    config_ref = (
-        config.get("species", {})
-              .get(species, {})
-              .get("scg_selector", {})
-              .get("reference")
-    )
+    config_ref = config.get("species", {}).get(species, {}).get("scg_reference")
     if config_ref:
         return config_ref
 
@@ -405,7 +400,7 @@ def get_scg_determination_reference_path(species):
         raise ValueError(
             f"No reference genome found for SCG determination of species '{species}'. "
             f"Place a FASTA in {species}/raw/ref/ or set "
-            f"species.{species}.scg_selector.reference in config."
+            f"species.{species}.scg_reference in config."
         )
 
     if len(refs) > 1:
@@ -413,7 +408,7 @@ def get_scg_determination_reference_path(species):
         raise ValueError(
             f"Multiple reference genomes found for species '{species}' ({ref_paths}). "
             f"SCG determination requires exactly one reference. "
-            f"Please set species.{species}.scg_selector.reference in config."
+            f"Please set species.{species}.scg_reference in config."
         )
 
     _log.info(f"[SCG Selector] Auto-detected reference for '{species}': {refs[0][1]}")
@@ -429,7 +424,7 @@ def should_auto_determine_scg(species):
         return False
     if get_scg_library_file_list_for_species(species):
         return False
-    lineage = config.get("species", {}).get(species, {}).get("scg_selector", {}).get("settings", {}).get("lineage")
+    lineage = config.get("species", {}).get(species, {}).get("lineage")
     return bool(lineage)
 
 # -----------------------------------------------------------------------------------------------

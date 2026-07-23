@@ -19,7 +19,7 @@ _scg_sel_mapper_extra  = (
     or _mapper_extra_fallback
 )
 _scg_keep_bam  = _scg_sel_settings.get("keep_mapped_bam", False)
-_scg_min_mapq  = _scg_sel_settings.get("min_mapq", 15)
+_scg_min_mapq  = _scg_sel_settings.get("min_mapq", 0)
 
 _SCG_SORTED_BAM      = "{species}/processed/reveal/scg/reads_mapped/{individual}_scg_library.sorted.bam"
 _SCG_SORTED_BAI      = _SCG_SORTED_BAM + ".bai"

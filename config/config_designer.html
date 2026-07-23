@@ -1187,6 +1187,13 @@
               <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin:0 0 8px">Output selection</p>
               <div class="toggle-wrap">
                 <label class="toggle">
+                  <input type="checkbox" id="ana_exec" checked onchange="render()">
+                  <span class="slider"></span>
+                </label>
+                <label class="lbl" for="ana_exec">Analysis <span style="color:var(--text-muted);font-size:.75em">(default: on — enables the coverage/SNP/indel stats stage below)</span></label>
+              </div>
+              <div class="toggle-wrap" style="margin-top:8px">
+                <label class="toggle">
                   <input type="checkbox" id="viz_coverage_analysis" checked onchange="render()">
                   <span class="slider"></span>
                 </label>
@@ -1572,6 +1579,7 @@ function buildYAML() {
   kv(8, 'min_mapq_scg', gn('rv_min_mapq_scg'));
   kv(8, 'min_mapq_fle', gn('rv_min_mapq_fle'));
   p(4, 'analysis:');
+  kv(6, 'execute', gb('ana_exec'));
   p(6, 'settings:');
   kv(8, 'coverage_analysis', gb('viz_coverage_analysis'));
   kv(8, 'snp_analysis', gb('viz_snp_analysis'));
@@ -1616,15 +1624,11 @@ function buildYAML() {
     p(2, `${k}:`);
     kv(4, 'execute', exec);
     kv(4, 'name', n);
+    if (lineage) kv(4, 'lineage', lineage);
+    if (ref) kv(4, 'scg_reference', ref);
     pList(4, 'individuals', individuals);
     pList(4, 'references', references);
     pList(4, 'feature_libraries', featureLibs);
-    if (lineage || ref) {
-      p(4, 'scg_selector:');
-      if (ref) kv(6, 'reference', ref);
-      p(6, 'settings:');
-      if (lineage) kv(8, 'lineage', lineage);
-    }
   });
   return L.join('\n');
 }
@@ -1848,6 +1852,7 @@ function populateForm(c) {
   sb('rv_comp_mapping', rvm.competitive_mapping);
   sv('rv_min_mapq_scg', rvm.min_mapq_scg != null ? rvm.min_mapq_scg : 0);
   sv('rv_min_mapq_fle', rvm.min_mapq_fle != null ? rvm.min_mapq_fle : 0);
+  sb('ana_exec', (reveal.analysis||{}).execute);
   const anas = (reveal.analysis||{}).settings||{};
   sb('viz_coverage_analysis',   anas.coverage_analysis);
   sb('viz_snp_analysis',       anas.snp_analysis);
@@ -1877,12 +1882,10 @@ function populateForm(c) {
   const species = c.species || {};
   Object.entries(species).forEach(([k,v]) => {
     const sv2 = v || {};
-    const scgSel = sv2.scg_selector || {};
-    const scgSelSettings = scgSel.settings || {};
     const individuals = (sv2.individuals || []).join(', ');
     const references  = (sv2.references  || []).join(', ');
     const featureLibs = (sv2.feature_libraries || []).join(', ');
-    addSpecies(k, sv2.name||'', scgSelSettings.lineage||'', scgSel.reference||'', individuals, references, featureLibs, sv2.execute !== false);
+    addSpecies(k, sv2.name||'', sv2.lineage||'', sv2.scg_reference||'', individuals, references, featureLibs, sv2.execute !== false);
   });
   if (!Object.keys(species).length) addSpecies('demo','Dmel Demo');
   render();
@@ -1928,7 +1931,7 @@ function resetDefaults() {
         execute: true,
         scg_selector: { execute: true, settings: { num_top_scgs: 20, min_length_scg: 4000, max_length_scg: 8000 } },
         mapping: { settings: { mapper: 'bwa-aln' } },
-        analysis: { settings: { coverage_analysis: true, snp_analysis: false, indel_analysis: false } },
+        analysis: { execute: true, settings: { coverage_analysis: true, snp_analysis: false, indel_analysis: false } },
         sequence_overview: { settings: { mapping_quality_threshold: 5, minimum_count_snp: 5, minimum_frequency_snp: 0.1, minimum_count_indel: 3, minimum_frequency_indel: 0.01 } },
         normalization: { settings: { end_distance: 100, exclude_quantile: 25 } },
         visualization: { execute: true, settings: { individual_plots: 'plot', comparison_plots: 'plot', y_axis_log_scale_threshold_individual: 25, y_axis_log_scale_threshold_species: 25 } }

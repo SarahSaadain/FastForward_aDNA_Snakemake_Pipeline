@@ -16,9 +16,7 @@ species:
     # Required only when using the REVEAL stage with SCG auto-determination
     # (i.e. no pre-built SCG FASTA is placed in {species}/raw/reveal/scg/).
     # Find available lineages at https://busco.ezlab.org/
-    scg_selector:
-      settings:
-        lineage: "drosophilidae_odb12"
+    lineage: "drosophilidae_odb12"
 
     # Optional: limit which individuals to process (all discovered by default)
     #individuals:
@@ -38,11 +36,7 @@ species:
 # species:
 #   Dmel:
 #     name: "Drosophila melanogaster"
-#     scg_selector:
-#       settings:
-#         lineage: "drosophilidae_odb12"
+#     lineage: "drosophilidae_odb12"
 #   Equus:
 #     name: "Equus caballus"
-#     scg_selector:
-#       settings:
-#         lineage: "equidae_odb10"
+#     lineage: "equidae_odb10"

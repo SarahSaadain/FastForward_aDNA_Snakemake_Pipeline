@@ -228,21 +228,18 @@ Can also be used standalone (without feature libraries) to produce an SCG rankin
 | `execute` | `true` | Enable SCG auto-determination when no user-provided FASTA is present. |
 | `settings.mapper` | *(inherits from `reveal.mapping.settings.mapper`)* | Mapper for reads-to-SCG-library mapping. Uncomment to override. Options: `bwa-mem2`, `bwa-aln`, `minimap2`. |
 | `settings.mapper_extra_params` | *(inherits from `reveal.mapping.settings.mapper_extra_params`)* | Optional extra parameters for the mapper. Falls back to mapper-specific defaults if not set. |
-| `settings.num_top_scgs` | `20` | Number of top-ranked SCGs to retain as normalisers. Per-species setting overrides this global default. |
-| `settings.min_length_scg` | `4000` | Minimum SCG sequence length in bp to include from BUSCO results. Per-species setting overrides this. |
-| `settings.max_length_scg` | `8000` | Maximum SCG sequence length in bp to include from BUSCO results. Per-species setting overrides this. |
+| `settings.num_top_scgs` | `20` | Number of top-ranked SCGs to retain as normalisers. |
+| `settings.min_length_scg` | `4000` | Minimum SCG sequence length in bp to include from BUSCO results. |
+| `settings.max_length_scg` | `8000` | Maximum SCG sequence length in bp to include from BUSCO results. |
 | `settings.min_mapq` | `15` | Minimum mapping quality for reads in the SCG library BAM. Reads with MAPQ below this value are removed after unmapped-read removal. The same threshold is applied when computing per-contig coverage stats for ranking. Set to `0` to disable MAPQ filtering. |
 | `settings.keep_mapped_bam` | `false` | When `true`, the filtered sorted SCG BAM and its index (`{species}/processed/reveal/scg/reads_mapped/{individual}_scg_library.sorted.bam[.bai]`) are kept as permanent outputs. When `false` (default), they are marked as temporary and deleted after SCG ranking consumes them. |
 
-**Per-species SCG settings** (under `species.<key>.scg_selector`):
+**Per-species SCG settings** (directly under `species.<key>`):
 
 | Setting | Default | Description |
 |---|---|---|
-| `settings.lineage` | — | **Required** for SCG auto-determination. BUSCO lineage database name (e.g. `drosophilidae_odb12`). Browse available lineages at [busco.ezlab.org](https://busco.ezlab.org/). |
-| `reference` | auto-detect | Path to the reference genome to use for BUSCO. Required when multiple FASTA files exist in `{species}/raw/ref/`; if only one is present it is auto-detected and logged. |
-| `settings.num_top_scgs` | *(pipeline default)* | Per-species override for the number of top-ranked SCGs. |
-| `settings.min_length_scg` | *(pipeline default)* | Per-species override for minimum SCG length. |
-| `settings.max_length_scg` | *(pipeline default)* | Per-species override for maximum SCG length. |
+| `lineage` | — | **Required** for SCG auto-determination. BUSCO lineage database name (e.g. `drosophilidae_odb12`). Browse available lineages at [busco.ezlab.org](https://busco.ezlab.org/). |
+| `scg_reference` | auto-detect | Path to the reference genome to use for BUSCO. Required when multiple FASTA files exist in `{species}/raw/ref/`; if only one is present it is auto-detected and logged. |
 
 #### `mapping`
 
@@ -271,6 +268,7 @@ Competition sequences are internally suffixed with `_comp` to distinguish them f
 | Step / Setting | Default | Description |
 |---|---|---|
 | `visualization` | on | Generates SO profiles — per-position coverage, SNP, and indel information — normalised into a REVEAL directory structure for per-individual TE occupancy plots and a faceted species-level comparison plot. |
+| `analysis` | on | Produces coverage/SNP/indel stats and comparisons per `analysis.settings.*` below. |
 | `analysis.settings.coverage_analysis` | `true` | When `true`, produce per-individual and species-level coverage stats, comparisons, and plots. |
 | `analysis.settings.snp_analysis` | `false` | When `true`, produce per-individual and species-level SNP stats and comparisons. |
 | `analysis.settings.indel_analysis` | `false` | When `true`, produce per-individual and species-level indel stats and comparisons. |
@@ -306,11 +304,8 @@ Each entry under `species:` in the config corresponds to a species folder in the
 | `individuals` | *(all discovered)* | Optional list of individual IDs to process. Each ID must match the part of a read filename before the first `_` (e.g. `IND001` from `IND001_L001_R1.fastq.gz`). If omitted, all individuals discovered in `{species}/raw/reads/` are used. An error is raised if any listed ID is not found on disk. |
 | `references` | *(all discovered)* | Optional list of reference IDs to process. IDs are derived from filenames: basename without extension, dots replaced by underscores (e.g. `EquCab3.0.fna` → `EquCab3_0`). If omitted, all references in `{species}/raw/ref/` are used. An error is raised if any listed ID is not found on disk. |
 | `feature_libraries` | *(all discovered)* | Optional list of feature library IDs to use for the REVEAL stage. Same ID format as `references`. If omitted, all libraries in `{species}/raw/reveal/feature_library/` are used. An error is raised if any listed ID is not found on disk. |
-| `scg_selector.settings.lineage` | — | Required for SCG auto-determination. BUSCO lineage name (e.g. `drosophilidae_odb12`). Browse available lineages at [busco.ezlab.org](https://busco.ezlab.org/). |
-| `scg_selector.reference` | auto-detect | Explicit path to the reference FASTA used by BUSCO. Required when multiple FASTAs exist in `{species}/raw/ref/`; auto-detected and logged when exactly one is present. |
-| `scg_selector.settings.num_top_scgs` | *(pipeline default)* | Per-species override for the number of top-ranked SCGs to retain. |
-| `scg_selector.settings.min_length_scg` | *(pipeline default)* | Per-species override for minimum SCG sequence length in bp. |
-| `scg_selector.settings.max_length_scg` | *(pipeline default)* | Per-species override for maximum SCG sequence length in bp. |
+| `lineage` | — | Required for SCG auto-determination. BUSCO lineage name (e.g. `drosophilidae_odb12`). Browse available lineages at [busco.ezlab.org](https://busco.ezlab.org/). |
+| `scg_reference` | auto-detect | Explicit path to the reference FASTA used by BUSCO. Required when multiple FASTAs exist in `{species}/raw/ref/`; auto-detected and logged when exactly one is present. |
 
 When `individuals`, `references`, or `feature_libraries` are specified, the startup preview logs which items were found but not selected under **"ignored"** entries. This makes it easy to verify your selection before a full run.
 
@@ -459,6 +454,7 @@ pipeline:
         #mapper_extra_params: ""
 
     analysis:
+      execute: true
       settings:
         coverage_analysis: true
         snp_analysis: false
@@ -495,6 +491,10 @@ pipeline:
 species:
   Dmel:
     name: "Drosophila melanogaster"
+    # Required for SCG auto-determination. Find lineages at https://busco.ezlab.org/
+    lineage: "drosophilidae_odb12"
+    # Optional: explicit reference path (required only if multiple refs exist in raw/ref/)
+    #scg_reference: "/path/to/reference.fasta"
     # Optional: process only these individuals (all discovered if omitted)
     #individuals:
     #  - IND001
@@ -506,10 +506,4 @@ species:
     # Optional: use only these feature libraries (all discovered if omitted)
     #feature_libraries:
     #  - my_lib
-    scg_selector:
-      # Required for SCG auto-determination. Find lineages at https://busco.ezlab.org/
-      settings:
-        lineage: "drosophilidae_odb12"
-      # Optional: explicit reference path (required only if multiple refs exist in raw/ref/)
-      #reference: "/path/to/reference.fasta"
 ```

@@ -54,8 +54,7 @@ rule filter_top_scgs:
         relevant_contigs_bed="{species}/processed/reveal/scg/{species}_relevant_scg.bed"
     params:
         num_top_scgs=lambda wildcards: (
-            config.get("species", {}).get(wildcards.species, {}).get("scg_selector", {}).get("settings", {}).get("num_top_scgs")
-            or config.get("pipeline", {}).get("reveal", {}).get("scg_selector", {}).get("settings", {}).get("num_top_scgs", 20)
+            config.get("pipeline", {}).get("reveal", {}).get("scg_selector", {}).get("settings", {}).get("num_top_scgs", 20)
         )
     message: "Selecting top {params.num_top_scgs} SCGs for {wildcards.species}"
     shell:

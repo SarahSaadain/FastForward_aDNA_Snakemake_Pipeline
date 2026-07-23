@@ -51,12 +51,13 @@ def get_expected_output_reveal_processing(species):
         )
 
     visualization_settings = reveal_cfg.get("visualization", {}).get("settings", {})
+    analysis_active = reveal_cfg.get("analysis", {}).get("execute", True)
     analysis_settings = reveal_cfg.get("analysis", {}).get("settings", {})
     individual_plots_mode = visualization_settings.get("individual_plots", "plot")
     comparison_plots_mode = visualization_settings.get("comparison_plots", "plot")
-    coverage_analysis_active = analysis_settings.get("coverage_analysis", True)
-    snp_analysis_active = analysis_settings.get("snp_analysis", False)
-    indel_analysis_active = analysis_settings.get("indel_analysis", False)
+    coverage_analysis_active = analysis_active and analysis_settings.get("coverage_analysis", True)
+    snp_analysis_active = analysis_active and analysis_settings.get("snp_analysis", False)
+    indel_analysis_active = analysis_active and analysis_settings.get("indel_analysis", False)
 
     individuals = get_individuals_for_species(species)
 

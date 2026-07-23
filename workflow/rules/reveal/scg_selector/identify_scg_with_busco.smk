@@ -3,16 +3,7 @@
 ####################################################
 
 def _scg_setting(wildcards, key, default):
-    """Return per-species scg_selector.settings.{key}, falling back to pipeline-level then default."""
-    per_species = (
-        config.get("species", {})
-              .get(wildcards.species, {})
-              .get("scg_selector", {})
-              .get("settings", {})
-              .get(key)
-    )
-    if per_species is not None:
-        return per_species
+    """Return pipeline-level reveal.scg_selector.settings.{key}, falling back to default."""
     return (
         config.get("pipeline", {})
               .get("reveal", {})
@@ -23,17 +14,11 @@ def _scg_setting(wildcards, key, default):
 
 
 def _get_busco_lineage(wildcards):
-    lineage = (
-        config.get("species", {})
-              .get(wildcards.species, {})
-              .get("scg_selector", {})
-              .get("settings", {})
-              .get("lineage")
-    )
+    lineage = config.get("species", {}).get(wildcards.species, {}).get("lineage")
     if lineage is None:
         raise ValueError(
             f"BUSCO lineage is required for species '{wildcards.species}' but was not provided. "
-            f"Set species.{wildcards.species}.scg_selector.settings.lineage in your config."
+            f"Set species.{wildcards.species}.lineage in your config."
         )
     return lineage
 
