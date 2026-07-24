@@ -4,9 +4,9 @@ The pastForward REVEAL pipeline normalises TE and feature-library coverage again
 
 ## Overview
 
-When `pipeline.reveal_module.scg_selector.execute: true` is set and no FASTA file is found in `{species}/raw/reveal_module/scg/`, pastForward runs the SCG determination pipeline automatically. The result — a ranked list and a filtered FASTA of the top-scoring SCGs — is placed in `{species}/results/reveal_module/scg/` and fed directly into the REVEAL mapping step.
+When `pipeline.reveal_module.scg_selector.execute: true` is set and no FASTA file is found in `{species}/input/reveal_module/scg/`, pastForward runs the SCG determination pipeline automatically. The result — a ranked list and a filtered FASTA of the top-scoring SCGs — is placed in `{species}/results/reveal_module/scg/` and fed directly into the REVEAL mapping step.
 
-If a FASTA is provided in `{species}/raw/reveal_module/scg/`, this step is skipped entirely and the user-supplied file is used.
+If a FASTA is provided in `{species}/input/reveal_module/scg/`, this step is skipped entirely and the user-supplied file is used.
 
 See [config/README.md](../config/README.md) for all configuration options (`lineage`, `num_top_scgs`, `min_length_scg`, `max_length_scg`, etc.).
 

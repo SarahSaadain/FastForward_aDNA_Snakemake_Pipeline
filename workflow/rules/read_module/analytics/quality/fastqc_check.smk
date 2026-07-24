@@ -5,7 +5,7 @@
 # Rule: Run FastQC on raw reads
 rule run_fastqc_raw:
     input:
-        "{species}/raw/reads/{sample}.fastq.gz"
+        "{species}/input/reads/{sample}.fastq.gz"
     output:
         html="{species}/results/reads/reads_raw/fastqc/{sample}_raw_fastqc.html",
         zip="{species}/results/reads/reads_raw/fastqc/{sample}_raw_fastqc.zip"

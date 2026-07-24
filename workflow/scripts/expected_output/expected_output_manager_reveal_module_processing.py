@@ -39,7 +39,7 @@ def get_expected_output_reveal_module_processing(species):
         logging.warning(
             f"No SCG library available for {species} and scg_selector.execute is false. "
             f"Skipping REVEAL analysis. Provide a FASTA in "
-            f"{species}/raw/reveal_module/scg/ or set pipeline.reveal_module.scg_selector.execute: true."
+            f"{species}/input/reveal_module/scg/ or set pipeline.reveal_module.scg_selector.execute: true."
         )
         return all_inputs
 

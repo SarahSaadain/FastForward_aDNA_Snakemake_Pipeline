@@ -1019,7 +1019,7 @@
           </label>
           <label class="lbl" for="rv_exec">Execute REVEAL</label>
         </div>
-        <p class="exec-note"><span class="def-pill on">Default: ON</span>Turn off if you are not performing TE or genomic feature abundance analysis, or if the feature library and SCG library are not yet prepared. Requires both libraries placed in <code style="font-size:.68rem;background:#e9ecf0;padding:1px 4px;border-radius:3px">{species}/raw/reveal_module/</code>.</p>
+        <p class="exec-note"><span class="def-pill on">Default: ON</span>Turn off if you are not performing TE or genomic feature abundance analysis, or if the feature library and SCG library are not yet prepared. Requires both libraries placed in <code style="font-size:.68rem;background:#e9ecf0;padding:1px 4px;border-radius:3px">{species}/input/reveal_module/</code>.</p>
 
         <div id="rv_body">
 
@@ -1037,8 +1037,8 @@
             <div class="adv-content">
             <div class="step-desc">
               <span class="tool-pill green">BUSCO</span>
-              Automatically identifies <strong>single-copy genes (SCGs)</strong> from the reference genome via BUSCO when no user-provided SCG FASTA is placed in <code>{species}/raw/reveal_module/scg/</code>. SCGs act as coverage normalisers for the REVEAL pipeline. Skipped automatically when a user-provided file is found <em>or</em> when no BUSCO lineage is configured for the species (set per species in the Species section above).
-              <div class="when-hint"><span class="def-pill on">Default: ON</span>Can also be used standalone (without any feature library) to produce an SCG ranking table as the sole output. Set the <strong>BUSCO Lineage</strong> per species in the Species section; if exactly one reference exists in <code>{species}/raw/ref/</code> it is auto-detected, otherwise specify it explicitly.</div>
+              Automatically identifies <strong>single-copy genes (SCGs)</strong> from the reference genome via BUSCO when no user-provided SCG FASTA is placed in <code>{species}/input/reveal_module/scg/</code>. SCGs act as coverage normalisers for the REVEAL pipeline. Skipped automatically when a user-provided file is found <em>or</em> when no BUSCO lineage is configured for the species (set per species in the Species section above).
+              <div class="when-hint"><span class="def-pill on">Default: ON</span>Can also be used standalone (without any feature library) to produce an SCG ranking table as the sole output. Set the <strong>BUSCO Lineage</strong> per species in the Species section; if exactly one reference exists in <code>{species}/input/ref/</code> it is auto-detected, otherwise specify it explicitly.</div>
             </div>
             <div class="subsection-body open">
               <div class="field">
@@ -1147,7 +1147,7 @@
                   <input type="checkbox" id="rv_comp_mapping" onchange="render()">
                   <span class="slider"></span>
                 </label>
-                <label class="lbl" for="rv_comp_mapping">Enable competitive mapping <span style="color:var(--text-muted);font-size:.75em">(default: off — place a FASTA in <code>{species}/raw/reveal_module/competition/</code>; sequences suffixed <code>_comp</code> are removed after mapping)</span></label>
+                <label class="lbl" for="rv_comp_mapping">Enable competitive mapping <span style="color:var(--text-muted);font-size:.75em">(default: off — place a FASTA in <code>{species}/input/reveal_module/competition/</code>; sequences suffixed <code>_comp</code> are removed after mapping)</span></label>
               </div>
               <div class="field" style="margin-top:8px">
                 <label>Min MAPQ for SCG reads</label>

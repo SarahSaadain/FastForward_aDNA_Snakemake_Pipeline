@@ -25,9 +25,9 @@ The project contains folders for different species, which each contain the raw d
 The species folders should be placed in the root folder of your pipeline.
 
 #### Providing Raw Data
-The pipeline supports automatically moving the raw reads to the `<species>/raw/reads/` folder as well as the reference to the `<species>/raw/ref/` folder. Simply provide the files in the `<species>` folder. Alternatively, you can manually move the files to the respective folders.
-  - provide the raw reads in `<species>/raw/reads/` folder
-  - provide the reference in `<species>/raw/ref/` folder
+The pipeline supports automatically moving the raw reads to the `<species>/input/reads/` folder as well as the reference to the `<species>/input/ref/` folder. Simply provide the files in the `<species>` folder. Alternatively, you can manually move the files to the respective folders.
+  - provide the raw reads in `<species>/input/reads/` folder
+  - provide the reference in `<species>/input/ref/` folder
 
 When adding a new species, make sure to 
 - the species folder should be placed in the root folder of your pipeline
@@ -215,11 +215,11 @@ Optionally removes or extracts reads that did not map to the reference. Default:
 
 TE and genomic feature abundance analysis — maps to a combined SCG + feature library for depth-normalised comparisons.
 
-Place feature libraries in `{species}/raw/reveal_module/feature_library/` and, optionally, a pre-built SCG FASTA in `{species}/raw/reveal_module/scg/`. If no SCG FASTA is provided and `scg_selector.execute` is `true`, SCGs are determined automatically via BUSCO (requires a lineage configured per species). To use competitive mapping, place a single competition FASTA in `{species}/raw/reveal_module/competition/`.
+Place feature libraries in `{species}/input/reveal_module/feature_library/` and, optionally, a pre-built SCG FASTA in `{species}/input/reveal_module/scg/`. If no SCG FASTA is provided and `scg_selector.execute` is `true`, SCGs are determined automatically via BUSCO (requires a lineage configured per species). To use competitive mapping, place a single competition FASTA in `{species}/input/reveal_module/competition/`.
 
 #### `scg_selector`
 
-Automatically identifies single-copy genes (SCGs) from the reference genome using BUSCO. SCGs serve as coverage normalisers for the REVEAL pipeline. Skipped automatically when a user-provided SCG FASTA is already present in `{species}/raw/reveal_module/scg/` or when no BUSCO lineage is configured for the species.
+Automatically identifies single-copy genes (SCGs) from the reference genome using BUSCO. SCGs serve as coverage normalisers for the REVEAL pipeline. Skipped automatically when a user-provided SCG FASTA is already present in `{species}/input/reveal_module/scg/` or when no BUSCO lineage is configured for the species.
 
 Can also be used standalone (without feature libraries) to produce an SCG ranking table as the sole output.
 
@@ -239,7 +239,7 @@ Can also be used standalone (without feature libraries) to produce an SCG rankin
 | Setting | Default | Description |
 |---|---|---|
 | `lineage` | — | **Required** for SCG auto-determination. BUSCO lineage database name (e.g. `drosophilidae_odb12`). Browse available lineages at [busco.ezlab.org](https://busco.ezlab.org/). |
-| `scg_reference` | auto-detect | Path to the reference genome to use for BUSCO. Required when multiple FASTA files exist in `{species}/raw/ref/`; if only one is present it is auto-detected and logged. |
+| `scg_reference` | auto-detect | Path to the reference genome to use for BUSCO. Required when multiple FASTA files exist in `{species}/input/ref/`; if only one is present it is auto-detected and logged. |
 
 #### `mapping`
 
@@ -255,13 +255,13 @@ Can also be used standalone (without feature libraries) to produce an SCG rankin
 
 Competitive mapping adds a competition FASTA to the combined reference (alongside SCG and feature library sequences) before mapping. Reads mapping to competition sequences are removed after mapping, so only SCG and feature library reads reach downstream analysis. This is useful for reducing false-positive mappings when reads originate from competing sources (e.g. a host genome fragment).
 
-To use competitive mapping, place exactly one FASTA file in `{species}/raw/reveal_module/competition/`. The pipeline auto-discovers it — no path needs to be specified in the config.
+To use competitive mapping, place exactly one FASTA file in `{species}/input/reveal_module/competition/`. The pipeline auto-discovers it — no path needs to be specified in the config.
 
 Competition sequences are internally suffixed with `_comp` to distinguish them from SCG (`_scg`) and feature library (`_fle`) sequences.
 
 | Setting | Default | Description |
 |---|---|---|
-| `settings.competitive_mapping` | `false` | When `true`, the FASTA in `{species}/raw/reveal_module/competition/` is included in the combined reference. Reads mapping to `_comp` sequences are filtered out after mapping. |
+| `settings.competitive_mapping` | `false` | When `true`, the FASTA in `{species}/input/reveal_module/competition/` is included in the combined reference. Reads mapping to `_comp` sequences are filtered out after mapping. |
 
 #### Other `reveal_module` steps
 
@@ -301,11 +301,11 @@ Each entry under `species:` in the config corresponds to a species folder in the
 |---|---|---|
 | `execute` | `true` | Whether to process this species. Set to `false` to skip all pipeline stages for this species without removing it from the config. Skipped species are listed in the startup preview log. |
 | `name` | — | Human-readable species name used in reports. |
-| `individuals` | *(all discovered)* | Optional list of individual IDs to process. Each ID must match the part of a read filename before the first `_` (e.g. `IND001` from `IND001_L001_R1.fastq.gz`). If omitted, all individuals discovered in `{species}/raw/reads/` are used. An error is raised if any listed ID is not found on disk. |
-| `references` | *(all discovered)* | Optional list of reference IDs to process. IDs are derived from filenames: basename without extension, dots replaced by underscores (e.g. `EquCab3.0.fna` → `EquCab3_0`). If omitted, all references in `{species}/raw/ref/` are used. An error is raised if any listed ID is not found on disk. |
-| `feature_libraries` | *(all discovered)* | Optional list of feature library IDs to use for the REVEAL stage. Same ID format as `references`. If omitted, all libraries in `{species}/raw/reveal_module/feature_library/` are used. An error is raised if any listed ID is not found on disk. |
+| `individuals` | *(all discovered)* | Optional list of individual IDs to process. Each ID must match the part of a read filename before the first `_` (e.g. `IND001` from `IND001_L001_R1.fastq.gz`). If omitted, all individuals discovered in `{species}/input/reads/` are used. An error is raised if any listed ID is not found on disk. |
+| `references` | *(all discovered)* | Optional list of reference IDs to process. IDs are derived from filenames: basename without extension, dots replaced by underscores (e.g. `EquCab3.0.fna` → `EquCab3_0`). If omitted, all references in `{species}/input/ref/` are used. An error is raised if any listed ID is not found on disk. |
+| `feature_libraries` | *(all discovered)* | Optional list of feature library IDs to use for the REVEAL stage. Same ID format as `references`. If omitted, all libraries in `{species}/input/reveal_module/feature_library/` are used. An error is raised if any listed ID is not found on disk. |
 | `lineage` | — | Required for SCG auto-determination. BUSCO lineage name (e.g. `drosophilidae_odb12`). Browse available lineages at [busco.ezlab.org](https://busco.ezlab.org/). |
-| `scg_reference` | auto-detect | Explicit path to the reference FASTA used by BUSCO. Required when multiple FASTAs exist in `{species}/raw/ref/`; auto-detected and logged when exactly one is present. |
+| `scg_reference` | auto-detect | Explicit path to the reference FASTA used by BUSCO. Required when multiple FASTAs exist in `{species}/input/ref/`; auto-detected and logged when exactly one is present. |
 
 When `individuals`, `references`, or `feature_libraries` are specified, the startup preview logs which items were found but not selected under **"ignored"** entries. This makes it easy to verify your selection before a full run.
 
@@ -493,7 +493,7 @@ species:
     name: "Drosophila melanogaster"
     # Required for SCG auto-determination. Find lineages at https://busco.ezlab.org/
     lineage: "drosophilidae_odb12"
-    # Optional: explicit reference path (required only if multiple refs exist in raw/ref/)
+    # Optional: explicit reference path (required only if multiple refs exist in input/ref/)
     #scg_reference: "/path/to/reference.fasta"
     # Optional: process only these individuals (all discovered if omitted)
     #individuals:

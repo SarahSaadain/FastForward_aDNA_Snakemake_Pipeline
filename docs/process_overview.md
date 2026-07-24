@@ -125,7 +125,7 @@ This module quantifies the relative abundance and activity of transposable eleme
 
 ### SCG Determination
 
-Single-copy genes can either be provided directly or determined automatically from the reference genome. If a FASTA file is placed under `{species}/raw/reveal_module/scg/`, it is used as-is. If no file is present and **`pipeline.reveal_module.scg_selector.execute`** is `true` (the default), the pipeline runs an automatic SCG determination step — provided a BUSCO lineage is configured for the species under **`species.<key>.scg_selector.settings.lineage`**.
+Single-copy genes can either be provided directly or determined automatically from the reference genome. If a FASTA file is placed under `{species}/input/reveal_module/scg/`, it is used as-is. If no file is present and **`pipeline.reveal_module.scg_selector.execute`** is `true` (the default), the pipeline runs an automatic SCG determination step — provided a BUSCO lineage is configured for the species under **`species.<key>.scg_selector.settings.lineage`**.
 
 Automatic SCG determination runs in three steps. First, **BUSCO** is run against the reference genome in genome mode to identify Complete single-copy genes within the configured lineage database. BUSCO's coordinates are used to extract each gene's nucleotide sequence from the reference, applying minimum (**`settings.min_length_scg`**, default 4,000 bp) and maximum (**`settings.max_length_scg`**, default 8,000 bp) length filters. Second, the merged per-individual reads are mapped to this candidate SCG library and per-position coverage statistics are computed for every SCG in every individual. Third, SCGs are scored on three criteria — breadth of coverage, evenness of depth, and consistency of depth relative to the global SCG population — and the top-ranked sequences (**`settings.num_top_scgs`**, default 20) are selected. The ranking table is written to `{species}/results/reveal_module/scg/` as a permanent result; the filtered FASTA is passed to the Library Preparation step.
 
@@ -133,7 +133,7 @@ The mapper used for SCG read mapping is configured via **`pipeline.reveal_module
 
 ### Library Preparation
 
-The REVEAL pipeline requires a **feature library** containing the TE or other feature sequences of interest, placed under `{species}/raw/reveal_module/feature_library/`. Both `.fna`, `.fasta`, and `.fa` formats are supported. The SCG library is either user-provided (placed under `{species}/raw/reveal_module/scg/`) or produced by the SCG Determination step described above.
+The REVEAL pipeline requires a **feature library** containing the TE or other feature sequences of interest, placed under `{species}/input/reveal_module/feature_library/`. Both `.fna`, `.fasta`, and `.fa` formats are supported. The SCG library is either user-provided (placed under `{species}/input/reveal_module/scg/`) or produced by the SCG Determination step described above.
 
 Before mapping, sequence headers in both libraries are standardised and suffixed to make TE and SCG sequences distinguishable in the alignments — `_fle` is appended to every feature library header, and `_scg` to every SCG header. The two processed libraries are then concatenated into a single combined FASTA, which is indexed in preparation for mapping using the indexer that matches the configured mapper. Multiple feature libraries per species are supported; each produces an entirely independent set of downstream results.
 
