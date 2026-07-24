@@ -178,7 +178,7 @@ Set its `execute` flag to `false` in `config/config.yaml`. For example, to skip 
 ```yaml
 pipeline:
   read_module:
-    contamination_analysis:
+    contamination:
       execute: false
 ```
 

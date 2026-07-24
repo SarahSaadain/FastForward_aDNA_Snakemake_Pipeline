@@ -43,7 +43,7 @@ Two R-based plots are generated from the read count statistics: one showing tota
 
 ### Contamination Analysis
 
-The Past Forward aDNA Pipeline supports two contamination detection tools, both operating on the quality-filtered reads. The entire contamination analysis block is controlled by **`pipeline.read_module.contamination_analysis.execute`**, and each tool can additionally be toggled individually.
+The Past Forward aDNA Pipeline supports two contamination detection tools, both operating on the quality-filtered reads. The entire contamination analysis block is controlled by **`pipeline.read_module.contamination.execute`**, and each tool can additionally be toggled individually.
 
 **ECMSD** assesses contamination by mapping reads against a curated mitochondrial reference database and reporting the proportional contribution of different taxa. It is enabled via **`tools.ecmsd.execute`**. The path to the ECMSD executable is set with **`tools.ecmsd.settings.executable`** and the conda environment can be customised via **`settings.conda_env`**. Several analysis parameters are configurable: **`settings.Binsize`** (default 1000) controls the read binning resolution, **`settings.RMUS_threshold`** (default 0.15) filters out marginal hits, **`settings.mapping_quality`** (default 20) sets the minimum mapping quality for a read to be considered, and **`settings.taxonomic_hierarchy`** (default `species`) determines at which taxonomic level results are reported. Results from all samples belonging to the same individual are merged into a combined summary file.
 

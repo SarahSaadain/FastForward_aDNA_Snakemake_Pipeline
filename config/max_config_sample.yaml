@@ -56,7 +56,7 @@ pipeline:
         min_length: 30
 
     # Contamination analysis
-    contamination_analysis:
+    contamination:
       # When true, this sub-stage will be executed (Default: true)
       execute: true
       tools:

@@ -143,7 +143,7 @@ Controls FastQC + MultiQC quality reports at each processing stage and read coun
 | `settings.min_quality` | `15` | Minimum base quality score for quality filtering. |
 | `settings.min_length` | `30` | Minimum read length after quality filtering. |
 
-#### `contamination_analysis`
+#### `contamination`
 
 Both tools operate on quality-filtered reads and can be toggled independently.
 
@@ -368,7 +368,7 @@ pipeline:
         min_quality: 15
         min_length: 30
 
-    contamination_analysis:
+    contamination:
       execute: true
       tools:
         ecmsd:

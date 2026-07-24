@@ -1501,7 +1501,7 @@ function buildYAML() {
   kv(8, 'min_quality', gn('qf_minq'));
   kv(8, 'min_length',  gn('qf_minl'));
   p(0, '');
-  p(4, 'contamination_analysis:');
+  p(4, 'contamination:');
   kv(6, 'execute', gb('ca_exec'));
   p(6, 'tools:');
   p(8, 'ecmsd:');
@@ -1783,7 +1783,7 @@ function populateForm(c) {
   const qf = rrp.quality_filtering || {};
   sb('qf_exec', qf.execute); dot('qf_exec','d_qf');
   sv('qf_minq',(qf.settings||{}).min_quality); sv('qf_minl',(qf.settings||{}).min_length);
-  const ca = rrp.contamination_analysis || {};
+  const ca = rrp.contamination || {};
   const cat = ca.tools || {};
   const cen = cat.centrifuge || {};
   const ces = cen.settings || {};
@@ -1911,7 +1911,7 @@ function resetDefaults() {
         analysis: { execute: true, settings: { multiqc_raw_reads: true, multiqc_trimmed_reads: true, multiqc_quality_filtered_reads: true, multiqc_merged_reads: true, create_plots: true } },
         adapter_removal: { execute: true, settings: { min_quality: 0, min_length: 0 } },
         quality_filtering: { execute: true, settings: { min_quality: 15, min_length: 30 } },
-        contamination_analysis: {
+        contamination: {
           execute: true,
           tools: {
             ecmsd: { execute: true, settings: { binsize: 1000, rmus_threshold: 0.15, mapping_quality: 20, taxonomic_hierarchy: 'species' } },
