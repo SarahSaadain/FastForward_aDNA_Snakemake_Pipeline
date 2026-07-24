@@ -4,10 +4,10 @@ rule analyze_bam_with_qualimap:
         # captured, even when filter_unmapped_reads is enabled with action="remove".
         bam=_pre_filter_bam
     output:
-        directory("{species}/results/{reference}/analytics/individual_level/{individual}/qualimap"),
-        "{species}/results/{reference}/analytics/individual_level/{individual}/qualimap/qualimapReport.html"
+        directory("{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/qualimap"),
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/qualimap/qualimapReport.html"
     log:
-        "{species}/results/{reference}/analytics/individual_level/{individual}/{individual}_qualimap.log",
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/{individual}_qualimap.log",
     # optional specification of memory usage of the JVM that snakemake will respect with global
     # resource restrictions (https://snakemake.readthedocs.io/en/latest/snakefiles/rules.html#resources)
     # and which can be used to request RAM during cluster job submission as `{resources.mem_mb}`:

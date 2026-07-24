@@ -242,7 +242,7 @@ rule dedup_merge_cluster_jsons:
     input:
         dedup_merge_split_jsons_input
     output:
-        json="{species}/results/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json"
+        json="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json"
     message:
         "Merging DeDup JSON files for individual {wildcards.individual} in species {wildcards.species}"
     conda:

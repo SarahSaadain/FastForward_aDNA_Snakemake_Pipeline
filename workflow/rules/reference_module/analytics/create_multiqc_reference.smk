@@ -33,20 +33,20 @@ def create_multiqc_reference_input(wildcards):
 
             if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("execute", True) == True:
                 if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("c_curve", True) == True:
-                    file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt")
+                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt")
                 if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("qualimap", True) == True:
-                    file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}")
+                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}")
                 if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("samtools_stats", True) == True:
-                    file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats")
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv")
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv")
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_analysis.tsv")
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.tsv")
+                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_analysis.tsv")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.tsv")
 
             if config.get("pipeline", {}).get("reference_module", {}).get("damage_rescaling", {}).get("execute", True) == True:
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt")
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt")
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt")
 
     logger.debug(f"MultiQC reference input files for species {species}, reference {reference}: {file_list}")
 
@@ -58,20 +58,20 @@ def create_multiqc_reference_input(wildcards):
 rule create_multiqc_reference:
     input:
         create_multiqc_reference_input,
-        config="{species}/results/{reference}/analytics/species_level/{species}_{reference}/{species}_{reference}_multiqc_config.yaml"
+        config="{species}/results/reference_module/{reference}/analytics/species_level/{species}_{reference}/{species}_{reference}_multiqc_config.yaml"
     output:
-        "{species}/results/{reference}/analytics/species_level/{species}_{reference}_multiqc.html",
-        directory("{species}/results/{reference}/analytics/species_level/{species}_{reference}/multiqc_data"),
+        "{species}/results/reference_module/{reference}/analytics/species_level/{species}_{reference}_multiqc.html",
+        directory("{species}/results/reference_module/{reference}/analytics/species_level/{species}_{reference}/multiqc_data"),
     params:
         extra="--verbose",
         use_input_files_only=True,
     log:
-        "{species}/results/{reference}/analytics/species_level/{species}_{reference}/multiqc.log",
+        "{species}/results/reference_module/{reference}/analytics/species_level/{species}_{reference}/multiqc.log",
     wrapper:
         "v9.3.0/bio/multiqc"
 
 rule create_multiqc_reference_config:
     output:
-        "{species}/results/{reference}/analytics/species_level/{species}_{reference}/{species}_{reference}_multiqc_config.yaml"
+        "{species}/results/reference_module/{reference}/analytics/species_level/{species}_{reference}/{species}_{reference}_multiqc_config.yaml"
     script:
         "../../../scripts/summary_module/create_multiqc_species_individual_script_create_multiqc_species_individual_config.py"

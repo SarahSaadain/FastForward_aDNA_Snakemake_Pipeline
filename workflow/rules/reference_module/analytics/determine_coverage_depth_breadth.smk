@@ -22,7 +22,7 @@ rule analyze_mapped_reads_coverage:
     input:
         depth_txt="{species}/processed/reference_module/{reference}/coverage/{individual}/{individual}_{reference}_depth.tsv"
     output:
-        analysis="{species}/results/{reference}/analytics/individual_level/{individual}/coverage/{individual}_{reference}_coverage_analysis.csv"
+        analysis="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/coverage/{individual}_{reference}_coverage_analysis.csv"
     message: "Analyzing coverage depth and breadth for {input.depth_txt}"
     conda:
         "../../../envs/python_and_r.yaml",
@@ -33,14 +33,14 @@ rule analyze_mapped_reads_coverage:
 rule combine_analyzed_mapped_reads_coverage:
     input:
         analysis = lambda wildcards: expand(
-            "{species}/results/{reference}/analytics/individual_level/{individual}/coverage/{individual}_{reference}_coverage_analysis.csv",
+            "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/coverage/{individual}_{reference}_coverage_analysis.csv",
             species=wildcards.species,
             reference=wildcards.reference,
             individual=get_individuals_for_species(wildcards.species),
         )
     output:
-        combined="{species}/results/{reference}/analytics/species_level/{species}/coverage/{reference}_combined_coverage_analysis.csv",
-        detailed="{species}/results/{reference}/analytics/species_level/{species}/coverage/{reference}_combined_coverage_analysis_detailed.csv"
+        combined="{species}/results/reference_module/{reference}/analytics/species_level/{species}/coverage/{reference}_combined_coverage_analysis.csv",
+        detailed="{species}/results/reference_module/{reference}/analytics/species_level/{species}/coverage/{reference}_combined_coverage_analysis_detailed.csv"
     message: "Combining coverage analysis files for species {params.species}"
     conda:
         "../../../envs/python_and_r.yaml",

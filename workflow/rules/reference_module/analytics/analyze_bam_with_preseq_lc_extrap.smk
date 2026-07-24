@@ -8,9 +8,9 @@ rule preseq_c_curve:
     input:
         bam="{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted.bam"
     output:
-        txt="{species}/results/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt"
+        txt="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt"
     log:
-        "{species}/results/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.log"
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.log"
     threads: 1
     conda:
         "../../../envs/preseq.yaml"

@@ -45,26 +45,26 @@ def create_multiqc_species_individual_input(wildcards):
         for reference in references:
             
             if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("execute", True) == True:
-                #file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.lc_extrap")
+                #file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.lc_extrap")
                 if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("c_curve", True) == True:
-                    file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt")
+                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt")
                 if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("qualimap", True) == True:
-                    file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}")
+                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}")
                 if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("samtools_stats", True) == True:
-                    file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats")
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv")
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv")
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_analysis.tsv")
-                # file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_depth_coverage_avg.csv")
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.tsv")
+                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_analysis.tsv")
+                # file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_depth_coverage_avg.csv")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.tsv")
             
             if config.get("pipeline", {}).get("reference_module", {}).get("damage_rescaling", {}).get("execute", True) == True:
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt")
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt")
-                file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt")
+                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt")
             
             # if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
-            #     file_list.append(f"{species}/results/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json")
+            #     file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json")
 
     logger.debug(f"MultiQC input files for species {species}: {file_list}")
 

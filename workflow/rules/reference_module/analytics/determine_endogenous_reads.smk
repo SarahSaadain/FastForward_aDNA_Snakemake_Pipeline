@@ -5,9 +5,9 @@
 # Rule: Determine endogenous reads from BAM stats
 rule determine_mapped_reads_endogenous:
     input:
-        stats="{species}/results/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats"
+        stats="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats"
     output:
-        csv="{species}/results/{reference}/analytics/individual_level/{individual}/endogenous/{individual}_{reference}.endogenous.csv"
+        csv="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/endogenous/{individual}_{reference}.endogenous.csv"
     message: "Determining endogenous reads for {input.stats}"
     log:
         "{species}/processed/reference_module/{reference}/analytics/{individual}/endogenous/{individual}_{reference}_endogenous.log"
@@ -20,13 +20,13 @@ rule determine_mapped_reads_endogenous:
 rule combine_determine_mapped_reads_endogenous:
     input:
         lambda wildcards: expand(
-            "{species}/results/{reference}/analytics/individual_level/{individual}/endogenous/{individual}_{reference}.endogenous.csv",
+            "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/endogenous/{individual}_{reference}.endogenous.csv",
             species=wildcards.species,
             reference=wildcards.reference,
             individual=get_individuals_for_species(wildcards.species),
         )
     output:
-        "{species}/results/{reference}/analytics/species_level/{species}/endogenous/{reference}_endogenous.csv"
+        "{species}/results/reference_module/{reference}/analytics/species_level/{species}/endogenous/{reference}_endogenous.csv"
     message: "Combining endogenous reads for species {wildcards.species}"
     log:
         "{species}/processed/reference_module/{reference}/analytics/{species}/endogenous/{reference}_endogenous.log"

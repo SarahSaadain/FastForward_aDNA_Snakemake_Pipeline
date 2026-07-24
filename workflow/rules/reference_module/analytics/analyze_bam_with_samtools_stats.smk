@@ -9,7 +9,7 @@ rule analyze_bam_with_samtools_stats:
         # captured, even when filter_unmapped_reads is enabled with action="remove".
         bam=_pre_filter_bam
     output:
-        "{species}/results/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats"
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats"
     message: "Generating samtools stats for {input.bam}"
     log:
         "{species}/processed/reference_module/{reference}/statistics/{individual}/{individual}_{reference}_final.bam.stats.log"

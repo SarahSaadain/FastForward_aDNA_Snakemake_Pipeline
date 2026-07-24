@@ -33,23 +33,23 @@ rule analyze_mapdamage_and_rescale_bam:
         bam = analyze_mapdamage_and_rescale_bam_input_bam,
         ref = "{species}/input/reference_module/{reference}.fa"
     output:
-        directory           = directory("{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/"),
-        GtoA3p              ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.3pGtoA_freq.txt",
-        CtoT5p              ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.5pCtoT_freq.txt",
-        dnacomp             ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.dnacomp.txt",
-        lg_dist             ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.lgdistribution.txt",
-        misinc              ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.misincorporation.txt",
-        plot_misinc         ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Fragmisincorporation_plot.pdf",
-        plot_len            ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Length_plot.pdf",
-        stats_ref           ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.dnacomp_genome.csv",
-        stats_prob          ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Stats_out_MCMC_correct_prob.csv",
-        stats_hist          ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Stats_out_MCMC_hist.pdf",
-        stats_iter          ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Stats_out_MCMC_iter.csv",
-        stats_summ          ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Stats_out_MCMC_iter_summ_stat.csv",
-        stats_plot_freq     ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Stats_out_MCMC_post_pred.pdf",
-        stats_plot_trace    ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Stats_out_MCMC_trace.pdf",
-        bam                 =temp("{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.bam"),
-        log                 ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Runtime_log.txt",
+        directory           = directory("{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/"),
+        GtoA3p              ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.3pGtoA_freq.txt",
+        CtoT5p              ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.5pCtoT_freq.txt",
+        dnacomp             ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.dnacomp.txt",
+        lg_dist             ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.lgdistribution.txt",
+        misinc              ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.misincorporation.txt",
+        plot_misinc         ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Fragmisincorporation_plot.pdf",
+        plot_len            ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Length_plot.pdf",
+        stats_ref           ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.dnacomp_genome.csv",
+        stats_prob          ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Stats_out_MCMC_correct_prob.csv",
+        stats_hist          ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Stats_out_MCMC_hist.pdf",
+        stats_iter          ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Stats_out_MCMC_iter.csv",
+        stats_summ          ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Stats_out_MCMC_iter_summ_stat.csv",
+        stats_plot_freq     ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Stats_out_MCMC_post_pred.pdf",
+        stats_plot_trace    ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Stats_out_MCMC_trace.pdf",
+        bam                 =temp("{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.bam"),
+        log                 ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.Runtime_log.txt",
     params:
         extra="",  # optional parameters for mapdamage2 (except -i, -r, -d, --rescale)
     message:
@@ -63,9 +63,9 @@ rule analyze_mapdamage_and_rescale_bam:
 # 3 Sort BAM
 rule sort_rescaled_bam:
     input:
-        "{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.bam"
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.bam"
     output:
-        temp("{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam")
+        temp("{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam")
     log:
         "{species}/processed/reference_module/{reference}/analytics/{individual}/mapdamage/{individual}_{reference}_sorted.bam.log"
     message:
@@ -78,9 +78,9 @@ rule sort_rescaled_bam:
 # 4 Index BAM
 rule index_rescaled_bam:
     input:
-        "{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam"
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam"
     output:
-        temp("{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam.bai")
+        temp("{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam.bai")
     log:
         "{species}/processed/reference_module/{reference}/analytics/{individual}/mapdamage/{individual}_{reference}_sorted.bam.bai.log"
     message:
@@ -92,8 +92,8 @@ rule index_rescaled_bam:
 # Rule: Move rescaled BAM and index to processed directory
 rule move_rescaled_bam:
     input:
-        sorted_bam="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam",
-        bam_index ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam.bai"
+        sorted_bam="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam",
+        bam_index ="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}_sorted.bam.bai"
     output:
         sorted_bam=temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled.bam"),
         bam_index =temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled.bam.bai")
