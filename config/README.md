@@ -231,7 +231,7 @@ Can also be used standalone (without feature libraries) to produce an SCG rankin
 | `settings.num_top_scgs` | `20` | Number of top-ranked SCGs to retain as normalisers. |
 | `settings.min_length_scg` | `4000` | Minimum SCG sequence length in bp to include from BUSCO results. |
 | `settings.max_length_scg` | `8000` | Maximum SCG sequence length in bp to include from BUSCO results. |
-| `settings.min_mapq` | `15` | Minimum mapping quality for reads in the SCG library BAM. Reads with MAPQ below this value are removed after unmapped-read removal. The same threshold is applied when computing per-contig coverage stats for ranking. Set to `0` to disable MAPQ filtering. |
+| `settings.min_mapq` | `0` | Minimum mapping quality for reads in the SCG library BAM. Reads with MAPQ below this value are removed after unmapped-read removal. The same threshold is applied when computing per-contig coverage stats for ranking. Set to `0` (default) to disable MAPQ filtering. |
 | `settings.keep_mapped_bam` | `false` | When `true`, the filtered sorted SCG BAM and its index (`{species}/processed/reveal_module/scg/reads_mapped/{individual}_scg_library.sorted.bam[.bai]`) are kept as permanent outputs. When `false` (default), they are marked as temporary and deleted after SCG ranking consumes them. |
 
 **Per-species SCG settings** (directly under `species.<key>`):

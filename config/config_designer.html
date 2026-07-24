@@ -802,8 +802,8 @@
               <div class="field">
                 <label>Mapper</label>
                 <select id="rp_mapper" onchange="mapperInfo('rp_mapper','rp_minfo'); render()">
-                  <option value="bwa-aln" selected>bwa-aln</option>
-                  <option value="bwa-mem2">bwa-mem2</option>
+                  <option value="bwa-aln">bwa-aln</option>
+                  <option value="bwa-mem2" selected>bwa-mem2</option>
                   <option value="minimap2">minimap2</option>
                 </select>
                 <div class="mapper-info" id="rp_minfo">Classic seed-and-extend, well-suited for short aDNA reads.</div>
@@ -1083,7 +1083,7 @@
               <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin:14px 0 8px;border-top:1px solid var(--border);padding-top:12px">BAM filtering</p>
               <div class="field">
                 <label>Min MAPQ (SCG BAM)</label>
-                <input type="number" id="scg_min_mapq" value="15" min="0" oninput="render()">
+                <input type="number" id="scg_min_mapq" value="0" min="0" oninput="render()">
                 <span style="font-size:.68rem;color:var(--text-muted);margin-top:3px;display:block">Reads with MAPQ below this value are removed from the SCG BAM. Also applied when computing coverage stats. Set to 0 (default) to disable.</span>
               </div>
               <div class="toggle-wrap" style="margin-top:8px">
@@ -1116,8 +1116,8 @@
               <div class="field">
                 <label>Mapper</label>
                 <select id="rv_mapper" onchange="mapperInfo('rv_mapper','rv_minfo'); render()">
-                  <option value="bwa-aln" selected>bwa-aln</option>
-                  <option value="bwa-mem2">bwa-mem2</option>
+                  <option value="bwa-aln">bwa-aln</option>
+                  <option value="bwa-mem2" selected>bwa-mem2</option>
                   <option value="minimap2">minimap2</option>
                 </select>
                 <div class="mapper-info" id="rv_minfo">Classic seed-and-extend, well-suited for short aDNA reads.</div>
@@ -1914,14 +1914,14 @@ function resetDefaults() {
         contamination: {
           execute: true,
           tools: {
-            ecmsd: { execute: true, settings: { binsize: 1000, rmus_threshold: 0.15, mapping_quality: 20, taxonomic_hierarchy: 'species' } },
+            ecmsd: { execute: true, settings: { cov_threshold: 50, top_n: 25, mapping_quality: 20, taxonomic_hierarchy: 'species' } },
             centrifuge: { execute: true, settings: { include_human_taxid: true } }
           }
         },
       },
       reference_module: {
         execute: true,
-        mapping: { settings: { mapper: 'bwa-aln' } },
+        mapping: { settings: { mapper: 'bwa-mem2' } },
         deduplication: { execute: false, settings: { min_contigs_per_cluster: 1, max_contigs_per_cluster: 500 } },
         damage_rescaling: { execute: true },
         filter_unmapped_reads: { execute: false, settings: { action: 'keep' } },
@@ -1930,7 +1930,7 @@ function resetDefaults() {
       reveal_module: {
         execute: true,
         scg_selector: { execute: true, settings: { num_top_scgs: 20, min_length_scg: 4000, max_length_scg: 8000 } },
-        mapping: { settings: { mapper: 'bwa-aln' } },
+        mapping: { settings: { mapper: 'bwa-mem2' } },
         analysis: { execute: true, settings: { coverage_analysis: true, snp_analysis: false, indel_analysis: false } },
         sequence_overview: { settings: { mapping_quality_threshold: 5, minimum_count_snp: 5, minimum_frequency_snp: 0.1, minimum_count_indel: 3, minimum_frequency_indel: 0.01 } },
         normalization: { settings: { end_distance: 100, exclude_quantile: 25 } },

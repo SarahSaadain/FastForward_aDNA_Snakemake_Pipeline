@@ -310,15 +310,15 @@ You can even share the same Centrifuge index across different projects or specie
 A FASTA file of genomic features sequences (e.g. transposable element, genes, ...) you want to quantify. Place it under `<species>/input/reveal_module/feature_library/`. Multiple feature libraries per species are supported and each is processed independently.
 
 **Q: Do I need to provide SCG sequences?**
-Not necessarily. If a FASTA file is placed under `<species>/input/reveal_module/scg/` it is used directly. Otherwise, if `pipeline.reveal_module.scg_selector.execute: true` (the default) and a BUSCO lineage is configured under `species.<key>.scg_selector.settings.lineage`, pastForward determines SCGs automatically from the reference genome.
+Not necessarily. If a FASTA file is placed under `<species>/input/reveal_module/scg/` it is used directly. Otherwise, if `pipeline.reveal_module.scg_selector.execute: true` (the default) and a BUSCO lineage is configured under `species.<key>.lineage`, pastForward determines SCGs automatically from the reference genome.
 
 **Q: How are SCGs selected automatically?**
 BUSCO identifies complete single-copy genes in the reference genome. Candidate sequences are filtered by length (`min_length_scg` / `max_length_scg`, defaults 4,000–8,000 bp), then scored on coverage breadth, depth evenness, and cross-individual consistency. The top-ranked sequences (`num_top_scgs`, default 20) are selected. See [scg_determination.md](scg_determination.md) for the full scoring methodology.
 
 **Q: How does pastForward determine the reference genome for determining SCGs?**
-pastForward will try to use the reference from the folder `<species>/input/reference_module/`. If it doesn't exist, it will fall back to using the reference specified in `species.<key>.reference`. If neither is available, pastForward will raise an error since a reference genome is required for SCG selection.
+pastForward will use the reference specified in `species.<key>.scg_reference` if set. Otherwise, it auto-detects the reference from `<species>/input/reference_module/`, provided exactly one reference file is present there.
 
-In case multiple references are available in `<species>/input/reference_module/`, pastForward will raise an error asking you to specify which one to use for SCG selection by setting `species.<key>.reference` to the filename of the desired reference.
+In case multiple references are available in `<species>/input/reference_module/`, pastForward will raise an error asking you to specify which one to use for SCG selection by setting `species.<key>.scg_reference` to the path of the desired reference.
 
 **Q: What does the copy number fold-change flag mean in the REVEAL output?**
 Sequences are flagged if the log₂ fold-change in median coverage across individuals exceeds `CN_FC` (default ≥ 2) or the absolute difference exceeds `CN_ABS` (default Δ ≥ 10). Flagged sequences are sorted to the top of the comparison table and written to a companion `_flagged_seqids.tsv` file.

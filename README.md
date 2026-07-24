@@ -73,10 +73,10 @@ If you want to restart the pipeline, because it has crashed or was terminated, y
 
 pastForward generates a MultiQC report for:
 - each species (including all samples from this species, to compare the results across all samples)
-   - **Location**: `{species}/results/summary/individual_level/{individual}_multiqc.html`
+   - **Location**: `{species}/results/summary/species_level/{species}_multiqc.overall.html`
 
 - each individual sample
-   - **Location**: `{species}/results/summary/species_level/{species}_multiqc.overall.html`
+   - **Location**: `{species}/results/summary/individual_level/{individual}_multiqc.html`
 
 The reports include a comprehensive summary of reads before and after trimming, contamination analysis, coverage analysis, deduplication and damage rescaling. The reports are essential for assessing the quality of the sequenced reads and for making decisions about the need of additional library preparation.
 

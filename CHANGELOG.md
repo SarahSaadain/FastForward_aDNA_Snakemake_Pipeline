@@ -9,12 +9,16 @@ All notable changes to this project will be documented in this file.
 
 ### Breaking Changes
 
-- **Module rename**: The `dynamics` pipeline stage is now `reveal_module` (`pipeline.dynamics` → `pipeline.reveal_module`; `{species}/raw|processed/results/reveal_module/` → `{species}/raw|processed/results/reveal_module/`)
+- **Module rename**: The `dynamics` pipeline stage is now `reveal_module` (`pipeline.dynamics` → `pipeline.reveal_module`; `{species}/raw|processed/results/dynamics/` → `{species}/raw|processed/results/reveal_module/`)
 - **Config structure**: The former `seqvista` sub-section is now `visualization` (`pipeline.reveal_module.seqvista` → `pipeline.reveal_module.visualization`); output subfolder renamed to match (`.../reveal_module/<feature_library>/seqvista/` → `.../reveal_module/<feature_library>/visualization/`)
 - **Config structure**: `coverage_analysis`, `snp_analysis`, and `indel_analysis` moved out of `visualization.settings` into their own sibling section, `pipeline.reveal_module.analysis.settings`
 - **Config structure**: bam2so thresholds (`mapping_quality_threshold`, `minimum_count_snp`, `minimum_frequency_snp`, `minimum_count_indel`, `minimum_frequency_indel`) moved into a new `pipeline.reveal_module.sequence_overview.settings` section; normalize-so thresholds (`end_distance`, `exclude_quantile`) moved into a new `pipeline.reveal_module.normalization.settings` section — `visualization.settings` now holds only plot-rendering options
 - **REVEAL as external dependency**: The vendored SeqVista scripts under `workflow/scripts/dynamics/seqvista/` have been removed. Rules now call the `REVEAL` CLI from the `reveal-tools` bioconda package (new `workflow/envs/reveal_module.yaml` conda environment) instead of invoking local copies of `bam2so.py`, `normalize-so.py`, `estimate-so.py`, `so2plotable.py`, `plot.py`, and the stats/compare scripts
 - **Module rename (naming consistency)**: The remaining three pipeline stages are renamed to match the `_module` convention: `raw_reads_processing` → `read_module`, `reference_processing` → `reference_module`, `summary_processing` → `summary_module`. Rule/script directories under `workflow/rules/` and `workflow/scripts/` are renamed accordingly (e.g. `raw_read/` → `read_module/`, `reads_to_reference/` → `reference_module/`, `processing_summary/` → `summary_module/`); existing configs must update the corresponding `pipeline.*` keys.
+- **Folder structure**: The species input root is now `{species}/input/` (previously `{species}/raw/`); read files now live under `{species}/input/reads_module/` (previously `input/reads/`) and reference genomes under `{species}/input/reference_module/` (previously `input/ref/`)
+- **Folder structure**: `reference_module` results are now namespaced under `{species}/results/reference_module/{reference}/...` (previously `{species}/results/{reference}/...`); the final per-individual BAM (`_final.bam`) is now written to `results/reference_module/{reference}/mapped/` instead of `processed/reference_module/{reference}/mapped/`
+- **Folder structure**: Contamination analysis outputs moved to `{species}/results/reads_module/contamination/` (previously `{species}/results/contamination_analysis/`)
+- **Config structure**: `pipeline.read_module.contamination_analysis` renamed to `pipeline.read_module.contamination`
 
 ### Other Changes
 
