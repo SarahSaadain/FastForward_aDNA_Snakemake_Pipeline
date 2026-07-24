@@ -1025,10 +1025,10 @@
               </div>
               <div class="toggle-wrap" style="margin-top:10px;border-top:1px solid #e0e0e0;padding-top:10px">
                 <label class="toggle">
-                  <input type="checkbox" id="cov_c_curve" checked onchange="render()">
+                  <input type="checkbox" id="cov_preseq_complexitiy_curve" checked onchange="render()">
                   <span class="slider"></span>
                 </label>
-                <label class="lbl" for="cov_c_curve">Include Preseq c_curve in MultiQC reports</label>
+                <label class="lbl" for="cov_preseq_complexitiy_curve">Include Preseq complexitiy_curve in MultiQC reports</label>
               </div>
               <div class="toggle-wrap" style="margin-top:6px">
                 <label class="toggle">
@@ -1625,7 +1625,7 @@ function buildYAML() {
   kv(8, 'create_plots', gb('rp_create_plots'));
   kv(8, 'individual_multiqc', gb('cov_individual'));
   kv(8, 'species_multiqc', gb('cov_species'));
-  kv(8, 'c_curve', gb('cov_c_curve'));
+  kv(8, 'preseq_complexitiy_curve', gb('cov_preseq_complexitiy_curve'));
   kv(8, 'qualimap', gb('cov_qualimap'));
   kv(8, 'samtools_stats', gb('cov_samtools_stats'));
   kv(8, 'qualimap_mem_mb', gn('cov_qualimap_mem'));
@@ -1911,7 +1911,7 @@ function populateForm(c) {
   sb('cov_exec',      (rp.analysis||{}).execute);                  dot('cov_exec','d_cov');
   sb('cov_individual',    rpas.individual_multiqc);
   sb('cov_species',       rpas.species_multiqc);
-  sb('cov_c_curve',       rpas.c_curve);
+  sb('cov_preseq_complexitiy_curve', rpas.preseq_complexitiy_curve);
   sb('cov_qualimap',      rpas.qualimap);
   sb('cov_samtools_stats',rpas.samtools_stats);
   sv('cov_qualimap_mem',  rpas.qualimap_mem_mb);
@@ -2011,7 +2011,7 @@ function resetDefaults() {
         deduplication: { execute: false, settings: { min_contigs_per_cluster: 1, max_contigs_per_cluster: 500 } },
         damage_rescaling: { execute: true },
         filter_unmapped_reads: { execute: false, settings: { action: 'keep' } },
-        analysis: { execute: true, settings: { damage_analysis: true, create_plots: true, individual_multiqc: true, species_multiqc: true, c_curve: true, qualimap: true, samtools_stats: true } }
+        analysis: { execute: true, settings: { damage_analysis: true, create_plots: true, individual_multiqc: true, species_multiqc: true, preseq_complexitiy_curve: true, qualimap: true, samtools_stats: true } }
       },
       reveal_module: {
         execute: true,

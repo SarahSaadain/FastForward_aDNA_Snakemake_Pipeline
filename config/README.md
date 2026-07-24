@@ -213,7 +213,7 @@ Optionally removes or extracts reads that did not map to the reference. Default:
 | `analysis.settings.create_plots` | on | Generate coverage breadth/depth and endogenous reads plots per reference. |
 | `analysis.settings.individual_multiqc` | on | Generate a per-individual BAM MultiQC report. |
 | `analysis.settings.species_multiqc` | on | Generate a per-reference MultiQC report aggregating all individuals. |
-| `analysis.settings.c_curve` | on | Include Preseq c_curve complexity data in MultiQC reports. |
+| `analysis.settings.preseq_complexitiy_curve` | on | Include Preseq complexitiy_curve complexity data in MultiQC reports. |
 | `analysis.settings.qualimap` | on | Include Qualimap BAM QC data in MultiQC reports. |
 | `analysis.settings.samtools_stats` | on | Include samtools stats data in MultiQC reports. |
 | `analysis.settings.qualimap_mem_mb` | `4096` | Memory (MB) requested from the cluster scheduler for Qualimap. Increase for large reference genomes/BAM files; decrease for small ones to free up cluster resources. |
@@ -448,7 +448,7 @@ pipeline:
         create_plots: true
         individual_multiqc: true
         species_multiqc: true
-        c_curve: true
+        preseq_complexitiy_curve: true
         qualimap: true
         samtools_stats: true
         # Optional: Qualimap cluster memory request in MB (Default: 4096)

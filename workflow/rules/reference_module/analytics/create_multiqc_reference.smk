@@ -32,7 +32,7 @@ def create_multiqc_reference_input(wildcards):
         if config.get("pipeline", {}).get("reference_module", {}).get("execute", False) == True:
 
             if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("execute", True) == True:
-                if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("c_curve", True) == True:
+                if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("preseq_complexitiy_curve", True) == True:
                     file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt")
                 if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("qualimap", True) == True:
                     file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}")

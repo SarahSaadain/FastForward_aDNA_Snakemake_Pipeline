@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - **Folder structure**: Contamination analysis outputs moved to `{species}/results/read_module/contamination/` (previously `{species}/results/contamination_analysis/`)
 - **Config structure**: `pipeline.read_module.contamination_analysis` renamed to `pipeline.read_module.contamination`
 - **Folder structure (naming consistency)**: The `read_module` data folders under `{species}/input/`, `{species}/processed/`, and `{species}/results/` were briefly named `reads_module` during the rename above; renamed back to `read_module` to match the `pipeline.read_module` config key and the `workflow/rules/read_module/` directory
+- **Config structure**: `pipeline.reference_module.analysis.settings.c_curve` renamed to `preseq_complexitiy_curve`; the Snakemake rule `preseq_c_curve` is now `preseq_complexitiy_curve` (output file names and the underlying `preseq c_curve` command are unchanged)
 
 ### Other Changes
 

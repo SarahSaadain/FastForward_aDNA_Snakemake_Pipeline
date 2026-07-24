@@ -4,7 +4,7 @@
 # “ERROR: Saturation expected at double initial sample size. Unable to extrapolate”.
 # Library complexity estimates from deduplicated or rescaled BAMs are invalid and cannot be recovered.
 
-rule preseq_c_curve:
+rule preseq_complexitiy_curve:
     input:
         bam="{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted.bam"
     output:

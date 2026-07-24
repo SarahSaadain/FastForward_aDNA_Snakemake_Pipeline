@@ -177,8 +177,8 @@ pipeline:
         individual_multiqc: true
         # When true, generate a per-reference MultiQC report across all individuals (Default: true)
         species_multiqc: true
-        # When true, include Preseq c_curve in MultiQC reports (Default: true)
-        c_curve: true
+        # When true, include Preseq complexitiy_curve in MultiQC reports (Default: true)
+        preseq_complexitiy_curve: true
         # When true, include Qualimap in MultiQC reports (Default: true)
         qualimap: true
         # When true, include samtools stats in MultiQC reports (Default: true)
