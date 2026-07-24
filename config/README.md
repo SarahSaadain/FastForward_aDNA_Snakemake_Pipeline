@@ -25,8 +25,8 @@ The project contains folders for different species, which each contain the raw d
 The species folders should be placed in the root folder of your pipeline.
 
 #### Providing Raw Data
-The pipeline supports automatically moving the raw reads to the `<species>/input/reads/` folder as well as the reference to the `<species>/input/reference_module/` folder. Simply provide the files in the `<species>` folder. Alternatively, you can manually move the files to the respective folders.
-  - provide the raw reads in `<species>/input/reads/` folder
+The pipeline supports automatically moving the raw reads to the `<species>/input/reads_module/` folder as well as the reference to the `<species>/input/reference_module/` folder. Simply provide the files in the `<species>` folder. Alternatively, you can manually move the files to the respective folders.
+  - provide the raw reads in `<species>/input/reads_module/` folder
   - provide the reference in `<species>/input/reference_module/` folder
 
 When adding a new species, make sure to 
@@ -301,7 +301,7 @@ Each entry under `species:` in the config corresponds to a species folder in the
 |---|---|---|
 | `execute` | `true` | Whether to process this species. Set to `false` to skip all pipeline stages for this species without removing it from the config. Skipped species are listed in the startup preview log. |
 | `name` | — | Human-readable species name used in reports. |
-| `individuals` | *(all discovered)* | Optional list of individual IDs to process. Each ID must match the part of a read filename before the first `_` (e.g. `IND001` from `IND001_L001_R1.fastq.gz`). If omitted, all individuals discovered in `{species}/input/reads/` are used. An error is raised if any listed ID is not found on disk. |
+| `individuals` | *(all discovered)* | Optional list of individual IDs to process. Each ID must match the part of a read filename before the first `_` (e.g. `IND001` from `IND001_L001_R1.fastq.gz`). If omitted, all individuals discovered in `{species}/input/reads_module/` are used. An error is raised if any listed ID is not found on disk. |
 | `references` | *(all discovered)* | Optional list of reference IDs to process. IDs are derived from filenames: basename without extension, dots replaced by underscores (e.g. `EquCab3.0.fna` → `EquCab3_0`). If omitted, all references in `{species}/input/reference_module/` are used. An error is raised if any listed ID is not found on disk. |
 | `feature_libraries` | *(all discovered)* | Optional list of feature library IDs to use for the REVEAL stage. Same ID format as `references`. If omitted, all libraries in `{species}/input/reveal_module/feature_library/` are used. An error is raised if any listed ID is not found on disk. |
 | `lineage` | — | Required for SCG auto-determination. BUSCO lineage name (e.g. `drosophilidae_odb12`). Browse available lineages at [busco.ezlab.org](https://busco.ezlab.org/). |

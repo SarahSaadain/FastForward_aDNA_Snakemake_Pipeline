@@ -36,7 +36,7 @@ def get_files_in_folder_matching_pattern(folder: str, pattern: str) -> list:
 # Get all raw read files for a given species    
 def get_read_files_for_species(species: str) -> list[str]:
 
-    read_folder = f"{species}/input/reads"
+    read_folder = f"{species}/input/reads_module"
 
     try:   
         logger.debug(f"Looking for read files in {read_folder} for species {species}.")
@@ -101,7 +101,7 @@ def get_raw_reads_for_sample(species, sample):
     # turn read paths into file names only
     read_files = [os.path.basename(f) for f in read_files]
 
-    reads_dir = f"{species}/input/reads"
+    reads_dir = f"{species}/input/reads_module"
  
     # R1
     base_r1 = f"{sample}_R1"
