@@ -28,12 +28,12 @@ def create_multiqc_species_individual_input(wildcards):
                   
                 for sample in samples_of_individual:
                     raw_reads = get_raw_reads_for_sample(species, sample)
-                    file_list.append(f"{species}/results/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv")
+                    file_list.append(f"{species}/results/reads_module/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv")
                     
 
             if config.get("pipeline", {}).get("read_module", {}).get("contamination_analysis", {}).get("tools", {}).get("ecmsd", {}).get("execute", True) == True:
                 
-                file_list.append(f"{species}/results/contamination_analysis/ecmsd/{individual}_Mito_summary_hits_combined.tsv")
+                file_list.append(f"{species}/results/reads_module/contamination_analysis/ecmsd/{individual}_Mito_summary_hits_combined.tsv")
 
         # merged reads fastqc
         if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("execute", True) == True and config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_merged_reads", True) == True:

@@ -70,7 +70,7 @@ def get_expected_output_contamination_ecmsd(species):
 
     for individual in get_individuals_for_species(species):
         for sample in get_samples_for_species_individual(species, individual):
-            expected_outputs.append(f"{species}/results/contamination_analysis/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.txt")
+            expected_outputs.append(f"{species}/results/reads_module/contamination_analysis/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.txt")
     
     return expected_outputs
 
@@ -86,9 +86,9 @@ def get_expected_output_contamination_centrifuge(species):
 
     for individual in get_individuals_for_species(species):
         for sample in get_samples_for_species_individual(species, individual):
-            expected_outputs.append(f"{species}/results/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv")
-            expected_outputs.append(f"{species}/results/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_taxon_counts.tsv")
-            expected_outputs.append(f"{species}/results/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv.gz")
+            expected_outputs.append(f"{species}/results/reads_module/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv")
+            expected_outputs.append(f"{species}/results/reads_module/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_taxon_counts.tsv")
+            expected_outputs.append(f"{species}/results/reads_module/contamination_analysis/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv.gz")
 
     return expected_outputs
 
