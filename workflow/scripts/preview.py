@@ -110,7 +110,7 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
                         else:
                             lines.append(
                                 f"    SCG Libraries: (will be auto-determined via BUSCO [{_lineage}] — "
-                                f"WARNING: no reference found in {sname}/input/ref/)"
+                                f"WARNING: no reference found in {sname}/input/reference_module/)"
                             )
                     except Exception as e:
                         lines.append(f"    SCG Libraries: (will be auto-determined via BUSCO [{_lineage}] — WARNING: {e})")

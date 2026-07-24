@@ -166,7 +166,7 @@ def get_individuals_for_species(species):
 # (internal) Discover all reference files from disk without applying any config filter
 def _discover_all_reference_file_list_for_species(species: str) -> list[tuple[str, str]]:
     species_folder = species
-    reference_folder = f"{species}/input/ref"
+    reference_folder = f"{species}/input/reference_module"
     try:
         logger.debug(f"Looking for reference files in {reference_folder} for species {species}.")
         reference_files = get_files_in_folder_matching_pattern(reference_folder, "*.fna")
@@ -386,7 +386,7 @@ def get_scg_library_file_for_species_and_library(species, library_id):
 
 # -----------------------------------------------------------------------------------------------
 # Resolve the reference genome path that SCG determination (BUSCO) will use.
-# Priority: species.{species}.scg_reference → auto-detect from {species}/input/ref/
+# Priority: species.{species}.scg_reference → auto-detect from {species}/input/reference_module/
 # Raises ValueError when 0 or >1 references are found without an explicit config override.
 def get_scg_determination_reference_path(species):
     import logging as _log
@@ -399,7 +399,7 @@ def get_scg_determination_reference_path(species):
     if len(refs) == 0:
         raise ValueError(
             f"No reference genome found for SCG determination of species '{species}'. "
-            f"Place a FASTA in {species}/input/ref/ or set "
+            f"Place a FASTA in {species}/input/reference_module/ or set "
             f"species.{species}.scg_reference in config."
         )
 

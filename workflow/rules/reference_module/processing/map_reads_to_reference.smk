@@ -15,7 +15,7 @@ if _ref_mapper == "minimap2":
     rule map_reads_to_reference_minimap2:
         input:
             query=["{species}/processed/reads_module/reads_merged/{individual}.fastq.gz"],
-            target="{species}/input/ref/{reference}.mmi",
+            target="{species}/input/reference_module/{reference}.mmi",
         output:
             temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_unsorted.bam")
         log:
@@ -33,7 +33,7 @@ elif _ref_mapper == "bwa-aln":
     rule align_reads_to_reference_bwa_aln:
         input:
             fastq="{species}/processed/reads_module/reads_merged/{individual}.fastq.gz",
-            idx=multiext("{species}/input/ref/{reference}.fa", ".amb", ".ann", ".bwt", ".pac", ".sa"),
+            idx=multiext("{species}/input/reference_module/{reference}.fa", ".amb", ".ann", ".bwt", ".pac", ".sa"),
         output:
             temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}.sai"),
         log:
@@ -48,7 +48,7 @@ elif _ref_mapper == "bwa-aln":
         input:
             fastq="{species}/processed/reads_module/reads_merged/{individual}.fastq.gz",
             sai="{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}.sai",
-            idx=multiext("{species}/input/ref/{reference}.fa", ".amb", ".ann", ".bwt", ".pac", ".sa"),
+            idx=multiext("{species}/input/reference_module/{reference}.fa", ".amb", ".ann", ".bwt", ".pac", ".sa"),
         output:
             temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_unsorted.bam")
         log:
@@ -61,7 +61,7 @@ else:
     rule map_reads_to_reference_bwa_mem2:
         input:
             reads=["{species}/processed/reads_module/reads_merged/{individual}.fastq.gz"],
-            idx=multiext("{species}/input/ref/{reference}.fa", ".0123", ".amb", ".ann", ".bwt.2bit.64", ".pac"),
+            idx=multiext("{species}/input/reference_module/{reference}.fa", ".0123", ".amb", ".ann", ".bwt.2bit.64", ".pac"),
         output:
             temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_unsorted.bam")
         log:

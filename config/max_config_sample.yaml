@@ -327,7 +327,7 @@ species:
     # Example: "drosophilidae_odb12", "diptera_odb10", "insecta_odb10"
     lineage: "drosophilidae_odb12"
     # Optional: exact path to the reference genome to use for SCG determination.
-    # Required when multiple FASTA files exist in {species}/input/ref/.
+    # Required when multiple FASTA files exist in {species}/input/reference_module/.
     # If omitted and exactly one reference is present, it is used automatically
     # and an info message is written to the log.
     #scg_reference: "/path/to/reference.fasta"
@@ -342,7 +342,7 @@ species:
     #  - IND002
 
     # Optional: restrict which reference genomes to use for this species.
-    # If omitted, all references discovered in {species}/input/ref/ are used.
+    # If omitted, all references discovered in {species}/input/reference_module/ are used.
     # Each entry must match the reference ID derived from the filename:
     # basename without extension, dots replaced by underscores
     # (e.g. "genome.fna" → "genome", "EquCab3.0.fna" → "EquCab3_0").

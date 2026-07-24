@@ -31,7 +31,7 @@ def analyze_mapdamage_and_rescale_bam_input_bam_index(wildcards):
 rule analyze_mapdamage_and_rescale_bam:
     input:
         bam = analyze_mapdamage_and_rescale_bam_input_bam,
-        ref = "{species}/input/ref/{reference}.fa"
+        ref = "{species}/input/reference_module/{reference}.fa"
     output:
         directory           = directory("{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/"),
         GtoA3p              ="{species}/results/{reference}/analytics/individual_level/{individual}/mapdamage/{individual}_{reference}.3pGtoA_freq.txt",

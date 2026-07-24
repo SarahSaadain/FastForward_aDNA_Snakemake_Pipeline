@@ -39,7 +39,7 @@ Yes. pastForward auto-detects single-end vs. paired-end by checking whether an R
 Yes. All samples belonging to the same individual (same prefix before the first underscore) are merged into a single FASTQ during the "Merge by Individual" step. You can place all run files in `<species>/input/reads/` and they will be processed and concatenated automatically.
 
 **Q: Where do I put the reference genome?**
-Place it in `<species>/input/ref/`. pastForward accepts `.fa`, `.fasta`, and `.fna` extensions and normalises them internally. Multiple reference genomes per species are supported — each is processed independently.
+Place it in `<species>/input/reference_module/`. pastForward accepts `.fa`, `.fasta`, and `.fna` extensions and normalises them internally. Multiple reference genomes per species are supported — each is processed independently.
 
 **Q: Can I point to files outside the species folder without moving them?**
 The recommended approach is to place files directly in the species folder. pastForward will detect and move them to the correct subfolders automatically on the first run.
@@ -51,10 +51,10 @@ Yes. pastForward will detect if files are symlinks and will use them directly wi
 Yes. Each species is processed independently, so you can have as many species as needed within the same project. Just add additional entries under the `species` section in the config.yaml and place their respective data in separate subfolders under `<species>/input/`.
 
 **Q: Do I need to provide a separate reference genome for each species?**
-Yes. Each species entry in the config must have its own reference genome placed in `<species>/input/ref/`. pastForward processes each species independently, so it requires a reference genome for each one to perform mapping and downstream analyses.
+Yes. Each species entry in the config must have its own reference genome placed in `<species>/input/reference_module/`. pastForward processes each species independently, so it requires a reference genome for each one to perform mapping and downstream analyses.
 
 **Q: Can I use multiple references for the same species?**
-Yes. pastForward supports multiple references per species. Just place each reference file in `<species>/input/ref/` and pastForward will process them independently, generating separate outputs for each reference.
+Yes. pastForward supports multiple references per species. Just place each reference file in `<species>/input/reference_module/` and pastForward will process them independently, generating separate outputs for each reference.
 
 **Q: Does the reference need to be a reference genome?**
 No. The reference can be any FASTA file of sequences you want to map to and analyse. While a reference genome is typical, you could also use a transcriptome assembly, a custom set of contigs, or even a single sequence if that suits your research question.
@@ -87,7 +87,7 @@ species:
       - genome
 ```
 
-Each entry must match the reference ID derived from the filename: basename without extension, with dots replaced by underscores (e.g. `EquCab3.0.fna` → `EquCab3_0`). If omitted, all references in `{species}/input/ref/` are used.
+Each entry must match the reference ID derived from the filename: basename without extension, with dots replaced by underscores (e.g. `EquCab3.0.fna` → `EquCab3_0`). If omitted, all references in `{species}/input/reference_module/` are used.
 
 **Q: Can I use only specific feature libraries for the REVEAL stage?**
 Yes. Add a `feature_libraries` list under the species entry:
@@ -316,9 +316,9 @@ Not necessarily. If a FASTA file is placed under `<species>/input/reveal_module/
 BUSCO identifies complete single-copy genes in the reference genome. Candidate sequences are filtered by length (`min_length_scg` / `max_length_scg`, defaults 4,000–8,000 bp), then scored on coverage breadth, depth evenness, and cross-individual consistency. The top-ranked sequences (`num_top_scgs`, default 20) are selected. See [scg_determination.md](scg_determination.md) for the full scoring methodology.
 
 **Q: How does pastForward determine the reference genome for determining SCGs?**
-pastForward will try to use the reference from the folder `<species>/input/ref/`. If it doesn't exist, it will fall back to using the reference specified in `species.<key>.reference`. If neither is available, pastForward will raise an error since a reference genome is required for SCG selection.
+pastForward will try to use the reference from the folder `<species>/input/reference_module/`. If it doesn't exist, it will fall back to using the reference specified in `species.<key>.reference`. If neither is available, pastForward will raise an error since a reference genome is required for SCG selection.
 
-In case multiple references are available in `<species>/input/ref/`, pastForward will raise an error asking you to specify which one to use for SCG selection by setting `species.<key>.reference` to the filename of the desired reference.
+In case multiple references are available in `<species>/input/reference_module/`, pastForward will raise an error asking you to specify which one to use for SCG selection by setting `species.<key>.reference` to the filename of the desired reference.
 
 **Q: What does the copy number fold-change flag mean in the REVEAL output?**
 Sequences are flagged if the log₂ fold-change in median coverage across individuals exceeds `CN_FC` (default ≥ 2) or the absolute difference exceeds `CN_ABS` (default Δ ≥ 10). Flagged sequences are sorted to the top of the comparison table and written to a companion `_flagged_seqids.tsv` file.

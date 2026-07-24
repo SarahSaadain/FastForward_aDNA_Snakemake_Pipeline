@@ -25,9 +25,9 @@ The project contains folders for different species, which each contain the raw d
 The species folders should be placed in the root folder of your pipeline.
 
 #### Providing Raw Data
-The pipeline supports automatically moving the raw reads to the `<species>/input/reads/` folder as well as the reference to the `<species>/input/ref/` folder. Simply provide the files in the `<species>` folder. Alternatively, you can manually move the files to the respective folders.
+The pipeline supports automatically moving the raw reads to the `<species>/input/reads/` folder as well as the reference to the `<species>/input/reference_module/` folder. Simply provide the files in the `<species>` folder. Alternatively, you can manually move the files to the respective folders.
   - provide the raw reads in `<species>/input/reads/` folder
-  - provide the reference in `<species>/input/ref/` folder
+  - provide the reference in `<species>/input/reference_module/` folder
 
 When adding a new species, make sure to 
 - the species folder should be placed in the root folder of your pipeline
@@ -239,7 +239,7 @@ Can also be used standalone (without feature libraries) to produce an SCG rankin
 | Setting | Default | Description |
 |---|---|---|
 | `lineage` | — | **Required** for SCG auto-determination. BUSCO lineage database name (e.g. `drosophilidae_odb12`). Browse available lineages at [busco.ezlab.org](https://busco.ezlab.org/). |
-| `scg_reference` | auto-detect | Path to the reference genome to use for BUSCO. Required when multiple FASTA files exist in `{species}/input/ref/`; if only one is present it is auto-detected and logged. |
+| `scg_reference` | auto-detect | Path to the reference genome to use for BUSCO. Required when multiple FASTA files exist in `{species}/input/reference_module/`; if only one is present it is auto-detected and logged. |
 
 #### `mapping`
 
@@ -302,10 +302,10 @@ Each entry under `species:` in the config corresponds to a species folder in the
 | `execute` | `true` | Whether to process this species. Set to `false` to skip all pipeline stages for this species without removing it from the config. Skipped species are listed in the startup preview log. |
 | `name` | — | Human-readable species name used in reports. |
 | `individuals` | *(all discovered)* | Optional list of individual IDs to process. Each ID must match the part of a read filename before the first `_` (e.g. `IND001` from `IND001_L001_R1.fastq.gz`). If omitted, all individuals discovered in `{species}/input/reads/` are used. An error is raised if any listed ID is not found on disk. |
-| `references` | *(all discovered)* | Optional list of reference IDs to process. IDs are derived from filenames: basename without extension, dots replaced by underscores (e.g. `EquCab3.0.fna` → `EquCab3_0`). If omitted, all references in `{species}/input/ref/` are used. An error is raised if any listed ID is not found on disk. |
+| `references` | *(all discovered)* | Optional list of reference IDs to process. IDs are derived from filenames: basename without extension, dots replaced by underscores (e.g. `EquCab3.0.fna` → `EquCab3_0`). If omitted, all references in `{species}/input/reference_module/` are used. An error is raised if any listed ID is not found on disk. |
 | `feature_libraries` | *(all discovered)* | Optional list of feature library IDs to use for the REVEAL stage. Same ID format as `references`. If omitted, all libraries in `{species}/input/reveal_module/feature_library/` are used. An error is raised if any listed ID is not found on disk. |
 | `lineage` | — | Required for SCG auto-determination. BUSCO lineage name (e.g. `drosophilidae_odb12`). Browse available lineages at [busco.ezlab.org](https://busco.ezlab.org/). |
-| `scg_reference` | auto-detect | Explicit path to the reference FASTA used by BUSCO. Required when multiple FASTAs exist in `{species}/input/ref/`; auto-detected and logged when exactly one is present. |
+| `scg_reference` | auto-detect | Explicit path to the reference FASTA used by BUSCO. Required when multiple FASTAs exist in `{species}/input/reference_module/`; auto-detected and logged when exactly one is present. |
 
 When `individuals`, `references`, or `feature_libraries` are specified, the startup preview logs which items were found but not selected under **"ignored"** entries. This makes it easy to verify your selection before a full run.
 
@@ -493,7 +493,7 @@ species:
     name: "Drosophila melanogaster"
     # Required for SCG auto-determination. Find lineages at https://busco.ezlab.org/
     lineage: "drosophilidae_odb12"
-    # Optional: explicit reference path (required only if multiple refs exist in input/ref/)
+    # Optional: explicit reference path (required only if multiple refs exist in input/reference_module/)
     #scg_reference: "/path/to/reference.fasta"
     # Optional: process only these individuals (all discovered if omitted)
     #individuals:
