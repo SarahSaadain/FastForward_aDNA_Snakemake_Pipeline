@@ -638,6 +638,27 @@
                   <p class="hint">Default: 30 bp — the standard minimum for reliable mapping. Increase for longer-fragment aDNA; decrease only if fragments are genuinely shorter (e.g. highly degraded specimens).</p>
                 </div>
               </div>
+              <div class="opt-group">
+                <div class="opt-header" id="qf_adv_hdr">
+                  <input type="checkbox" id="qf_adv_en" onchange="optToggle('qf_adv_en','qf_adv_body','qf_adv_hdr'); render()">
+                  <label for="qf_adv_en">Advanced filtering thresholds</label>
+                  <span class="opt-tag">optional</span>
+                </div>
+                <div class="opt-body" id="qf_adv_body">
+                  <div class="field-row">
+                    <div class="field">
+                      <label>Unqualified % Limit</label>
+                      <input type="number" id="qf_unqual" value="40" min="0" max="100" oninput="render()">
+                      <p class="hint">Default: 40. Max % of unqualified bases allowed in a read.</p>
+                    </div>
+                    <div class="field">
+                      <label>N Base Limit</label>
+                      <input type="number" id="qf_nbase" value="5" min="0" oninput="render()">
+                      <p class="hint">Default: 5. Max number of N bases allowed in a read.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             </div><!-- /.adv-content -->
           </div>
@@ -886,6 +907,11 @@
                 <input type="number" id="dedup_max" value="500" min="1" oninput="render()">
                 <p class="hint">Default: 500. Lower values use less memory per cluster but increase runtime due to more merge operations. Reduce (e.g. to 100) only if deduplication is failing on a large, fragmented reference genome.</p>
               </div>
+              <div class="field">
+                <label>Memory (MB)</label>
+                <input type="number" id="dedup_mem" value="20000" min="1" oninput="render()">
+                <p class="hint">Default: 20000. DeDup's JVM heap (<code>-Xms</code>/<code>-Xmx</code>), also requested from the cluster scheduler as <code>resources.mem_mb</code>. Increase for large reference genomes/BAM files; decrease for small ones to free up cluster resources.</p>
+              </div>
             </div>
             </div><!-- /.adv-content -->
           </div>
@@ -1010,6 +1036,11 @@
                   <span class="slider"></span>
                 </label>
                 <label class="lbl" for="cov_qualimap">Include Qualimap in MultiQC reports</label>
+              </div>
+              <div class="field" style="margin-top:6px;margin-left:44px;max-width:220px">
+                <label>Qualimap Memory (MB)</label>
+                <input type="number" id="cov_qualimap_mem" value="4096" min="1" oninput="render()">
+                <p class="hint">Default: 4096. Memory requested from the cluster scheduler for Qualimap. Increase for large reference genomes/BAM files; decrease for small ones to free up cluster resources.</p>
               </div>
               <div class="toggle-wrap" style="margin-top:6px">
                 <label class="toggle">
@@ -1265,6 +1296,11 @@
                 <label>Y-axis log scale threshold &mdash; species</label>
                 <input type="number" id="viz_log_thresh_sp" value="25" min="1" oninput="render()">
                 <span style="font-size:.68rem;color:var(--text-muted);margin-top:3px;display:block">Y-axis value above which the species comparison plot switches to log scale (Default: 25)</span>
+              </div>
+              <div class="field">
+                <label>Visualization bin size</label>
+                <input type="text" id="viz_bin_size" value="target:5000" oninput="render()">
+                <span style="font-size:.68rem;color:var(--text-muted);margin-top:3px;display:block">Bin size for per-position coverage plotables (Default: "target:5000"). Fixed integer (e.g. "100"), "target:N" to auto-compute bin_size = max(1, seq_len // N) per sequence, or length-threshold rules (e.g. "10000:1,100000:10,default:500")</span>
               </div>
 
               <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin:14px 0 8px;border-top:1px solid var(--border);padding-top:12px">Coverage analysis (bam2so)</p>
@@ -1531,6 +1567,10 @@ function buildYAML() {
   p(6, 'settings:');
   kv(8, 'min_quality', gn('qf_minq'));
   kv(8, 'min_length',  gn('qf_minl'));
+  if (gb('qf_adv_en')) {
+    kv(8, 'unqualified_percent_limit', gn('qf_unqual'));
+    kv(8, 'n_base_limit', gn('qf_nbase'));
+  }
   p(0, '');
   p(4, 'contamination:');
   kv(6, 'execute', gb('ca_exec'));
@@ -1568,6 +1608,7 @@ function buildYAML() {
   p(6, 'settings:');
   kv(8, 'min_contigs_per_cluster', gn('dedup_min'));
   kv(8, 'max_contigs_per_cluster', gn('dedup_max'));
+  kv(8, 'mem_mb', gn('dedup_mem'));
   p(0, '');
   p(4, 'damage_rescaling:');
   kv(6, 'execute', gb('dr_exec'));
@@ -1587,6 +1628,7 @@ function buildYAML() {
   kv(8, 'c_curve', gb('cov_c_curve'));
   kv(8, 'qualimap', gb('cov_qualimap'));
   kv(8, 'samtools_stats', gb('cov_samtools_stats'));
+  kv(8, 'qualimap_mem_mb', gn('cov_qualimap_mem'));
   p(0, ''); p(0, '');
   p(2, 'reveal_module:');
   kv(4, 'execute', gb('rv_exec'));
@@ -1633,6 +1675,7 @@ function buildYAML() {
   kv(8, 'comparison_plots', gv('viz_comparison_plots'));
   kv(8, 'y_axis_log_scale_threshold_individual', gn('viz_log_thresh_ind'));
   kv(8, 'y_axis_log_scale_threshold_species',    gn('viz_log_thresh_sp'));
+  kv(8, 'visualization_bin_size', gv('viz_bin_size'));
   p(0, '');
   p(2, 'summary_module:');
   kv(4, 'execute', gb('sp_exec'));
@@ -1816,8 +1859,13 @@ function populateForm(c) {
   if (ars.extra_params !== undefined) { setOpt('ar_xp_en','ar_xp_body','ar_xp_hdr',true); sv('ar_xp',ars.extra_params); }
   else setOpt('ar_xp_en','ar_xp_body','ar_xp_hdr',false);
   const qf = rrp.quality_filtering || {};
+  const qfs = qf.settings || {};
   sb('qf_exec', qf.execute); dot('qf_exec','d_qf');
-  sv('qf_minq',(qf.settings||{}).min_quality); sv('qf_minl',(qf.settings||{}).min_length);
+  sv('qf_minq', qfs.min_quality); sv('qf_minl', qfs.min_length);
+  if (qfs.unqualified_percent_limit !== undefined || qfs.n_base_limit !== undefined) {
+    setOpt('qf_adv_en','qf_adv_body','qf_adv_hdr', true);
+    sv('qf_unqual', qfs.unqualified_percent_limit); sv('qf_nbase', qfs.n_base_limit);
+  } else setOpt('qf_adv_en','qf_adv_body','qf_adv_hdr', false);
   const ca = rrp.contamination || {};
   const cat = ca.tools || {};
   const cen = cat.centrifuge || {};
@@ -1852,6 +1900,7 @@ function populateForm(c) {
   sb('dedup_exec', ded.execute); dot('dedup_exec','d_dedup');
   sv('dedup_min', (ded.settings||{}).min_contigs_per_cluster);
   sv('dedup_max', (ded.settings||{}).max_contigs_per_cluster);
+  sv('dedup_mem', (ded.settings||{}).mem_mb);
   sb('dr_exec',  (rp.damage_rescaling||{}).execute);              dot('dr_exec','d_dr');
   const fur = rp.filter_unmapped_reads||{};
   sb('fur_exec', fur.execute); dot('fur_exec','d_fur');
@@ -1865,6 +1914,7 @@ function populateForm(c) {
   sb('cov_c_curve',       rpas.c_curve);
   sb('cov_qualimap',      rpas.qualimap);
   sb('cov_samtools_stats',rpas.samtools_stats);
+  sv('cov_qualimap_mem',  rpas.qualimap_mem_mb);
 
   sb('rv_exec', reveal.execute);
   toggleStage('rv_body', document.getElementById('rv_exec'));
@@ -1900,6 +1950,7 @@ function populateForm(c) {
   sv('viz_comparison_plots', svs.comparison_plots || 'plot');
   sv('viz_log_thresh_ind',  svs.y_axis_log_scale_threshold_individual != null ? svs.y_axis_log_scale_threshold_individual : 25);
   sv('viz_log_thresh_sp',   svs.y_axis_log_scale_threshold_species    != null ? svs.y_axis_log_scale_threshold_species    : 25);
+  sv('viz_bin_size',        svs.visualization_bin_size != null ? svs.visualization_bin_size : 'target:5000');
   sv('viz_mapqth',          sos.mapping_quality_threshold   != null ? sos.mapping_quality_threshold   : 5);
   sv('viz_mc_snp',          sos.minimum_count_snp           != null ? sos.minimum_count_snp           : 5);
   sv('viz_mf_snp',          sos.minimum_frequency_snp       != null ? sos.minimum_frequency_snp       : 0.1);
@@ -1969,7 +2020,7 @@ function resetDefaults() {
         analysis: { execute: true, settings: { coverage_analysis: true, snp_analysis: false, indel_analysis: false } },
         sequence_overview: { settings: { mapping_quality_threshold: 5, minimum_count_snp: 5, minimum_frequency_snp: 0.1, minimum_count_indel: 3, minimum_frequency_indel: 0.01 } },
         normalization: { settings: { end_distance: 100, exclude_quantile: 25 } },
-        visualization: { execute: true, settings: { individual_plots: 'plot', comparison_plots: 'plot', y_axis_log_scale_threshold_individual: 25, y_axis_log_scale_threshold_species: 25 } }
+        visualization: { execute: true, settings: { individual_plots: 'plot', comparison_plots: 'plot', y_axis_log_scale_threshold_individual: 25, y_axis_log_scale_threshold_species: 25, visualization_bin_size: 'target:5000' } }
       },
       summary_module: { execute: true, settings: { individual_multiqc: true, species_multiqc: true } }
     },

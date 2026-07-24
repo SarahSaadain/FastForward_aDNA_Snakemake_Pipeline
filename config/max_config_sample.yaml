@@ -60,6 +60,10 @@ pipeline:
         min_quality: 15
         # Minimum length of reads after quality filtering
         min_length: 30
+        # Optional: Max percentage of unqualified bases allowed in a read (Default: 40)
+        #unqualified_percent_limit: 40
+        # Optional: Max number of N bases allowed in a read (Default: 5)
+        #n_base_limit: 5
 
     # Contamination analysis
     contamination:
@@ -140,6 +144,9 @@ pipeline:
         min_contigs_per_cluster: 1
         # Optional: Maximum number of contigs per cluster (Default: 500 if not specified)
         max_contigs_per_cluster: 500
+        # Optional: Memory (MB) for DeDup's JVM heap, also requested from the cluster scheduler as mem_mb (Default: 20000)
+        # Increase for large reference genomes/BAM files; decrease for small ones to free up cluster resources.
+        #mem_mb: 20000
     
     # Damage rescaling settings for mapDamage2
     damage_rescaling:
@@ -176,6 +183,9 @@ pipeline:
         qualimap: true
         # When true, include samtools stats in MultiQC reports (Default: true)
         samtools_stats: true
+        # Optional: Memory (MB) requested from the cluster scheduler for Qualimap (Default: 4096)
+        # Increase for large reference genomes/BAM files; decrease for small ones to free up cluster resources.
+        #qualimap_mem_mb: 4096
 
 
   reveal_module:
@@ -291,6 +301,14 @@ pipeline:
         # Y-axis value above which the plot switches to log scale (individual and species level) (Default: 25)
         y_axis_log_scale_threshold_individual: 25
         y_axis_log_scale_threshold_species: 25
+        # Bin size used when generating per-position coverage plotables (Default: "target:5000")
+        # Options:
+        #   fixed integer      — e.g. "100" applies the same bin size to every sequence
+        #   "target:N"         — auto-computes bin_size = max(1, seq_len // N) per sequence (Default)
+        #   length thresholds  — e.g. "10000:1,100000:10,1000000:100,default:500" uses bin size 1
+        #                        for sequences <= 10000 bp, 10 for <= 100000 bp, etc., and the
+        #                        "default" bin size for anything larger
+        visualization_bin_size: "target:5000"
     
     analysis:
       # When true, this sub-stage will be executed (Default: true)

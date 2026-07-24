@@ -182,15 +182,16 @@ rule dedup_deduplicate_bam_cluster:
     log: 
         "{species}/processed/reference_module/{reference}/dedup_cluster/{individual}/dedup_{start}_{end}/{individual}_{reference}_{start}_{end}.dedup.log",
     resources:
-        mem_mb = 20000
+        mem_mb = config.get('pipeline', {}).get('reference_module', {}).get('deduplication', {}).get('settings', {}).get('mem_mb', 20000)
     params:
-        jar = DEDUP_JAR_PATH
+        jar = DEDUP_JAR_PATH,
+        mem_mb = config.get('pipeline', {}).get('reference_module', {}).get('deduplication', {}).get('settings', {}).get('mem_mb', 20000)
     conda:
         "../../../envs/dedup.yaml"
     shell:
         """
         mkdir -p "{output.dedup_folder}"
-        java -Xms5g -Xmx20g -jar "{params.jar}" --input "{input.bam}" --merged --output "{output.dedup_folder}"
+        java -Xms{params.mem_mb}m -Xmx{params.mem_mb}m -jar "{params.jar}" --input "{input.bam}" --merged --output "{output.dedup_folder}"
         """
 
 # Rule: Merge deduplicated BAM files

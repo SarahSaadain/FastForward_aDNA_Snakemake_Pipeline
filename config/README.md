@@ -145,6 +145,8 @@ Controls FastQC + MultiQC quality reports at each processing stage and read coun
 |---|---|---|
 | `settings.min_quality` | `15` | Minimum base quality score for quality filtering. |
 | `settings.min_length` | `30` | Minimum read length after quality filtering. |
+| `settings.unqualified_percent_limit` | `40` | Max percentage of unqualified bases allowed in a read. |
+| `settings.n_base_limit` | `5` | Max number of N bases allowed in a read. |
 
 #### `contamination`
 
@@ -191,6 +193,7 @@ Uses a [modified DeDup fork](https://github.com/SarahSaadain/DeDup) for performa
 |---|---|---|
 | `settings.min_contigs_per_cluster` | `1` | Minimum number of contigs grouped into a cluster. Small contigs below this count are merged together before deduplication. |
 | `settings.max_contigs_per_cluster` | `500` | Maximum number of contigs grouped per deduplication cluster. Lower values use less memory but increase runtime. Reduce (e.g. to 100) only for large, highly fragmented reference genomes. |
+| `settings.mem_mb` | `20000` | Memory (MB) for DeDup's JVM heap (`-Xms`/`-Xmx`), also requested from the cluster scheduler as `resources.mem_mb`. Increase for large reference genomes/BAM files; decrease for small ones to free up cluster resources. |
 
 #### `filter_unmapped_reads`
 
@@ -213,6 +216,7 @@ Optionally removes or extracts reads that did not map to the reference. Default:
 | `analysis.settings.c_curve` | on | Include Preseq c_curve complexity data in MultiQC reports. |
 | `analysis.settings.qualimap` | on | Include Qualimap BAM QC data in MultiQC reports. |
 | `analysis.settings.samtools_stats` | on | Include samtools stats data in MultiQC reports. |
+| `analysis.settings.qualimap_mem_mb` | `4096` | Memory (MB) requested from the cluster scheduler for Qualimap. Increase for large reference genomes/BAM files; decrease for small ones to free up cluster resources. |
 
 ### Stage: `reveal_module`
 
@@ -279,6 +283,7 @@ Competition sequences are internally suffixed with `_comp` to distinguish them f
 | `visualization.settings.comparison_plots` | `plot` | `plot` — generate plotables and render the faceted species comparison plot; `plotable_only` — generate plotables only, skip rendering; `skip` — skip both. |
 | `visualization.settings.y_axis_log_scale_threshold_individual` | `25` | Y-axis value above which per-individual plots switch to a log scale. |
 | `visualization.settings.y_axis_log_scale_threshold_species` | `25` | Y-axis value above which the species comparison plot switches to a log scale. |
+| `visualization.settings.visualization_bin_size` | `target:5000` | Bin size for per-position coverage plotables. Accepts a fixed integer (e.g. `100`), `target:N` to auto-compute `bin_size = max(1, seq_len // N)` per sequence, or length-threshold rules (e.g. `10000:1,100000:10,default:500`). |
 | `sequence_overview.settings.mapping_quality_threshold` | `5` | Mapping quality threshold for bam2so; reads below this value are treated as ambiguously mapped and excluded. |
 | `sequence_overview.settings.minimum_count_snp` | `5` | Minimum number of reads supporting a variant for it to be called as a SNP. |
 | `sequence_overview.settings.minimum_frequency_snp` | `0.1` | Minimum allele frequency (0–1) for a SNP call. |
@@ -374,6 +379,9 @@ pipeline:
       settings:
         min_quality: 15
         min_length: 30
+        # Optional: advanced fastp filtering thresholds
+        #unqualified_percent_limit: 40
+        #n_base_limit: 5
 
     contamination:
       execute: true
@@ -420,6 +428,8 @@ pipeline:
         min_contigs_per_cluster: 1
         # Maximum contigs per deduplication cluster (Default: 500)
         max_contigs_per_cluster: 500
+        # Optional: DeDup JVM heap / cluster memory request in MB (Default: 20000)
+        #mem_mb: 20000
 
     damage_rescaling:
       execute: true
@@ -441,6 +451,8 @@ pipeline:
         c_curve: true
         qualimap: true
         samtools_stats: true
+        # Optional: Qualimap cluster memory request in MB (Default: 4096)
+        #qualimap_mem_mb: 4096
 
   reveal_module:
     execute: true
@@ -487,6 +499,7 @@ pipeline:
         comparison_plots: "plot"
         y_axis_log_scale_threshold_individual: 25
         y_axis_log_scale_threshold_species: 25
+        visualization_bin_size: "target:5000"
 
   summary_module:
     execute: true
