@@ -29,13 +29,13 @@ include: "read_module/analytics/quality/multiqc_check.smk"
 include: "read_module/plotting/plot_read_counts.smk"
 
 # Check for contamination using ECMSD
-include: "read_module/analytics/contamination/check_contamination_ecmsd.smk"
+include: "read_module/contamination/check_contamination_ecmsd.smk"
 
 # Check for contamination using Centrifuge
-include: "read_module/analytics/contamination/check_contamination_centrifuge.smk"
+include: "read_module/contamination/check_contamination_centrifuge.smk"
 
 # Check for contamination using Kraken
-#include: "read_module/analytics/contamination/check_contamination_kraken.smk"
+#include: "read_module/contamination/check_contamination_kraken.smk"
 # =================================================================================================
 # End of read_module_processing.smk
 # =================================================================================================

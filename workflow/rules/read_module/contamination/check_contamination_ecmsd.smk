@@ -27,7 +27,7 @@ rule ecmsd_database_setup:
     output:
         directory("resources/ecmsd_database")
     conda:
-        "../../../../envs/ecmsd.yaml"
+        "../../../envs/ecmsd.yaml"
     message:
         "Setting up ECMSD database."
     shell:
@@ -56,7 +56,7 @@ rule ecmsd_analyze_contamination:
         prefix = "{sample}"
     threads: 15
     conda:
-        "../../../../envs/ecmsd.yaml"
+        "../../../envs/ecmsd.yaml"
     message: "Running ECMSD contamination analysis for {input.fastq}"
     shell:
         """
@@ -92,7 +92,7 @@ rule ecmsd_merge_hits_per_individual:
     params:
         taxonomic_hierarchy = _ecmsd_taxonomic_hierarchy
     script:
-        "../../../../scripts/read_module/analytics/contamination/check_contamination_ecmsd_script_ecmsd_merge_hits_per_individual.py"
+        "../../../scripts/read_module/contamination/check_contamination_ecmsd_script_ecmsd_merge_hits_per_individual.py"
 
 rule ecmsd_analyze_proportions:
     input:
@@ -103,4 +103,4 @@ rule ecmsd_analyze_proportions:
     params:
         sample = "{sample}"
     script:
-        "../../../../scripts/read_module/analytics/contamination/check_contamination_ecmsd_script_ecmsd_analyze_proportions.py"
+        "../../../scripts/read_module/contamination/check_contamination_ecmsd_script_ecmsd_analyze_proportions.py"

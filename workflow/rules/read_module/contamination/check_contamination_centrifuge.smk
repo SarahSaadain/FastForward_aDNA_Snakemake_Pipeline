@@ -26,7 +26,7 @@ rule download_centrifuge_index:
         url = "https://genome-idx.s3.amazonaws.com/centrifuge/p%2Bh%2Bv.tar.gz",
         outdir = "resources/centrifuge_index"
     conda:
-        "../../../../envs/wget.yaml"
+        "../../../envs/wget.yaml"
     message: "Downloading Centrifuge index"
     shell:
         """
@@ -54,7 +54,7 @@ rule analyze_contamination_with_centrifuge:
     params:
         index = get_centrifuge_index,
     conda:
-        config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("conda_env", "../../../../envs/centrifuge.yaml")
+        config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("conda_env", "../../../envs/centrifuge.yaml")
     message: "Running Centrifuge contamination analysis for {input.fastq}"
     shell:
         """
@@ -90,7 +90,7 @@ rule analyze_centrifuge_report_proportions:
     params:
         sample = "{sample}"
     script:
-        "../../../../scripts/read_module/analytics/contamination/check_contamination_ecmsd_script_analyze_centrifuge_report_proportions.py"
+        "../../../scripts/read_module/contamination/check_contamination_ecmsd_script_analyze_centrifuge_report_proportions.py"
 
 rule analyze_centrifuge_report_top_taxa:
     input:
@@ -102,7 +102,7 @@ rule analyze_centrifuge_report_top_taxa:
         sample = "{sample}",
         include_human = config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("include_human_taxid", False)
     script:
-        "../../../../scripts/read_module/analytics/contamination/check_contamination_ecmsd_script_analyze_centrifuge_report_top_taxa.py"
+        "../../../scripts/read_module/contamination/check_contamination_ecmsd_script_analyze_centrifuge_report_top_taxa.py"
 
 rule compress_centrifuge_output:
     input:
@@ -111,7 +111,7 @@ rule compress_centrifuge_output:
         "{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv.gz"
     threads: 4
     conda:
-        "../../../../envs/pigz.yaml"
+        "../../../envs/pigz.yaml"
     message: "Compressing Centrifuge output for {wildcards.sample}"
     shell:
         "pigz -p {threads} -c \"{input.tsv}\" > \"{output}\""
