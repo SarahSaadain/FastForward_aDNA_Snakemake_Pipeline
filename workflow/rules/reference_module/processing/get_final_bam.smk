@@ -30,8 +30,8 @@ if _filter_remove:
             bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam",
             bai = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam.bai"
         output:
-            bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
-            bai = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai"
+            bam = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
+            bai = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai"
         message:
             "Getting final (mapped-only) BAM for {wildcards.individual} of {wildcards.species}."
         shell:
@@ -52,8 +52,8 @@ else:
             bam = _pre_filter_bam,
             bai = _pre_filter_bam + ".bai"
         output:
-            bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
-            bai = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai"
+            bam = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
+            bai = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai"
         message:
             "Getting final bam for {wildcards.individual} of {wildcards.species}."
         shell:

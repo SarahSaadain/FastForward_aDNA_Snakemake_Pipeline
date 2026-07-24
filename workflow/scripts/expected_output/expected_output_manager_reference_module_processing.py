@@ -46,8 +46,8 @@ def get_expected_output_reference_module(species):
 
         for individual in individuals:
 
-            expected_outputs.append(f"{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_final.bam")
-            expected_outputs.append(f"{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai")
+            expected_outputs.append(f"{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam")
+            expected_outputs.append(f"{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai")
 
             if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("execute", True) == True:
                 if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("individual_multiqc", True) == True:
