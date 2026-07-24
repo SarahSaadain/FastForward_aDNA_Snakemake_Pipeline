@@ -9,8 +9,8 @@ rule filter_reads_by_quality:
     output:
         trimmed=temp("{species}/processed/reads_module/reads_quality_filtered/{sample}_quality_filtered.fastq.gz"),
         failed=temp("{species}/processed/reads_module/reads_quality_filtered/{sample}_quality_filtered.failed.fastq.gz"),
-        html="{species}/results/reads/reads_quality_filtered/fastp_report/{sample}_quality_filtered.html",
-        json="{species}/results/reads/reads_quality_filtered/fastp_report/{sample}_quality_filtered.json",
+        html="{species}/results/reads_module/reads_quality_filtered/fastp_report/{sample}_quality_filtered.html",
+        json="{species}/results/reads_module/reads_quality_filtered/fastp_report/{sample}_quality_filtered.json",
     message: "Quality filtering reads in {input.sample}"
     log:
         "{species}/processed/reads_module/reads_quality_filtered/{sample}_quality_filtered.log",

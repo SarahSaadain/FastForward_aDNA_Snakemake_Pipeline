@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Breaking Changes
 
-- **Module rename**: The `dynamics` pipeline stage is now `reveal_module` (`pipeline.dynamics` → `pipeline.reveal_module`; `{species}/raw|processed/results/dynamics/` → `{species}/raw|processed/results/reveal_module/`)
+- **Module rename**: The `dynamics` pipeline stage is now `reveal_module` (`pipeline.dynamics` → `pipeline.reveal_module`; `{species}/raw|processed/results/reveal_module/` → `{species}/raw|processed/results/reveal_module/`)
 - **Config structure**: The former `seqvista` sub-section is now `visualization` (`pipeline.reveal_module.seqvista` → `pipeline.reveal_module.visualization`); output subfolder renamed to match (`.../reveal_module/<feature_library>/seqvista/` → `.../reveal_module/<feature_library>/visualization/`)
 - **Config structure**: `coverage_analysis`, `snp_analysis`, and `indel_analysis` moved out of `visualization.settings` into their own sibling section, `pipeline.reveal_module.analysis.settings`
 - **Config structure**: bam2so thresholds (`mapping_quality_threshold`, `minimum_count_snp`, `minimum_frequency_snp`, `minimum_count_indel`, `minimum_frequency_indel`) moved into a new `pipeline.reveal_module.sequence_overview.settings` section; normalize-so thresholds (`end_distance`, `exclude_quantile`) moved into a new `pipeline.reveal_module.normalization.settings` section — `visualization.settings` now holds only plot-rendering options

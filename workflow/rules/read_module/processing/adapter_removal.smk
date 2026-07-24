@@ -32,8 +32,8 @@ rule remove_adapters_single_with_fastp:
     output:
         trimmed=temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.se.fastq.gz"),
         failed=temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.se.failed.fastq.gz"),
-        html="{species}/results/reads/reads_trimmed/fastp_report/{sample}_trimmed.se.html",
-        json="{species}/results/reads/reads_trimmed/fastp_report/{sample}_trimmed.se.json",
+        html="{species}/results/reads_module/reads_trimmed/fastp_report/{sample}_trimmed.se.html",
+        json="{species}/results/reads_module/reads_trimmed/fastp_report/{sample}_trimmed.se.json",
     message: "Trimming adapters from single-end reads in {input.sample}"
     log:
         "{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.se.log",
@@ -70,8 +70,8 @@ rule remove_adapters_paired_with_fastp:
         unpaired2=temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.unpaired.R2.fastq.gz"),
         merged=temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.fastq.gz"),
         failed=temp("{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.failed.fastq.gz"),
-        html="{species}/results/reads/reads_trimmed/fastp_report/{sample}_trimmed.pe.html",
-        json="{species}/results/reads/reads_trimmed/fastp_report/{sample}_trimmed.pe.json",
+        html="{species}/results/reads_module/reads_trimmed/fastp_report/{sample}_trimmed.pe.html",
+        json="{species}/results/reads_module/reads_trimmed/fastp_report/{sample}_trimmed.pe.json",
     message: "Trimming adapters from paired-end reads and merging for {input.sample}"
     log:
         "{species}/processed/reads_module/reads_trimmed/{sample}_trimmed.pe.log",

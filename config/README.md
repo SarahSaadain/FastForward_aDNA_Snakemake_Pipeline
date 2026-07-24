@@ -112,7 +112,7 @@ Defines the overall pipeline behavior, including execution controls and process 
 
 Quality checking, adapter removal, quality filtering, merging, contamination analysis, and read count statistics of raw reads.
 
-> **Read count statistics always run** — per-stage counts (raw → trimmed → quality-filtered) are written unconditionally as `{species}/results/reads/statistics/{species}_reads_counts.csv`.
+> **Read count statistics always run** — per-stage counts (raw → trimmed → quality-filtered) are written unconditionally as `{species}/results/reads_module/statistics/{species}_reads_counts.csv`.
 
 #### `analysis`
 

@@ -26,7 +26,7 @@ def prepare_custom_data_reads_processing_endogenous(wildcards):
 
 rule prepare_custom_data_reads_processing_absolute_values:
     input:
-        reads = "{species}/results/reads/statistics/{species}_reads_counts.csv",
+        reads = "{species}/results/reads_module/statistics/{species}_reads_counts.csv",
         endogenous = prepare_custom_data_reads_processing_endogenous,
         dedup = prepare_custom_data_reads_processing_dedup
     output:

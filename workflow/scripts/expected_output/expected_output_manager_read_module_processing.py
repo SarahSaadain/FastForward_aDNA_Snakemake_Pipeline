@@ -20,10 +20,10 @@ def get_expected_output_fastqc_raw(species):
     all_inputs = []
     for raw_file in files:
         filename = os.path.basename(raw_file).replace('.fastq.gz','')
-        all_inputs.append(f"{species}/results/reads/reads_raw/fastqc/{filename}_raw_fastqc.html")
+        all_inputs.append(f"{species}/results/reads_module/reads_raw/fastqc/{filename}_raw_fastqc.html")
         # Add R2 if exists
         if os.path.exists(raw_file.replace("_R1", "_R2")):
-            all_inputs.append(f"{species}/results/reads/reads_raw/fastqc/{filename.replace('_R1', '_R2')}_raw_fastqc.html")
+            all_inputs.append(f"{species}/results/reads_module/reads_raw/fastqc/{filename.replace('_R1', '_R2')}_raw_fastqc.html")
     return all_inputs
 
 # -----------------------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ def get_expected_output_fastqc_trimmed(species):
 
     all_inputs = []
     for sample in get_sample_ids_for_species(species):
-        all_inputs.append(f"{species}/results/reads/reads_trimmed/fastqc/{sample}_trimmed_fastqc.html")
+        all_inputs.append(f"{species}/results/reads_module/reads_trimmed/fastqc/{sample}_trimmed_fastqc.html")
     return all_inputs
 
 # -----------------------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ def get_expected_output_fastqc_quality_filtered(species):
 
     all_inputs = []
     for sample in get_sample_ids_for_species(species):
-        all_inputs.append(f"{species}/results/reads/reads_quality_filtered/fastqc/{sample}_quality_filtered_fastqc.html")
+        all_inputs.append(f"{species}/results/reads_module/reads_quality_filtered/fastqc/{sample}_quality_filtered_fastqc.html")
     return all_inputs
 
 # -----------------------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ def get_expected_output_fastqc_quality_filtered(species):
 def get_expected_output_fastqc_merged(species):
     all_inputs = []
     for individual in get_individuals_for_species(species):
-        all_inputs.append(f"{species}/results/reads/reads_merged/fastqc/{individual}_merged_fastqc.html")
+        all_inputs.append(f"{species}/results/reads_module/reads_merged/fastqc/{individual}_merged_fastqc.html")
     return all_inputs
 
 #-----------------------------------------------------------------------------------------------
@@ -118,22 +118,22 @@ def get_expected_output_multiqc(species):
 
     # Add MultiQC reports for different read processing stages
     if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_raw_reads", True) == True:
-        expected_outputs.append(f"{species}/results/reads/{species}_multiqc_raw.html")
+        expected_outputs.append(f"{species}/results/reads_module/{species}_multiqc_raw.html")
     else:
         logging.info(f"Skipping MultiQC report for raw reads for {species}. Disabled in config.")
 
     if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_trimmed_reads", True) == True:
-        expected_outputs.append(f"{species}/results/reads/{species}_multiqc_trimmed.html")
+        expected_outputs.append(f"{species}/results/reads_module/{species}_multiqc_trimmed.html")
     else:
         logging.info(f"Skipping MultiQC report for trimmed reads for {species}. Disabled in config.")
 
     if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_quality_filtered_reads", True) == True:
-        expected_outputs.append(f"{species}/results/reads/{species}_multiqc_quality_filtered.html")
+        expected_outputs.append(f"{species}/results/reads_module/{species}_multiqc_quality_filtered.html")
     else:
         logging.info(f"Skipping MultiQC report for quality filtered reads for {species}. Disabled in config.")
     
     if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_merged_reads", True) == True:
-        expected_outputs.append(f"{species}/results/reads/{species}_multiqc_merged.html")
+        expected_outputs.append(f"{species}/results/reads_module/{species}_multiqc_merged.html")
     else:
         logging.info(f"Skipping MultiQC report for merged reads for {species}. Disabled in config.")
 
@@ -147,8 +147,8 @@ def get_expected_output_reads_plots(species):
         return []
 
     expected_outputs = []
-    expected_outputs.append(f"{species}/results/reads/plots/{species}_read_counts.png")
-    expected_outputs.append(f"{species}/results/reads/plots/{species}_read_counts_comparison_by_individual.png")
+    expected_outputs.append(f"{species}/results/reads_module/plots/{species}_read_counts.png")
+    expected_outputs.append(f"{species}/results/reads_module/plots/{species}_read_counts_comparison_by_individual.png")
     return expected_outputs
 
 # -----------------------------------------------------------------------------------------------
@@ -195,7 +195,7 @@ def get_expected_output_read_module(species):
     expected_outputs += get_expected_output_contamination(species)
 
     # Read count statistics always run
-    expected_outputs.append(f"{species}/results/reads/statistics/{species}_reads_counts.csv")   
+    expected_outputs.append(f"{species}/results/reads_module/statistics/{species}_reads_counts.csv")   
 
     # Add analytics outputs (MultiQC reports and read count plots)
     expected_outputs += get_expected_output_analytics(species)

@@ -5,7 +5,7 @@
 # Rule: Plot endogenous reads bar chart
 rule plot_raw_and_endogenous_reads_as_bar_plot:
     input:
-        processing_results = "{species}/results/reads/statistics/{species}_reads_counts.csv",
+        processing_results = "{species}/results/reads_module/statistics/{species}_reads_counts.csv",
         endogenous_results = "{species}/results/{reference}/analytics/species_level/{species}/endogenous/{reference}_endogenous.csv"
     output:
         plot = "{species}/results/{reference}/plots/endogenous_reads/{species}_{reference}_raw_and_endogenous_reads_bar_chart.png"

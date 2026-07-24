@@ -26,7 +26,7 @@ def create_multiqc_reference_input(wildcards):
 
             # merged reads fastqc
             if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("execute", True) == True and config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_merged_reads", True) == True:
-                file_list.append(f"{species}/results/reads/reads_merged/fastqc/{individual}_merged_fastqc.zip")
+                file_list.append(f"{species}/results/reads_module/reads_merged/fastqc/{individual}_merged_fastqc.zip")
 
         # bam analytics for the single reference
         if config.get("pipeline", {}).get("reference_module", {}).get("execute", False) == True:

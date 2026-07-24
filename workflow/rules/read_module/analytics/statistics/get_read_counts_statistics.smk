@@ -123,7 +123,7 @@ rule combine_counts_per_species:
             sample=get_sample_ids_for_species(wildcards.species),
             species=wildcards.species)
     output:
-        counts="{species}/results/reads/statistics/{species}_reads_counts.csv"
+        counts="{species}/results/reads_module/statistics/{species}_reads_counts.csv"
     conda:
         "../../../../envs/python_and_r.yaml",
     run:
