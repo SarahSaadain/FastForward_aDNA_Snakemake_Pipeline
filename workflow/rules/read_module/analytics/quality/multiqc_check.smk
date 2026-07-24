@@ -24,11 +24,11 @@ rule run_multiqc_raw:
     input:
         run_multiqc_raw_input
     output:
-        "{species}/results/reads_module/{species}_multiqc_raw.html"
+        "{species}/results/read_module/{species}_multiqc_raw.html"
     params:
         extra="--verbose",  # Optional: extra parameters for multiqc.
     log:
-        "{species}/processed/reads_module/{species}_multiqc_raw.log"
+        "{species}/processed/read_module/{species}_multiqc_raw.log"
     message: "Running MultiQC on raw FastQC outputs for species {wildcards.species}"
     wrapper:
         "v9.3.0/bio/multiqc"
@@ -38,11 +38,11 @@ rule run_multiqc_trimmed:
     input:
         run_multiqc_trimmed_input
     output:
-        "{species}/results/reads_module/{species}_multiqc_trimmed.html"
+        "{species}/results/read_module/{species}_multiqc_trimmed.html"
     params:
         extra="--verbose",  # Optional: extra parameters for multiqc.
     log:
-        "{species}/processed/reads_module/{species}_multiqc_trimmed.log"
+        "{species}/processed/read_module/{species}_multiqc_trimmed.log"
     message: "Running MultiQC on trimmed FastQC outputs for species {wildcards.species}"
     wrapper:
         "v9.3.0/bio/multiqc"
@@ -52,11 +52,11 @@ rule run_multiqc_quality_filtered:
     input:
         run_multiqc_quality_filtered_input
     output:
-        "{species}/results/reads_module/{species}_multiqc_quality_filtered.html"
+        "{species}/results/read_module/{species}_multiqc_quality_filtered.html"
     params:
         extra="--verbose",  # Optional: extra parameters for multiqc.
     log:
-        "{species}/processed/reads_module/{species}_multiqc_quality_filtered.log"
+        "{species}/processed/read_module/{species}_multiqc_quality_filtered.log"
     message: "Running MultiQC on quality-filtered FastQC outputs for species {wildcards.species}"
     wrapper:
         "v9.3.0/bio/multiqc"
@@ -66,11 +66,11 @@ rule run_multiqc_merged:
     input:
         run_multiqc_merged_input
     output:
-        "{species}/results/reads_module/{species}_multiqc_merged.html"
+        "{species}/results/read_module/{species}_multiqc_merged.html"
     params:
         extra="--verbose",  # Optional: extra parameters for multiqc.
     log:
-        "{species}/processed/reads_module/{species}_multiqc_merged.log"
+        "{species}/processed/read_module/{species}_multiqc_merged.log"
     message: "Running MultiQC on merged FastQC outputs for species {wildcards.species}"
     wrapper:
         "v9.3.0/bio/multiqc"

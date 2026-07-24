@@ -333,7 +333,7 @@ species:
     #scg_reference: "/path/to/reference.fasta"
 
     # Optional: restrict which individuals to process for this species.
-    # If omitted, all individuals discovered in {species}/input/reads_module/ are used.
+    # If omitted, all individuals discovered in {species}/input/read_module/ are used.
     # Each entry must match the individual ID extracted from read filenames
     # (the part before the first "_", e.g. "IND001" from "IND001_L001_R1.fastq.gz").
     # An error is raised if any listed ID is not found on disk.

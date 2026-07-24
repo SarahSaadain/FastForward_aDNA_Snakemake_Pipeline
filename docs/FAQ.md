@@ -21,7 +21,7 @@ Based on your configuration and the detected input files, pastForward determines
 ## Input Data
 
 **Q: Where do I put my raw sequencing reads?**
-Place them in `<species>/input/reads_module/`. pastForward expects compressed FASTQ files following a specific naming convention (see below) to group samples by individual for merging.
+Place them in `<species>/input/read_module/`. pastForward expects compressed FASTQ files following a specific naming convention (see below) to group samples by individual for merging.
 
 **Q: What read file format does pastForward expect?**
 Reads must be compressed FASTQ (`.fastq.gz`). The filename must follow the convention:
@@ -36,7 +36,7 @@ Everything before the first underscore is treated as the individual identifier a
 Yes. pastForward auto-detects single-end vs. paired-end by checking whether an R2 file exists for each R1 file. Both modes are handled automatically.
 
 **Q: Can I have multiple sequencing runs for the same individual?**
-Yes. All samples belonging to the same individual (same prefix before the first underscore) are merged into a single FASTQ during the "Merge by Individual" step. You can place all run files in `<species>/input/reads_module/` and they will be processed and concatenated automatically.
+Yes. All samples belonging to the same individual (same prefix before the first underscore) are merged into a single FASTQ during the "Merge by Individual" step. You can place all run files in `<species>/input/read_module/` and they will be processed and concatenated automatically.
 
 **Q: Where do I put the reference genome?**
 Place it in `<species>/input/reference_module/`. pastForward accepts `.fa`, `.fasta`, and `.fna` extensions and normalises them internally. Multiple reference genomes per species are supported — each is processed independently.
@@ -106,7 +106,7 @@ Same ID format as references (filename stem, dots → underscores). If omitted, 
 pastForward raises an error at startup and aborts before any processing starts. The error message lists which IDs were not found and shows all available IDs, so you can correct the config. This prevents silent misconfiguration where a typo would cause a run to silently skip data.
 
 **Q: Can I add new samples after the first run?**
-Yes. pastForward is designed to be flexible and can accommodate new samples at any time. Just add the new FASTQ files to the appropriate `<species>/input/reads_module/` folder. pastForward will detect and process them automatically.
+Yes. pastForward is designed to be flexible and can accommodate new samples at any time. Just add the new FASTQ files to the appropriate `<species>/input/read_module/` folder. pastForward will detect and process them automatically.
 
 In case you use `skip_existing_files: true`, pastForward will not re-process existing files, so only the new samples will be processed without affecting previous results. This might be an issue if summary reports need to be updated to include the new samples, as they may rely on outputs from all samples. Either you can re-run pastForward without `skip_existing_files` to regenerate all outputs including the new samples, or you can remove the summary reports, so they will be regenerated with the new samples included.
 
@@ -137,7 +137,7 @@ Yes. If you want to provide custom adapter sequences for adapter removal, you ca
 In case they are not provided, fastp will try to auto-detect adapters based on the read data.
 
 **Q: Can I provide already pre-processed reads?**
-Yes. If you have already pre-processed reads (e.g., adapter-trimmed and quality-filtered) and want to skip the raw reads processing step, you can place your pre-processed FASTQ files in the expected location under `<species>/input/reads_module/` with the correct naming convention. 
+Yes. If you have already pre-processed reads (e.g., adapter-trimmed and quality-filtered) and want to skip the raw reads processing step, you can place your pre-processed FASTQ files in the expected location under `<species>/input/read_module/` with the correct naming convention. 
 
 To skip the adapter removal and quality filtering steps, set the `execute` flag to `false` for those steps in the config:
 

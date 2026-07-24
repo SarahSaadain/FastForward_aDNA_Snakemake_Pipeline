@@ -19,14 +19,14 @@ def create_multiqc_reference_input(wildcards):
                     
                     for sample in samples_of_individual:
                         raw_reads = get_raw_reads_for_sample(species, sample)
-                        file_list.append(f"{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv")
+                        file_list.append(f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv")
 
                 if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("ecmsd", {}).get("execute", True) == True:
-                    file_list.append(f"{species}/results/reads_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv")
+                    file_list.append(f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv")
 
             # merged reads fastqc
             if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("execute", True) == True and config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_merged_reads", True) == True:
-                file_list.append(f"{species}/results/reads_module/reads_merged/fastqc/{individual}_merged_fastqc.zip")
+                file_list.append(f"{species}/results/read_module/reads_merged/fastqc/{individual}_merged_fastqc.zip")
 
         # bam analytics for the single reference
         if config.get("pipeline", {}).get("reference_module", {}).get("execute", False) == True:

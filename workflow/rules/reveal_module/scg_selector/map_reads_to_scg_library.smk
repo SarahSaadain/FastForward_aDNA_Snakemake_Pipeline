@@ -39,7 +39,7 @@ if _scg_sel_mapper == "minimap2":
 
     rule map_reads_to_scg_library_minimap2:
         input:
-            query=["{species}/processed/reads_module/reads_merged/{individual}.fastq.gz"],
+            query=["{species}/processed/read_module/reads_merged/{individual}.fastq.gz"],
             target="{species}/processed/reveal_module/scg/{species}_scg_library.fasta.mmi",
         output:
             temp("{species}/processed/reveal_module/scg/reads_mapped/{individual}_scg_library.sorted.with_unmapped.bam"),
@@ -68,7 +68,7 @@ elif _scg_sel_mapper == "bwa-aln":
 
     rule align_reads_to_scg_library_bwa_aln:
         input:
-            fastq="{species}/processed/reads_module/reads_merged/{individual}.fastq.gz",
+            fastq="{species}/processed/read_module/reads_merged/{individual}.fastq.gz",
             idx=multiext("{species}/processed/reveal_module/scg/{species}_scg_library.fasta", ".amb", ".ann", ".bwt", ".pac", ".sa"),
         output:
             temp("{species}/processed/reveal_module/scg/reads_mapped/{individual}_scg_library.sai"),
@@ -82,7 +82,7 @@ elif _scg_sel_mapper == "bwa-aln":
 
     rule map_reads_to_scg_library_bwa_aln:
         input:
-            fastq="{species}/processed/reads_module/reads_merged/{individual}.fastq.gz",
+            fastq="{species}/processed/read_module/reads_merged/{individual}.fastq.gz",
             sai="{species}/processed/reveal_module/scg/reads_mapped/{individual}_scg_library.sai",
             idx=multiext("{species}/processed/reveal_module/scg/{species}_scg_library.fasta", ".amb", ".ann", ".bwt", ".pac", ".sa"),
         output:
@@ -125,7 +125,7 @@ else:
 
     rule map_reads_to_scg_library_bwa_mem2:
         input:
-            reads=["{species}/processed/reads_module/reads_merged/{individual}.fastq.gz"],
+            reads=["{species}/processed/read_module/reads_merged/{individual}.fastq.gz"],
             idx=multiext("{species}/processed/reveal_module/scg/{species}_scg_library.fasta", ".amb", ".ann", ".bwt.2bit.64", ".pac", ".0123"),
         output:
             temp("{species}/processed/reveal_module/scg/reads_mapped/{individual}_scg_library.sorted.with_unmapped.bam"),

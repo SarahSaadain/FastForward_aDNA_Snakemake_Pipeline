@@ -45,11 +45,11 @@ rule download_centrifuge_index:
 
 rule analyze_contamination_with_centrifuge:
     input:
-        fastq = "{species}/processed/reads_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
+        fastq = "{species}/processed/read_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
         index = get_centrifuge_index_input
     output:
-        output = temp("{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv"),
-        report = "{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv"
+        output = temp("{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv"),
+        report = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv"
     threads: 15
     params:
         index = get_centrifuge_index,
@@ -68,9 +68,9 @@ rule analyze_contamination_with_centrifuge:
 
 rule analyze_centrifuge_report_taxon_counts:
     input:
-        centrifuge_out = "{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv"
+        centrifuge_out = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv"
     output:
-        taxon_counts = "{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_taxon_counts.tsv"
+        taxon_counts = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_taxon_counts.tsv"
     message: "Counting taxon occurrences in {input.centrifuge_out}"
     shell:
         r"""
@@ -83,10 +83,10 @@ rule analyze_centrifuge_report_taxon_counts:
 
 rule analyze_centrifuge_report_proportions:
     input:
-        report = "{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
-        count_reads = "{species}/processed/reads_module/statistics/{sample}_quality_filtered.count"
+        report = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
+        count_reads = "{species}/processed/read_module/statistics/{sample}_quality_filtered.count"
     output:
-        "{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_proportions.tsv",
+        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_proportions.tsv",
     params:
         sample = "{sample}"
     script:
@@ -94,10 +94,10 @@ rule analyze_centrifuge_report_proportions:
 
 rule analyze_centrifuge_report_top_taxa:
     input:
-        report = "{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
+        report = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
     output:
-        top10_unique = "{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_unique_taxa.tsv",
-        top10_total = "{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+        top10_unique = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_unique_taxa.tsv",
+        top10_total = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
     params:
         sample = "{sample}",
         include_human = config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("include_human_taxid", False)
@@ -106,9 +106,9 @@ rule analyze_centrifuge_report_top_taxa:
 
 rule compress_centrifuge_output:
     input:
-        tsv = "{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv",
+        tsv = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv",
     output:
-        "{species}/results/reads_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv.gz"
+        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv.gz"
     threads: 4
     conda:
         "../../../envs/pigz.yaml"

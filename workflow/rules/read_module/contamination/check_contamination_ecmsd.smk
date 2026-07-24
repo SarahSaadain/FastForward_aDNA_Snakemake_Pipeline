@@ -14,10 +14,10 @@ def get_ecmsd_taxonomic_hierarchy():
 
 _ecmsd_taxonomic_hierarchy = get_ecmsd_taxonomic_hierarchy()
 
-_ecmsd_tax_hierarchy_readlength_output        = f"{{species}}/results/reads_module/contamination/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}_ReadLengths.png"
-_ecmsd_tax_hierarchy_proportions_png_output   = f"{{species}}/results/reads_module/contamination/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}_Proportions.png"
-_ecmsd_tax_hierarchy_proportions_txt_output   = f"{{species}}/results/reads_module/contamination/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}_proportions.txt"
-_ecmsd_tax_hierarchy_summary_txt_output       = f"{{species}}/results/reads_module/contamination/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}.txt"
+_ecmsd_tax_hierarchy_readlength_output        = f"{{species}}/results/read_module/contamination/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}_ReadLengths.png"
+_ecmsd_tax_hierarchy_proportions_png_output   = f"{{species}}/results/read_module/contamination/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}_Proportions.png"
+_ecmsd_tax_hierarchy_proportions_txt_output   = f"{{species}}/results/read_module/contamination/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}_proportions.txt"
+_ecmsd_tax_hierarchy_summary_txt_output       = f"{{species}}/results/read_module/contamination/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}.txt"
 
 ####################################################
 # Snakemake rules
@@ -37,13 +37,13 @@ rule ecmsd_database_setup:
 
 rule ecmsd_analyze_contamination:
     input:
-        fastq = "{species}/processed/reads_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
+        fastq = "{species}/processed/read_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
         database = get_ecmsd_database
     output:
-        summary                         = "{species}/results/reads_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.txt",
-        paf                             = "{species}/results/reads_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito.paf.gz",
-        coverage                        = "{species}/results/reads_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_coverage.txt",
-        ranked_summary                  = "{species}/results/reads_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.ref_summary.txt",
+        summary                         = "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.txt",
+        paf                             = "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito.paf.gz",
+        coverage                        = "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_coverage.txt",
+        ranked_summary                  = "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.ref_summary.txt",
         tax_hierarchy_proportions       = _ecmsd_tax_hierarchy_proportions_txt_output,
         tax_hierarchy_summary           = _ecmsd_tax_hierarchy_summary_txt_output,
         tax_hierarchy_readlength        = _ecmsd_tax_hierarchy_readlength_output,
@@ -88,7 +88,7 @@ rule ecmsd_merge_hits_per_individual:
             individual=wildcards.individual
             )
     output:
-        "{species}/results/reads_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+        "{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
     params:
         taxonomic_hierarchy = _ecmsd_taxonomic_hierarchy
     script:
@@ -97,9 +97,9 @@ rule ecmsd_merge_hits_per_individual:
 rule ecmsd_analyze_proportions:
     input:
         report = _ecmsd_tax_hierarchy_proportions_txt_output,
-        count_reads = "{species}/processed/reads_module/statistics/{sample}_quality_filtered.count"
+        count_reads = "{species}/processed/read_module/statistics/{sample}_quality_filtered.count"
     output:
-        "{species}/results/reads_module/contamination/ecmsd/{individual}/{sample}/pipeline/{sample}_ecmsd_proportions.tsv"
+        "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/pipeline/{sample}_ecmsd_proportions.tsv"
     params:
         sample = "{sample}"
     script:
