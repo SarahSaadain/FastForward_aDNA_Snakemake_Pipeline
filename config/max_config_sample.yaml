@@ -35,13 +35,19 @@ pipeline:
         min_quality: 0
         # Minimum length of reads after adapter removal
         min_length: 0
+        # Optional: Minimum length to trigger poly-X tail trimming (Default: 5)
+        #trim_poly_x: 5
+        # Optional: Max percentage of unqualified bases allowed in a read (Default: 40)
+        #unqualified_percent_limit: 40
+        # Optional: Max number of N bases allowed in a read (Default: 5)
+        #n_base_limit: 5
         # Optional: Adapter sequences for read 1 and read 2
         # If not provided, fastp will try to identify adapters automatically
         #adapters_sequences:
           # Adapter sequence for read 1
           #r1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"
           # Adapter sequence for read 2
-          #r2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT" 
+          #r2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"
         # Optional: Extra parameters for adapter removal (Default: "")
         #extra_params: ""
     

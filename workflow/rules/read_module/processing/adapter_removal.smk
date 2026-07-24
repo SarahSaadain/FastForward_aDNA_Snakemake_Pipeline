@@ -45,17 +45,17 @@ rule remove_adapters_single_with_fastp:
         ),  
         extra=lambda wc: (
             f"--length_required {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('min_length',0)} "
-            f"--trim_poly_x 5 "
             f"--qualified_quality_phred {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('min_quality',0)} "
-            f"--unqualified_percent_limit 40 "
-            f"--n_base_limit 5 "
+            f"--trim_poly_x {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('trim_poly_x',5)} "
+            f"--unqualified_percent_limit {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('unqualified_percent_limit',40)} "
+            f"--n_base_limit {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('n_base_limit',5)} "
             f"{config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('extra_params', '')}"
         ),
     threads: 10
     wrapper:
         "v9.3.0/bio/fastp"
- 
- 
+
+
 # Rule: Adapter removal for paired-end reads using fastp
 rule remove_adapters_paired_with_fastp:
     input:
@@ -84,10 +84,10 @@ rule remove_adapters_paired_with_fastp:
         ),
         extra=lambda wc: (
             f"--length_required {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('min_length',0)} "
-            f"--trim_poly_x 5 "
+            f"--trim_poly_x {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('trim_poly_x',5)} "
             f"--qualified_quality_phred {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('min_quality',0)} "
-            f"--unqualified_percent_limit 40 "
-            f"--n_base_limit 5 "
+            f"--unqualified_percent_limit {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('unqualified_percent_limit',40)} "
+            f"--n_base_limit {config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('n_base_limit',5)} "
             f"--merge "
             f"{config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('settings', {}).get('extra_params', '')}"
         ),   

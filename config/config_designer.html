@@ -544,6 +544,32 @@
                 </div>
               </div>
               <div class="opt-group">
+                <div class="opt-header" id="ar_adv_hdr">
+                  <input type="checkbox" id="ar_adv_en" onchange="optToggle('ar_adv_en','ar_adv_body','ar_adv_hdr'); render()">
+                  <label for="ar_adv_en">Advanced trimming thresholds</label>
+                  <span class="opt-tag">optional</span>
+                </div>
+                <div class="opt-body" id="ar_adv_body">
+                  <div class="field-row" style="grid-template-columns: 1fr 1fr 1fr">
+                    <div class="field">
+                      <label>Poly-X Min Len</label>
+                      <input type="number" id="ar_polyx" value="5" min="0" oninput="render()">
+                      <p class="hint">Default: 5. Minimum length to trigger poly-X tail trimming.</p>
+                    </div>
+                    <div class="field">
+                      <label>Unqualified % Limit</label>
+                      <input type="number" id="ar_unqual" value="40" min="0" max="100" oninput="render()">
+                      <p class="hint">Default: 40. Max % of unqualified bases allowed in a read.</p>
+                    </div>
+                    <div class="field">
+                      <label>N Base Limit</label>
+                      <input type="number" id="ar_nbase" value="5" min="0" oninput="render()">
+                      <p class="hint">Default: 5. Max number of N bases allowed in a read.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="opt-group">
                 <div class="opt-header" id="ar_adp_hdr">
                   <input type="checkbox" id="ar_adp_en" onchange="optToggle('ar_adp_en','ar_adp_body','ar_adp_hdr'); render()">
                   <label for="ar_adp_en">Custom adapter sequences</label>
@@ -1488,6 +1514,11 @@ function buildYAML() {
   p(6, 'settings:');
   kv(8, 'min_quality', gn('ar_minq'));
   kv(8, 'min_length',  gn('ar_minl'));
+  if (gb('ar_adv_en')) {
+    kv(8, 'trim_poly_x', gn('ar_polyx'));
+    kv(8, 'unqualified_percent_limit', gn('ar_unqual'));
+    kv(8, 'n_base_limit', gn('ar_nbase'));
+  }
   if (gb('ar_adp_en')) {
     p(8, 'adapters_sequences:');
     kv(10, 'r1', gv('ar_r1'));
@@ -1774,6 +1805,10 @@ function populateForm(c) {
   const ars = ar.settings || {};
   sb('ar_exec', ar.execute); dot('ar_exec','d_ar');
   sv('ar_minq', ars.min_quality); sv('ar_minl', ars.min_length);
+  if (ars.trim_poly_x !== undefined || ars.unqualified_percent_limit !== undefined || ars.n_base_limit !== undefined) {
+    setOpt('ar_adv_en','ar_adv_body','ar_adv_hdr', true);
+    sv('ar_polyx', ars.trim_poly_x); sv('ar_unqual', ars.unqualified_percent_limit); sv('ar_nbase', ars.n_base_limit);
+  } else setOpt('ar_adv_en','ar_adv_body','ar_adv_hdr', false);
   if (ars.adapters_sequences) {
     setOpt('ar_adp_en','ar_adp_body','ar_adp_hdr', true);
     sv('ar_r1', ars.adapters_sequences.r1); sv('ar_r2', ars.adapters_sequences.r2);
