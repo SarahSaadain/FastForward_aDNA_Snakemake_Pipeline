@@ -274,6 +274,9 @@ pastForward follows a priority chain: rescaled BAM → deduplicated BAM → sort
 
 ## Contamination Analysis
 
+**Q: Is this really a "contamination" analysis, or is it metagenomic profiling?**
+Both ECMSD and Centrifuge are taxonomic read classifiers — they assign reads to reference taxa and report proportions/top taxa, the same kind of output any metagenomic profiling tool would produce. Neither computes a dedicated contamination statistic (e.g. mismatch-to-consensus or heterozygosity-based estimates). pastForward treats the results as a contamination signal because each sample is expected to come from one known target organism, so a significant proportion of reads assigned to other taxa is interpreted as exogenous/contaminating DNA rather than as a community to characterize.
+
 **Q: ECMSD keeps failing on some samples. Do I have to fix this before pastForward continues?**
 No. Run with `--keep-going` and pastForward will skip the failed samples and continue processing everything else. ECMSD failures are common on low-coverage or low-quality samples.
 
