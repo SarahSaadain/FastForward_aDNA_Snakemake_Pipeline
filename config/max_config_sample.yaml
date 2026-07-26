@@ -36,7 +36,7 @@ pipeline:
         # Minimum length of reads after adapter removal
         min_length: 0
         # Optional: Minimum length to trigger poly-X tail trimming (Default: 5)
-        #trim_poly_x: 5
+        #poly_x_min_len: 5
         # Optional: Max percentage of unqualified bases allowed in a read (Default: 40)
         #unqualified_percent_limit: 40
         # Optional: Max number of N bases allowed in a read (Default: 5)

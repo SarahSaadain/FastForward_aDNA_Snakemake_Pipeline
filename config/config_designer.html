@@ -1551,7 +1551,7 @@ function buildYAML() {
   kv(8, 'min_quality', gn('ar_minq'));
   kv(8, 'min_length',  gn('ar_minl'));
   if (gb('ar_adv_en')) {
-    kv(8, 'trim_poly_x', gn('ar_polyx'));
+    kv(8, 'poly_x_min_len', gn('ar_polyx'));
     kv(8, 'unqualified_percent_limit', gn('ar_unqual'));
     kv(8, 'n_base_limit', gn('ar_nbase'));
   }
@@ -1848,9 +1848,9 @@ function populateForm(c) {
   const ars = ar.settings || {};
   sb('ar_exec', ar.execute); dot('ar_exec','d_ar');
   sv('ar_minq', ars.min_quality); sv('ar_minl', ars.min_length);
-  if (ars.trim_poly_x !== undefined || ars.unqualified_percent_limit !== undefined || ars.n_base_limit !== undefined) {
+  if (ars.poly_x_min_len !== undefined || ars.unqualified_percent_limit !== undefined || ars.n_base_limit !== undefined) {
     setOpt('ar_adv_en','ar_adv_body','ar_adv_hdr', true);
-    sv('ar_polyx', ars.trim_poly_x); sv('ar_unqual', ars.unqualified_percent_limit); sv('ar_nbase', ars.n_base_limit);
+    sv('ar_polyx', ars.poly_x_min_len); sv('ar_unqual', ars.unqualified_percent_limit); sv('ar_nbase', ars.n_base_limit);
   } else setOpt('ar_adv_en','ar_adv_body','ar_adv_hdr', false);
   if (ars.adapters_sequences) {
     setOpt('ar_adp_en','ar_adp_body','ar_adp_hdr', true);

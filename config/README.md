@@ -132,7 +132,7 @@ Controls FastQC + MultiQC quality reports at each processing stage and read coun
 |---|---|---|
 | `settings.min_quality` | `0` | Minimum base quality score for adapter trimming. |
 | `settings.min_length` | `0` | Minimum read length after adapter removal. |
-| `settings.trim_poly_x` | `5` | Minimum length to trigger poly-X tail trimming. |
+| `settings.poly_x_min_len` | `5` | Minimum length to trigger poly-X tail trimming. |
 | `settings.unqualified_percent_limit` | `40` | Max percentage of unqualified bases allowed in a read. |
 | `settings.n_base_limit` | `5` | Max number of N bases allowed in a read. |
 | `settings.adapters_sequences.r1` | auto-detect | Adapter sequence for read 1. If omitted, fastp detects adapters automatically. |
@@ -364,7 +364,7 @@ pipeline:
         min_quality: 0
         min_length: 0
         # Optional: advanced fastp trimming thresholds
-        #trim_poly_x: 5
+        #poly_x_min_len: 5
         #unqualified_percent_limit: 40
         #n_base_limit: 5
         # Optional: custom adapter sequences (auto-detected by fastp if not provided)
