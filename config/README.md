@@ -157,7 +157,7 @@ Both tools operate on quality-filtered reads and can be toggled independently.
 | Setting | Default | Description |
 |---|---|---|
 | `tools.ecmsd.settings.database` | — | Path to the ECMSD database folder. If omitted, the pipeline auto-creates a database at `resources/ecmsd_database` via `ECMSD --create-db`. |
-| `tools.ecmsd.settings.cov_threshold` | `50` | Minimum % of reference covered by reads to retain it. |
+| `tools.ecmsd.settings.cov_threshold` | `25` | Minimum % of reference covered by reads to retain it. |
 | `tools.ecmsd.settings.top_n` | `25` | Number of top references to generate alignment plots for. |
 | `tools.ecmsd.settings.mapping_quality` | `20` | Minimum mapping quality score to include a read. |
 | `tools.ecmsd.settings.taxonomic_hierarchy` | `species` | Taxonomic level at which to aggregate and report results. Options: `species`, `genus`, `family`, `order`. |
@@ -391,8 +391,8 @@ pipeline:
           settings:
             # Optional: path to ECMSD database folder (auto-created if not set)
             #database: "resources/ecmsd_database"
-            # Minimum % of reference covered by reads to retain it (Default: 50)
-            cov_threshold: 50
+            # Minimum % of reference covered by reads to retain it (Default: 25)
+            cov_threshold: 25
             # Number of top references to generate alignment plots for (Default: 25)
             top_n: 25
             # Minimum mapping quality to include a read (Default: 20)
