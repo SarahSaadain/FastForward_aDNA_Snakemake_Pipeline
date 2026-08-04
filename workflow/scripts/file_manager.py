@@ -47,33 +47,50 @@ def get_read_files_for_species(species: str) -> list[str]:
         read_files = get_files_in_folder_matching_pattern(species, "*.fastq.gz")
         
     if len(read_files) == 0:
-        logger.warning(f"No read files found for species {species}. Make sure the files are named with the pattern <Individual>*R[1,2]*.fastq.gz and are located in either {read_folder} or {species}.")
-        raise Exception(f"No read files found for species {species}. Make sure the files are named with the pattern <Individual>*R[1,2]*.fastq.gz and are located in either {read_folder} or {species}.")
-    
+        logger.warning(f"No read files found for species {species}. Make sure the files are named with the pattern <Individual>*_R1*.fastq.gz or <Individual>*_1*.fastq.gz and are located in either {read_folder} or {species}.")
+        raise Exception(f"No read files found for species {species}. Make sure the files are named with the pattern <Individual>*_R1*.fastq.gz or <Individual>*_1*.fastq.gz and are located in either {read_folder} or {species}.")
+
     logger.debug(f"Read files for species {species}: {read_files}")
-        
+
     return read_files
+
+# -----------------------------------------------------------------------------------------------
+# Regex matching the "read number" marker in a raw read filename: either the conventional
+# "R1"/"R2" token, or a bare "1"/"2" that stands alone as its own segment - bounded by
+# underscores (e.g. "..._1_001.fastq.gz") or immediately preceding the extension
+# (e.g. "..._1.fastq.gz"). The lookahead boundary keeps a bare digit from matching inside
+# a longer number, e.g. "_10_" or "_21.fastq.gz" are correctly ignored.
+READ_MARKER_RE = {
+    "1": re.compile(r"_(?:R1|1)(?=_|\.fastq\.gz$)"),
+    "2": re.compile(r"_(?:R2|2)(?=_|\.fastq\.gz$)"),
+}
+
+# -----------------------------------------------------------------------------------------------
+# Find the read-number marker (see READ_MARKER_RE) in a filename.
+# Returns the match object, or None if the filename has no marker for that read number.
+def _find_read_marker(filename: str, read_num: str):
+    return READ_MARKER_RE[read_num].search(filename)
 
 # -----------------------------------------------------------------------------------------------
 # Get only R1 raw read files for a given species
 def get_r1_read_files_for_species(species: str) -> list[str]:
     files = get_read_files_for_species(species)
-    
-    # since R1 and R2 files should always come in pairs, if there are no R1 files, 
-    # then there is probably something wrong with the file structure or naming. 
-    # Besides R1/R2, the name of the read files should be the same, 
-    # so we can just check for R1 files to build the list of samples and 
-    # individuals for a species. 
 
-    r1_files = [f for f in files if "_R1" in os.path.basename(f)]
+    # since R1 and R2 files should always come in pairs, if there are no R1 files,
+    # then there is probably something wrong with the file structure or naming.
+    # Besides R1/R2, the name of the read files should be the same,
+    # so we can just check for R1 files to build the list of samples and
+    # individuals for a species.
+
+    r1_files = [f for f in files if _find_read_marker(os.path.basename(f), "1")]
 
     if len(r1_files) == 0:
-        logger.warning(f"No R1 read files found for species {species}. Make sure the files are named with the pattern <Individual>*R[1,2]*.fastq.gz.")
+        logger.warning(f"No R1 read files found for species {species}. Make sure the files are named with the pattern <Individual>*_R1*.fastq.gz or <Individual>*_1*.fastq.gz.")
         logger.warning(f"Available read files for species {species}: {files}")
-        raise Exception(f"No R1 read files found for species {species}. Make sure the files are named with the pattern <Individual>*R[1,2]*.fastq.gz.")
-    
+        raise Exception(f"No R1 read files found for species {species}. Make sure the files are named with the pattern <Individual>*_R1*.fastq.gz or <Individual>*_1*.fastq.gz.")
+
     logger.debug(f"R1 read files for species {species}: {r1_files}")
-    
+
     return r1_files
 
 # -----------------------------------------------------------------------------------------------
@@ -83,47 +100,69 @@ def get_sample_ids_for_species(species):
 
     samples = []
     for raw_file in files:
-        filename = os.path.basename(raw_file).replace('.fastq.gz','').split("_R1")[0]
-        samples.append(filename)
-    
+        filename = os.path.basename(raw_file)
+        marker = _find_read_marker(filename, "1")
+        samples.append(filename[:marker.start()])
+
     logger.debug(f"Sample IDs for species {species}: {samples}")
 
     if len(samples) == 0:
         logger.warning(f"No sample IDs found for species {species}.")
         raise Exception(f"No sample IDs found for species {species}.")
-    
+
     return samples
+
+# -----------------------------------------------------------------------------------------------
+# (internal) Filter read_files down to those belonging to `sample` for the given read number,
+# i.e. files where the read marker (see READ_MARKER_RE) is immediately preceded by `sample`.
+def _read_files_for_sample(read_files, sample, read_num):
+    matches = []
+    for f in read_files:
+        marker = _find_read_marker(f, read_num)
+        if marker and f[:marker.start()] == sample:
+            matches.append(f)
+    return matches
 
 def get_raw_reads_for_sample(species, sample):
 
-    read_files = get_read_files_for_species(species) 
-    
+    read_files = get_read_files_for_species(species)
+
     # turn read paths into file names only
     read_files = [os.path.basename(f) for f in read_files]
 
     reads_dir = f"{species}/input/read_module"
- 
+
     # R1
-    base_r1 = f"{sample}_R1"
-    candidates_r1 = [f for f in read_files
-                     if re.match(base_r1 + r"(\S*)?\.fastq\.gz", f)]
-    
+    candidates_r1 = _read_files_for_sample(read_files, sample, "1")
+
     if not candidates_r1:
-        logger.warning(f"No R1 found for {sample}. Expected pattern: {base_r1}*.fastq.gz in {reads_dir}. Found files: {read_files}")
-        raise FileNotFoundError(f"No R1 found for {sample}. Expected pattern: {base_r1}*.fastq.gz in {reads_dir}. Found files: {read_files}")
+        logger.warning(f"No R1 found for {sample}. Expected pattern: {sample}_R1*.fastq.gz or {sample}_1*.fastq.gz in {reads_dir}. Found files: {read_files}")
+        raise FileNotFoundError(f"No R1 found for {sample}. Expected pattern: {sample}_R1*.fastq.gz or {sample}_1*.fastq.gz in {reads_dir}. Found files: {read_files}")
 
     r1 = os.path.join(reads_dir, sorted(candidates_r1)[0])
- 
+
     # R2
-    base_r2 = f"{sample}_R2"
-    candidates_r2 = [f for f in read_files
-                     if re.match(base_r2 + r"(\S*)?\.fastq\.gz", f)]
- 
+    candidates_r2 = _read_files_for_sample(read_files, sample, "2")
+
     if candidates_r2:
         r2 = os.path.join(reads_dir, sorted(candidates_r2)[0])
         return [r1, r2]  # Paired-end
     else:
         return [r1]      # Single-end
+
+# -----------------------------------------------------------------------------------------------
+# Given the path to a read 1 file, return the path its read 2 counterpart would have
+# (whether or not that file actually exists on disk), by swapping the read-number marker
+# (R1->R2, or a standalone 1->2).
+def get_read2_counterpart_path(read1_path):
+    directory = os.path.dirname(read1_path)
+    filename = os.path.basename(read1_path)
+    marker = _find_read_marker(filename, "1")
+    if not marker:
+        raise ValueError(f"File '{filename}' does not contain a recognizable read 1 marker (R1 or a standalone 1).")
+    replacement = "_R2" if marker.group(0) == "_R1" else "_2"
+    filename2 = filename[:marker.start()] + replacement + filename[marker.end():]
+    return os.path.join(directory, filename2)
 
 # -----------------------------------------------------------------------------------------------
 # (internal) Discover all individuals from disk without applying any config filter
@@ -239,7 +278,8 @@ def get_references_ids_for_species(species):
 def get_samples_for_species_individual(species, individual):
     samples = get_sample_ids_for_species(species)
 
-    # Currently, a sample is everything before the first "_R1" or "_R2" in the filename.
+    # Currently, a sample is everything before the first read-number marker (see READ_MARKER_RE)
+    # in the filename, e.g. "_R1"/"_R2" or a standalone "_1"/"_2".
     # The first part of the sample name (before the first "_") is considered the individual ID.
     # The sample might contain additional information after the individual ID, 
     # but we only want to match the samples with the individual ID at the start of the sample name.

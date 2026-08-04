@@ -27,13 +27,15 @@ Place them in `<species>/input/read_module/`. pastForward expects compressed FAS
 Reads must be compressed FASTQ (`.fastq.gz`). The filename must follow the convention:
 
 ```
-<Individual>_[<FreeText>_]R<1/2>[_<FreeText>].fastq.gz
+<Individual>_[<FreeText>_]<ReadNumber>[_<FreeText>].fastq.gz
 ```
+
+`<ReadNumber>` is either `R1`/`R2`, or a bare `1`/`2` that stands alone as its own segment — immediately before the extension (`..._1.fastq.gz`) or between underscores (`..._1_<FreeText>.fastq.gz`). A bare digit will not match inside a longer number such as `_10_` or `_21`.
 
 Everything before the first underscore is treated as the individual identifier and is used to group samples for merging.
 
 **Q: My data is single-end. Does pastForward support that?**
-Yes. pastForward auto-detects single-end vs. paired-end by checking whether an R2 file exists for each R1 file. Both modes are handled automatically.
+Yes. pastForward auto-detects single-end vs. paired-end by checking whether a matching read 2 file (`R2` or a standalone `2`) exists for each read 1 file. Both modes are handled automatically.
 
 **Q: Can I have multiple sequencing runs for the same individual?**
 Yes. All samples belonging to the same individual (same prefix before the first underscore) are merged into a single FASTQ during the "Merge by Individual" step. You can place all run files in `<species>/input/read_module/` and they will be processed and concatenated automatically.

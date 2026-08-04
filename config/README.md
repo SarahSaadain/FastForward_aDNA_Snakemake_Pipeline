@@ -49,7 +49,7 @@ Some exemptions include `*.sam` and unsorted `*.bam` files. These are deleted to
 The pipeline expects input read files to follow a standardized naming convention:
 
 ```
-<Individual>_[<FreeText>_]R<1/2>[_<FreeText>].fastq.gz
+<Individual>_[<FreeText>_]<ReadNumber>[_<FreeText>].fastq.gz
 ```
 
 Following this convention ensures proper organization and automated processing within the pipeline.  
@@ -57,12 +57,13 @@ Following this convention ensures proper organization and automated processing w
 ##### Filename Components:
 - **`<Individual>`** – A unique identifier for the sample or individual.  
 - **`<FreeText>`** – Any additional text or identifier that can be included in the filename. Typically, this is used to differentiate between different samples within the same individual, e.g. the same sample was extracted twice using different protocols.
-- **`R<1/2>`** – Indicates the read pair number, typically `R1` for the first read and `R2` for the second read. If the data is single-end, only `R1` should be present.
+- **`<ReadNumber>`** – Indicates the read pair number: either `R1`/`R2`, or a bare `1`/`2`. Typically read 1 for the first read and read 2 for the second read. If the data is single-end, only read 1 should be present. A bare `1`/`2` must stand alone as its own segment, either immediately before the extension (`..._1.fastq.gz`) or between underscores (`..._1_<FreeText>.fastq.gz`) — it will not match inside a longer number such as `_10_` or `_21`.
 - **`.fastq.gz`** – The expected file extension, indicating compressed FASTQ format. Only `.fastq.gz` files are supported.
 
-#### Example:
+#### Examples:
 ```
 Dmel01_DabneyProtocol_R1_001.fastq.gz
+Dmel01_DabneyProtocol_1_001.fastq.gz
 ```
 
 # Configuration File Structure for aDNA Pipeline (`config.yaml`)

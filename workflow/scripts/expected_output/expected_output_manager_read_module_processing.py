@@ -22,8 +22,10 @@ def get_expected_output_fastqc_raw(species):
         filename = os.path.basename(raw_file).replace('.fastq.gz','')
         all_inputs.append(f"{species}/results/read_module/reads_raw/fastqc/{filename}_raw_fastqc.html")
         # Add R2 if exists
-        if os.path.exists(raw_file.replace("_R1", "_R2")):
-            all_inputs.append(f"{species}/results/read_module/reads_raw/fastqc/{filename.replace('_R1', '_R2')}_raw_fastqc.html")
+        r2_path = get_read2_counterpart_path(raw_file)
+        if os.path.exists(r2_path):
+            r2_filename = os.path.basename(r2_path).replace('.fastq.gz', '')
+            all_inputs.append(f"{species}/results/read_module/reads_raw/fastqc/{r2_filename}_raw_fastqc.html")
     return all_inputs
 
 # -----------------------------------------------------------------------------------------------
