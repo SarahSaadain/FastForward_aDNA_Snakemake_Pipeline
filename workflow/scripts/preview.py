@@ -59,6 +59,16 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
                 lines.append(f"    Individuals ignored ({len(ignored_individuals)}) [not selected in config]:")
                 for ind in ignored_individuals:
                     lines.append(f"      - {ind}")
+            unmatched_reads = _discover_unmatched_read_files_for_species(sname)
+            if unmatched_reads:
+                lines.append(f"    Reads ignored ({len(unmatched_reads)}) [do not match naming convention]:")
+                for r in unmatched_reads:
+                    lines.append(f"      - {r}")
+            uncompressed_reads = _discover_uncompressed_fastq_files_for_species(sname)
+            if uncompressed_reads:
+                lines.append(f"    Reads ignored ({len(uncompressed_reads)}) [uncompressed .fastq — pipeline only processes .fastq.gz]:")
+                for r in uncompressed_reads:
+                    lines.append(f"      - {r}")
         except ConfigValidationError:
             raise
         except Exception:

@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
 
 - Config designer updated to match the `reveal_module`/`visualization` naming and the `read_module`/`reference_module`/`summary_module` renames
 - **Raw read naming convention**: read files may now use a bare `1`/`2` instead of `R1`/`R2` as the read-number marker (e.g. `Sample_1.fastq.gz` or `Sample_1_001.fastq.gz`), as long as the digit stands alone as its own underscore-delimited segment
+- **Preview logging**: now also reports raw read files found in `input/read_module/` that don't match the R1/R2 naming convention, and uncompressed `.fastq` files (the pipeline only processes `.fastq.gz`), both of which are otherwise silently ignored
 
 ## [2.0.0] - 2026-06-02
 

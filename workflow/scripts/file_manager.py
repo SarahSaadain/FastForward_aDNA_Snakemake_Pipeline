@@ -55,6 +55,24 @@ def get_read_files_for_species(species: str) -> list[str]:
     return read_files
 
 # -----------------------------------------------------------------------------------------------
+# (internal) Discover uncompressed *.fastq files in a species' raw read folder (or the species
+# folder directly, as a fallback - mirrors get_read_files_for_species). The pipeline only picks
+# up *.fastq.gz, so any bare .fastq files found here are silently skipped during processing.
+def _discover_uncompressed_fastq_files_for_species(species: str) -> list[str]:
+    read_folder = f"{species}/input/read_module"
+
+    try:
+        files = get_files_in_folder_matching_pattern(read_folder, "*.fastq")
+    except Exception:
+        try:
+            files = get_files_in_folder_matching_pattern(species, "*.fastq")
+        except Exception:
+            files = []
+
+    logger.debug(f"Uncompressed .fastq files found for species {species}: {files}")
+    return files
+
+# -----------------------------------------------------------------------------------------------
 # Regex matching the "read number" marker in a raw read filename: either the conventional
 # "R1"/"R2" token, or a bare "1"/"2" that stands alone as its own segment - bounded by
 # underscores (e.g. "..._1_001.fastq.gz") or immediately preceding the extension
@@ -92,6 +110,24 @@ def _discover_all_r1_read_files_for_species(species: str) -> list[str]:
     logger.debug(f"Discovered R1 read files for species {species}: {r1_files}")
 
     return r1_files
+
+# -----------------------------------------------------------------------------------------------
+# (internal) Discover raw read files on disk that don't match the naming convention (i.e. have
+# no recognizable R1/R2 or standalone 1/2 marker per READ_MARKER_RE) and are therefore ignored
+# by the pipeline instead of being paired into a sample's reads.
+def _discover_unmatched_read_files_for_species(species: str) -> list[str]:
+    try:
+        files = get_read_files_for_species(species)
+    except Exception:
+        return []
+
+    unmatched = [
+        f for f in files
+        if not _find_read_marker(os.path.basename(f), "1") and not _find_read_marker(os.path.basename(f), "2")
+    ]
+
+    logger.debug(f"Read files ignored (naming convention) for species {species}: {unmatched}")
+    return unmatched
 
 # -----------------------------------------------------------------------------------------------
 # Get R1 raw read files for a given species, restricted to the individuals selected in the config
