@@ -262,7 +262,7 @@ Yes. The mapper is configured independently under `pipeline.reference_module.map
 ## Deduplication & Damage
 
 **Q: Which DeDup build does pastForward use?**
-A [modified DeDup fork](https://github.com/SarahSaadain/DeDup), not upstream DeDup — the fork includes performance improvements. The jar is pinned and downloaded automatically by `workflow/scripts/bootstrap_dedup_jar.py`, so no manual build step is required. Benchmarks against upstream DeDup are tracked in a [separate comparison repo](https://github.com/SarahSaadain/DeDup_comparison_fork).
+A [modified DeDup fork](https://github.com/SarahSaadain/DeDup), not upstream DeDup — the fork includes performance improvements. It isn't published on bioconda, so the pinned jar is side-loaded automatically into the `dedup` conda environment by `workflow/envs/dedup.post-deploy.sh` the first time it's created, with no manual build step required. Benchmarks against upstream DeDup are tracked in a [separate comparison repo](https://github.com/SarahSaadain/DeDup_comparison_fork).
 
 **Q: Why does deduplication split the BAM into clusters?**
 DeDup can use large amounts of memory on reference genomes with many contigs. Splitting by contig cluster caps peak memory use. Adjust `deduplication.settings.max_contigs_per_cluster` (default 500) — lower values reduce memory at the cost of more merge operations.

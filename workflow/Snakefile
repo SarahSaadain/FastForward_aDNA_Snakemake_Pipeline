@@ -8,11 +8,6 @@
 # information for the pipeline.
 include: "rules/initialize.smk"
 
-# bootstrap_dedup_jar.py: Downloads our DeDup fork's prebuilt jar (if not
-# already present) so the dedup rule can run it with no manual setup after
-# cloning.
-include: "scripts/bootstrap_dedup_jar.py"
-
 # file_manager.py: Manages file paths and directories.
 include: "scripts/file_manager.py"
 

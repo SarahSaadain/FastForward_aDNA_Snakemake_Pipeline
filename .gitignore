@@ -4,4 +4,3 @@
 aDNA.code-workspace
 __pycache__
 .snakemake/
-resources/dedup/

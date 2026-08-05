@@ -2,3 +2,6 @@ channels:
   - conda-forge
 dependencies:
   - openjdk>=21
+  # needed to run the `dedup` wrapper installed by the neighboring
+  # dedup.post-deploy.sh
+  - python>=3
