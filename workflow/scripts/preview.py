@@ -66,7 +66,7 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
                     lines.append(f"      - {r}")
             uncompressed_reads = _discover_uncompressed_fastq_files_for_species(sname)
             if uncompressed_reads:
-                lines.append(f"    Reads ignored ({len(uncompressed_reads)}) [uncompressed .fastq — pipeline only processes .fastq.gz]:")
+                lines.append(f"    Reads ignored ({len(uncompressed_reads)}) [uncompressed .fastq/.fq — pipeline only processes {' or '.join(RAW_READ_EXTENSIONS)}]:")
                 for r in uncompressed_reads:
                     lines.append(f"      - {r}")
         except ConfigValidationError:

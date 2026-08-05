@@ -33,54 +33,96 @@ def get_files_in_folder_matching_pattern(folder: str, pattern: str) -> list:
     return files
 
 # -----------------------------------------------------------------------------------------------
-# Get all raw read files for a given species    
+# Supported raw read file extensions, checked in this order wherever a raw file needs to be
+# matched or resolved by its filename stem.
+RAW_READ_EXTENSIONS = (".fastq.gz", ".fq.gz")
+
+# -----------------------------------------------------------------------------------------------
+# Human-readable description of the accepted raw read naming pattern, for use in error messages.
+_RAW_READ_PATTERN_HINT = " or ".join(f"<Individual>*_R1*{ext} or <Individual>*_1*{ext}" for ext in RAW_READ_EXTENSIONS)
+
+# -----------------------------------------------------------------------------------------------
+# Get all raw read files for a given species
 def get_read_files_for_species(species: str) -> list[str]:
 
     read_folder = f"{species}/input/read_module"
 
-    try:   
+    try:
         logger.debug(f"Looking for read files in {read_folder} for species {species}.")
-        read_files = get_files_in_folder_matching_pattern(read_folder, "*.fastq.gz")
-    except Exception as e:  
+        read_files = []
+        for ext in RAW_READ_EXTENSIONS:
+            read_files += get_files_in_folder_matching_pattern(read_folder, f"*{ext}")
+    except Exception as e:
         # Try looking in species folder directly as fallback.
         logger.debug(f"Read folder not found for species {species}. Trying species folder directly.")
-        read_files = get_files_in_folder_matching_pattern(species, "*.fastq.gz")
-        
+        read_files = []
+        for ext in RAW_READ_EXTENSIONS:
+            read_files += get_files_in_folder_matching_pattern(species, f"*{ext}")
+
     if len(read_files) == 0:
-        logger.warning(f"No read files found for species {species}. Make sure the files are named with the pattern <Individual>*_R1*.fastq.gz or <Individual>*_1*.fastq.gz and are located in either {read_folder} or {species}.")
-        raise Exception(f"No read files found for species {species}. Make sure the files are named with the pattern <Individual>*_R1*.fastq.gz or <Individual>*_1*.fastq.gz and are located in either {read_folder} or {species}.")
+        logger.warning(f"No read files found for species {species}. Make sure the files are named with the pattern {_RAW_READ_PATTERN_HINT} and are located in either {read_folder} or {species}.")
+        raise Exception(f"No read files found for species {species}. Make sure the files are named with the pattern {_RAW_READ_PATTERN_HINT} and are located in either {read_folder} or {species}.")
 
     logger.debug(f"Read files for species {species}: {read_files}")
 
     return read_files
 
 # -----------------------------------------------------------------------------------------------
-# (internal) Discover uncompressed *.fastq files in a species' raw read folder (or the species
-# folder directly, as a fallback - mirrors get_read_files_for_species). The pipeline only picks
-# up *.fastq.gz, so any bare .fastq files found here are silently skipped during processing.
+# Strip a raw read file's compressed-FASTQ extension (see RAW_READ_EXTENSIONS) from a filename.
+def strip_raw_read_extension(filename: str) -> str:
+    for ext in RAW_READ_EXTENSIONS:
+        if filename.endswith(ext):
+            return filename[: -len(ext)]
+    return filename
+
+# -----------------------------------------------------------------------------------------------
+# Resolve the on-disk path of a raw read file given its filename stem (the filename with its
+# compressed-FASTQ extension removed, see strip_raw_read_extension), trying each of
+# RAW_READ_EXTENSIONS in turn.
+def get_raw_read_path_for_stem(species: str, stem: str) -> str:
+    reads_dir = f"{species}/input/read_module"
+    for ext in RAW_READ_EXTENSIONS:
+        candidate = os.path.join(reads_dir, f"{stem}{ext}")
+        if os.path.exists(candidate):
+            return candidate
+    raise FileNotFoundError(
+        f"No raw read file found for '{stem}' in {reads_dir} (tried extensions: {', '.join(RAW_READ_EXTENSIONS)})."
+    )
+
+# -----------------------------------------------------------------------------------------------
+# (internal) Discover uncompressed *.fastq/*.fq files in a species' raw read folder (or the
+# species folder directly, as a fallback - mirrors get_read_files_for_species). The pipeline only
+# picks up the compressed extensions in RAW_READ_EXTENSIONS, so any bare uncompressed files found
+# here are silently skipped during processing.
 def _discover_uncompressed_fastq_files_for_species(species: str) -> list[str]:
     read_folder = f"{species}/input/read_module"
+    uncompressed_patterns = ["*.fastq", "*.fq"]
 
     try:
-        files = get_files_in_folder_matching_pattern(read_folder, "*.fastq")
+        files = []
+        for pattern in uncompressed_patterns:
+            files += get_files_in_folder_matching_pattern(read_folder, pattern)
     except Exception:
         try:
-            files = get_files_in_folder_matching_pattern(species, "*.fastq")
+            files = []
+            for pattern in uncompressed_patterns:
+                files += get_files_in_folder_matching_pattern(species, pattern)
         except Exception:
             files = []
 
-    logger.debug(f"Uncompressed .fastq files found for species {species}: {files}")
+    logger.debug(f"Uncompressed .fastq/.fq files found for species {species}: {files}")
     return files
 
 # -----------------------------------------------------------------------------------------------
 # Regex matching the "read number" marker in a raw read filename: either the conventional
 # "R1"/"R2" token, or a bare "1"/"2" that stands alone as its own segment - bounded by
 # underscores (e.g. "..._1_001.fastq.gz") or immediately preceding the extension
-# (e.g. "..._1.fastq.gz"). The lookahead boundary keeps a bare digit from matching inside
-# a longer number, e.g. "_10_" or "_21.fastq.gz" are correctly ignored.
+# (e.g. "..._1.fastq.gz" or "..._1.fq.gz"). The lookahead boundary keeps a bare digit from
+# matching inside a longer number, e.g. "_10_" or "_21.fastq.gz" are correctly ignored.
+_EXT_ALTERNATION = "|".join(re.escape(ext) for ext in RAW_READ_EXTENSIONS)
 READ_MARKER_RE = {
-    "1": re.compile(r"_(?:R1|1)(?=_|\.fastq\.gz$)"),
-    "2": re.compile(r"_(?:R2|2)(?=_|\.fastq\.gz$)"),
+    "1": re.compile(rf"_(?:R1|1)(?=_|(?:{_EXT_ALTERNATION})$)"),
+    "2": re.compile(rf"_(?:R2|2)(?=_|(?:{_EXT_ALTERNATION})$)"),
 }
 
 # -----------------------------------------------------------------------------------------------
@@ -103,9 +145,9 @@ def _discover_all_r1_read_files_for_species(species: str) -> list[str]:
     r1_files = [f for f in files if _find_read_marker(os.path.basename(f), "1")]
 
     if len(r1_files) == 0:
-        logger.warning(f"No R1 read files found for species {species}. Make sure the files are named with the pattern <Individual>*_R1*.fastq.gz or <Individual>*_1*.fastq.gz.")
+        logger.warning(f"No R1 read files found for species {species}. Make sure the files are named with the pattern {_RAW_READ_PATTERN_HINT}.")
         logger.warning(f"Available read files for species {species}: {files}")
-        raise Exception(f"No R1 read files found for species {species}. Make sure the files are named with the pattern <Individual>*_R1*.fastq.gz or <Individual>*_1*.fastq.gz.")
+        raise Exception(f"No R1 read files found for species {species}. Make sure the files are named with the pattern {_RAW_READ_PATTERN_HINT}.")
 
     logger.debug(f"Discovered R1 read files for species {species}: {r1_files}")
 
@@ -203,8 +245,8 @@ def get_raw_reads_for_sample(species, sample):
     candidates_r1 = _read_files_for_sample(read_files, sample, "1")
 
     if not candidates_r1:
-        logger.warning(f"No R1 found for {sample}. Expected pattern: {sample}_R1*.fastq.gz or {sample}_1*.fastq.gz in {reads_dir}. Found files: {read_files}")
-        raise FileNotFoundError(f"No R1 found for {sample}. Expected pattern: {sample}_R1*.fastq.gz or {sample}_1*.fastq.gz in {reads_dir}. Found files: {read_files}")
+        logger.warning(f"No R1 found for {sample}. Expected pattern: {sample}_R1* or {sample}_1*, with extension {' or '.join(RAW_READ_EXTENSIONS)}, in {reads_dir}. Found files: {read_files}")
+        raise FileNotFoundError(f"No R1 found for {sample}. Expected pattern: {sample}_R1* or {sample}_1*, with extension {' or '.join(RAW_READ_EXTENSIONS)}, in {reads_dir}. Found files: {read_files}")
 
     r1 = os.path.join(reads_dir, sorted(candidates_r1)[0])
 

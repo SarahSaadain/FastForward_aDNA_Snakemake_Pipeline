@@ -1,11 +1,18 @@
 ####################################################
+# Python helper functions for rules
+####################################################
+
+def determine_fastqc_raw_input(wildcards):
+    return get_raw_read_path_for_stem(wildcards.species, wildcards.sample)
+
+####################################################
 # Snakemake rules
 ####################################################
 
 # Rule: Run FastQC on raw reads
 rule run_fastqc_raw:
     input:
-        "{species}/input/read_module/{sample}.fastq.gz"
+        determine_fastqc_raw_input
     output:
         html="{species}/results/read_module/reads_raw/fastqc/{sample}_raw_fastqc.html",
         zip="{species}/results/read_module/reads_raw/fastqc/{sample}_raw_fastqc.zip"
