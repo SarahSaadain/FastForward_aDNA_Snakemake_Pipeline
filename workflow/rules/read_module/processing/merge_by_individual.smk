@@ -32,7 +32,7 @@ rule merge_reads_by_individual:
     input:
         merge_reads_by_individual_input
     output:
-        "{species}/processed/read_module/reads_merged/{individual}.fastq.gz"
+        "{species}/results/read_module/reads_merged/{individual}.fastq.gz"
     log:
         "{species}/processed/read_module/reads_merged/{individual}_merge_reads.log"
     message: 

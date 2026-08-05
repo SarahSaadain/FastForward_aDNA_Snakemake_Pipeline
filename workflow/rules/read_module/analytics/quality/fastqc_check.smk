@@ -69,7 +69,7 @@ rule run_fastqc_quality_filtered:
 # Rule: Run FastQC on merged reads
 rule run_fastqc_merged:
     input:
-        merged="{species}/processed/read_module/reads_merged/{individual}.fastq.gz"
+        merged="{species}/results/read_module/reads_merged/{individual}.fastq.gz"
     output:
         html="{species}/results/read_module/reads_merged/fastqc/{individual}_merged_fastqc.html",
         zip="{species}/results/read_module/reads_merged/fastqc/{individual}_merged_fastqc.zip"

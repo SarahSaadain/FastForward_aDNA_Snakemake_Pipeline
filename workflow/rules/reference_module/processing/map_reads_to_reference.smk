@@ -14,7 +14,7 @@ _ref_mapper_extra  = _ref_settings.get(
 if _ref_mapper == "minimap2":
     rule map_reads_to_reference_minimap2:
         input:
-            query=["{species}/processed/read_module/reads_merged/{individual}.fastq.gz"],
+            query=["{species}/results/read_module/reads_merged/{individual}.fastq.gz"],
             target="{species}/input/reference_module/{reference}.mmi",
         output:
             temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_unsorted.bam")
@@ -32,7 +32,7 @@ elif _ref_mapper == "bwa-aln":
      # bwa-aln
     rule align_reads_to_reference_bwa_aln:
         input:
-            fastq="{species}/processed/read_module/reads_merged/{individual}.fastq.gz",
+            fastq="{species}/results/read_module/reads_merged/{individual}.fastq.gz",
             idx=multiext("{species}/input/reference_module/{reference}.fa", ".amb", ".ann", ".bwt", ".pac", ".sa"),
         output:
             temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}.sai"),
@@ -46,7 +46,7 @@ elif _ref_mapper == "bwa-aln":
 
     rule map_reads_to_reference_bwa_aln:
         input:
-            fastq="{species}/processed/read_module/reads_merged/{individual}.fastq.gz",
+            fastq="{species}/results/read_module/reads_merged/{individual}.fastq.gz",
             sai="{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}.sai",
             idx=multiext("{species}/input/reference_module/{reference}.fa", ".amb", ".ann", ".bwt", ".pac", ".sa"),
         output:
@@ -60,7 +60,7 @@ elif _ref_mapper == "bwa-aln":
 else:
     rule map_reads_to_reference_bwa_mem2:
         input:
-            reads=["{species}/processed/read_module/reads_merged/{individual}.fastq.gz"],
+            reads=["{species}/results/read_module/reads_merged/{individual}.fastq.gz"],
             idx=multiext("{species}/input/reference_module/{reference}.fa", ".0123", ".amb", ".ann", ".bwt.2bit.64", ".pac"),
         output:
             temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_unsorted.bam")

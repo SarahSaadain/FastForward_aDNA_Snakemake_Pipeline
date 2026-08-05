@@ -31,7 +31,7 @@ if _dyn_mapper == "minimap2":
 
     rule map_reads_to_scg_feature_library_minimap2:
         input:
-            query=["{species}/processed/read_module/reads_merged/{individual}.fastq.gz"],
+            query=["{species}/results/read_module/reads_merged/{individual}.fastq.gz"],
             target="{species}/processed/reveal_module/{feature_library}/library/{feature_library}_and_scg.suffixed.fasta.mmi",
         output:
             temp("{species}/processed/reveal_module/{feature_library}/mapped/{individual}_{feature_library}_and_scg.sorted.with_unmapped.bam"),
@@ -59,7 +59,7 @@ elif _dyn_mapper == "bwa-aln":
 
     rule align_reads_to_library_bwa_aln:
         input:
-            fastq="{species}/processed/read_module/reads_merged/{individual}.fastq.gz",
+            fastq="{species}/results/read_module/reads_merged/{individual}.fastq.gz",
             idx=multiext("{species}/processed/reveal_module/{feature_library}/library/{feature_library}_and_scg.suffixed.fasta", ".amb", ".ann", ".bwt", ".pac", ".sa"),
         output:
             temp("{species}/processed/reveal_module/{feature_library}/mapped/{individual}_{feature_library}_and_scg.sai"),
@@ -73,7 +73,7 @@ elif _dyn_mapper == "bwa-aln":
 
     rule map_reads_to_scg_feature_library_bwa_aln:
         input:
-            fastq="{species}/processed/read_module/reads_merged/{individual}.fastq.gz",
+            fastq="{species}/results/read_module/reads_merged/{individual}.fastq.gz",
             sai="{species}/processed/reveal_module/{feature_library}/mapped/{individual}_{feature_library}_and_scg.sai",
             idx=multiext("{species}/processed/reveal_module/{feature_library}/library/{feature_library}_and_scg.suffixed.fasta", ".amb", ".ann", ".bwt", ".pac", ".sa"),
         output:
@@ -115,7 +115,7 @@ else:
 
     rule map_reads_to_scg_feature_library_bwa_mem2:
         input:
-            reads=["{species}/processed/read_module/reads_merged/{individual}.fastq.gz"],
+            reads=["{species}/results/read_module/reads_merged/{individual}.fastq.gz"],
             idx=multiext("{species}/processed/reveal_module/{feature_library}/library/{feature_library}_and_scg.suffixed.fasta", ".amb", ".ann", ".bwt.2bit.64", ".pac", ".0123"),
         output:
             temp("{species}/processed/reveal_module/{feature_library}/mapped/{individual}_{feature_library}_and_scg.sorted.with_unmapped.bam"),

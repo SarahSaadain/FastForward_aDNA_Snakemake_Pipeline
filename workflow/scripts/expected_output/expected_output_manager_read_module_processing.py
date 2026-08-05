@@ -160,7 +160,7 @@ def get_expected_output_read_merging(species):
     # read merging is should always be the result of raw read processing, so we don't check config for this step.
     expected_outputs = []
     for individual in get_individuals_for_species(species):
-        expected_outputs.append(f"{species}/processed/read_module/reads_merged/{individual}.fastq.gz")
+        expected_outputs.append(f"{species}/results/read_module/reads_merged/{individual}.fastq.gz")
 
     return expected_outputs
 
