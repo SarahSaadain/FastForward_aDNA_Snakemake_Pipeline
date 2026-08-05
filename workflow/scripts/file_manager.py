@@ -72,8 +72,8 @@ def _find_read_marker(filename: str, read_num: str):
     return READ_MARKER_RE[read_num].search(filename)
 
 # -----------------------------------------------------------------------------------------------
-# Get only R1 raw read files for a given species
-def get_r1_read_files_for_species(species: str) -> list[str]:
+# (internal) Discover all R1 raw read files from disk without applying any config filter
+def _discover_all_r1_read_files_for_species(species: str) -> list[str]:
     files = get_read_files_for_species(species)
 
     # since R1 and R2 files should always come in pairs, if there are no R1 files,
@@ -89,14 +89,28 @@ def get_r1_read_files_for_species(species: str) -> list[str]:
         logger.warning(f"Available read files for species {species}: {files}")
         raise Exception(f"No R1 read files found for species {species}. Make sure the files are named with the pattern <Individual>*_R1*.fastq.gz or <Individual>*_1*.fastq.gz.")
 
-    logger.debug(f"R1 read files for species {species}: {r1_files}")
+    logger.debug(f"Discovered R1 read files for species {species}: {r1_files}")
 
     return r1_files
 
 # -----------------------------------------------------------------------------------------------
-# Get sample IDs for a species based on raw read filenames
-def get_sample_ids_for_species(species):
-    files = get_r1_read_files_for_species(species)
+# Get R1 raw read files for a given species, restricted to the individuals selected in the config
+# (see get_individuals_for_species). Use _discover_all_r1_read_files_for_species when the
+# unfiltered on-disk list is needed.
+def get_r1_read_files_for_species(species: str) -> list[str]:
+    all_r1_files = _discover_all_r1_read_files_for_species(species)
+
+    selected_individuals = set(get_individuals_for_species(species))
+    r1_files = [f for f in all_r1_files if get_individual_from_filepath(f) in selected_individuals]
+
+    logger.debug(f"Config-filtered R1 read files for species {species}: {r1_files}")
+
+    return r1_files
+
+# -----------------------------------------------------------------------------------------------
+# (internal) Discover all sample IDs from disk without applying any config filter
+def _discover_all_sample_ids_for_species(species):
+    files = _discover_all_r1_read_files_for_species(species)
 
     samples = []
     for raw_file in files:
@@ -104,11 +118,28 @@ def get_sample_ids_for_species(species):
         marker = _find_read_marker(filename, "1")
         samples.append(filename[:marker.start()])
 
-    logger.debug(f"Sample IDs for species {species}: {samples}")
+    logger.debug(f"Discovered sample IDs for species {species}: {samples}")
 
     if len(samples) == 0:
         logger.warning(f"No sample IDs found for species {species}.")
         raise Exception(f"No sample IDs found for species {species}.")
+
+    return samples
+
+# -----------------------------------------------------------------------------------------------
+# Get sample IDs for a species based on raw read filenames, restricted to the individuals
+# selected in the config (see get_individuals_for_species).
+def get_sample_ids_for_species(species):
+    all_samples = _discover_all_sample_ids_for_species(species)
+
+    selected_individuals = set(get_individuals_for_species(species))
+    samples = [s for s in all_samples if get_individual_from_sample(s) in selected_individuals]
+
+    logger.debug(f"Config-filtered sample IDs for species {species}: {samples}")
+
+    if len(samples) == 0:
+        logger.warning(f"No sample IDs found for species {species} after applying the config individuals filter.")
+        raise Exception(f"No sample IDs found for species {species} after applying the config individuals filter.")
 
     return samples
 
@@ -167,7 +198,9 @@ def get_read2_counterpart_path(read1_path):
 # -----------------------------------------------------------------------------------------------
 # (internal) Discover all individuals from disk without applying any config filter
 def _discover_all_individuals_for_species(species):
-    samples = get_sample_ids_for_species(species)
+    # Must use the unfiltered sample list: get_sample_ids_for_species() filters by the
+    # individuals computed here, which would otherwise recurse.
+    samples = _discover_all_sample_ids_for_species(species)
     if len(samples) == 0:
         logger.warning(f"No samples found for species {species}.")
         raise Exception(f"No samples found for species {species}.")
@@ -276,7 +309,10 @@ def get_references_ids_for_species(species):
 # -----------------------------------------------------------------------------------------------
 # Get sample IDs for a specific individual within a species
 def get_samples_for_species_individual(species, individual):
-    samples = get_sample_ids_for_species(species)
+    # Unfiltered on purpose: the caller already names the individual, so the config
+    # individuals filter is redundant here and would only turn an explicitly requested
+    # (but unselected) individual into an error.
+    samples = _discover_all_sample_ids_for_species(species)
 
     # Currently, a sample is everything before the first read-number marker (see READ_MARKER_RE)
     # in the filename, e.g. "_R1"/"_R2" or a standalone "_1"/"_2".

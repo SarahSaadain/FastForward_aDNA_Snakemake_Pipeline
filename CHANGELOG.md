@@ -22,6 +22,10 @@ All notable changes to this project will be documented in this file.
 - **Folder structure (naming consistency)**: The `read_module` data folders under `{species}/input/`, `{species}/processed/`, and `{species}/results/` were briefly named `reads_module` during the rename above; renamed back to `read_module` to match the `pipeline.read_module` config key and the `workflow/rules/read_module/` directory
 - **Config structure**: `pipeline.reference_module.analysis.settings.c_curve` renamed to `preseq_complexitiy_curve`; the Snakemake rule `preseq_c_curve` is now `preseq_complexitiy_curve` (output file names and the underlying `preseq c_curve` command are unchanged)
 
+### Bug Fixes
+
+- **`read_module` ignored the species `individuals` selection**: the read module enumerated samples directly from disk, so individuals excluded via `species.<name>.individuals` were still adapter-trimmed, quality-filtered, FastQC'd and included in the read-count statistics (and therefore the read-count plots and MultiQC reports). Sample and R1-file lookup now applies the same config filter that individual, reference and feature-library lookup already used.
+
 ### Other Changes
 
 - Config designer updated to match the `reveal_module`/`visualization` naming and the `read_module`/`reference_module`/`summary_module` renames
