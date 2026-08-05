@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - ecmsd=1.2.*
+  - ecmsd=1.*
