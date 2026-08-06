@@ -1,5 +1,10 @@
 # Setup Overview
 
+## Requirements
+
+* [Snakemake](https://snakemake.readthedocs.io) **>= 9.9.0** — pastForward checks this at startup and refuses to run on older versions.
+* [Conda](https://docs.conda.io) **>= 24.7.1** (or a compatible drop-in such as Mamba/Miniforge) — used by `--use-conda` to manage all tool dependencies automatically.
+
 ## Install Snakemake
 To install Snakemake, you can use conda, which is a package manager that simplifies the installation of software and its dependencies. You can create a new conda environment for Snakemake and install it using the following commands:
 
@@ -18,19 +23,46 @@ Refer to the [Snakemake documentation](https://snakemake.readthedocs.io/en/stabl
 
 ## Folder Structure
 
+### Project Structure
+
+A pastForward **project** is a directory that contains the `workflow/` and `config/` folders (i.e. a copy/clone of this repository) plus one `<species>/` folder for each species you want to process:
+
+```
+my_project/                  <- project root — run `snakemake` from here
+├── workflow/                <- pastForward pipeline code (Snakefile, rules, scripts)
+├── config/                  <- config.yaml, config_designer.html
+├── Dmel/                    <- one folder per species; name must match the `species:` key in config.yaml
+│   ├── input/
+│   ├── processed/
+│   └── results/
+└── Dsim/
+    ├── input/
+    ├── processed/
+    └── results/
+```
+
+There is currently no separation between the pipeline code and your input/output data — a project is a self-contained directory. To start a new project, copy (or `git clone`) pastForward into a new folder and add your species folders there; the `workflow/` and `config/` folders can be freely copied between projects.
+
+One project can process 1–n species, and which layout to use depends on how you want to run them:
+
+* **Combined** — several species in one project folder, sharing one `snakemake` invocation and one config. Convenient when you just want a quick look across many species at once, e.g. checking data quality for a low-depth trial-sequencing batch covering several species with a single command.
+* **Separate** — one project folder per species. Each species can then be started, re-run, and configured independently without affecting the others. This is the better choice for deep-sequencing / production runs.
+
 ### Species Folders
 
 The project contains folders for different species, which each contain the raw data, processed data, and results for the particular species.
 
-The species folders should be placed in the root folder of your pipeline.
+The species folders should be placed in the project root, alongside `workflow/` and `config/` (see [Project Structure](#project-structure) above).
 
 #### Providing Raw Data
 The pipeline supports automatically moving the raw reads to the `<species>/input/read_module/` folder as well as the reference to the `<species>/input/reference_module/` folder. Simply provide the files in the `<species>` folder. Alternatively, you can manually move the files to the respective folders.
   - provide the raw reads in `<species>/input/read_module/` folder
   - provide the reference in `<species>/input/reference_module/` folder
 
+If you don't want to move or copy the original files (e.g. they are large, shared with other tools, or live on a different volume), place a **symlink** in the expected location instead — pastForward detects symlinks and uses them directly without copying. The symlink itself must follow pastForward's naming convention, but the file it points to can keep its own name and live anywhere on disk.
+
 When adding a new species, make sure to 
-- the species folder should be placed in the root folder of your pipeline
+- the species folder should be placed in the project root, alongside `workflow/` and `config/`
 - add the folder name should match the species key which is defined in `config.yaml` below `species:` 
 
 #### Folder Structure

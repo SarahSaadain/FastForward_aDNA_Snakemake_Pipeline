@@ -5,11 +5,19 @@
 **Q: What is the minimum Snakemake version required?**
 Snakemake 9.9.0 or higher is required. pastForward enforces this at startup and will refuse to run on older versions.
 
+**Q: What is the minimum conda version required?**
+Conda 24.7.1 or higher (or a compatible drop-in such as Mamba/Miniforge) is recommended. Conda is used to manage all tool dependencies automatically via `--use-conda`.
+
 **Q: Do I need to pre-install all the bioinformatics tools?**
 No. pastForward manages all tool dependencies through conda environments automatically when you pass `--use-conda`. Snakemake creates the environments on the first run.
 
 **Q: Can I run pastForward without conda?**
 Not reliably. Each pastForward rule is tied to a specific conda environment that ensures reproducible software versions. Running without `--use-conda` will fail unless you have all required tools installed and on your PATH with compatible versions.
+
+**Q: Where does pastForward live relative to my input/output data, and do I need a separate copy for each project?**
+A pastForward **project** is a directory that contains the `workflow/` and `config/` folders (i.e. a copy/clone of the pastForward repository) plus one `<species>/` folder for each species you want to process — pipeline code and data currently live side by side in the same directory, they are not separated. To start a new project, copy pastForward into a new folder and add your species folders there.
+
+One project can process 1–n species. Whether to combine several species in one project folder or give each its own project folder depends on how you want to run them: combining them shares one `snakemake` invocation and config, which is handy for a quick look across a batch (e.g. checking data quality for several species from a low-depth trial-sequencing run); separating them lets each species be started, re-run, and configured independently, which is preferable for deep-sequencing/production runs. See [Project Structure](../config/README.md#project-structure) for a folder diagram.
 
 **Q: How does the pastForward know which files to create?**
 pastForward defines a set of expected output files based on the configuration and the input data. At the start of each run, it performs an input validation step that checks for the presence of available input files and prints a summary of the detected files.
@@ -47,7 +55,7 @@ Place it in `<species>/input/reference_module/`. pastForward accepts `.fa`, `.fa
 The recommended approach is to place files directly in the species folder. pastForward will detect and move them to the correct subfolders automatically on the first run.
 
 **Q: I have a lot of data. Can I symlink to it instead of copying?**
-Yes. pastForward will detect if files are symlinks and will use them directly without copying. Just place the symlinks in the expected locations under `<species>/input/` and pastForward will handle them seamlessly.
+Yes. pastForward will detect if files are symlinks and will use them directly without copying. Just place the symlinks in the expected locations under `<species>/input/` and pastForward will handle them seamlessly. Only the symlink's own name needs to follow pastForward's naming convention — the file it points to keeps its original name and can live anywhere on disk, including outside the project folder entirely.
 
 **Q: Can I have multiple species in the same project?**
 Yes. Each species is processed independently, so you can have as many species as needed within the same project. Just add additional entries under the `species` section in the config.yaml and place their respective data in separate subfolders under `<species>/input/`.
@@ -235,6 +243,9 @@ Non theless, it is recommended to monitor disk usage during the first run to ens
 
 **Q: Can I run multiple instances of pastForward simultaneously?**
 Yes, you can run multiple instances of pastForward simultaneously, provided that each instance has its own independent working directory and configuration. This allows you to process different datasets or run the same dataset with different parameters in parallel.
+
+**Q: Does pastForward support running on an HPC cluster (e.g. via Slurm or PBS)?**
+pastForward is a plain Snakemake workflow, so it should in principle work with Snakemake's [cluster/HPC execution support](https://snakemake.readthedocs.io/en/stable/executing/cluster.html) (e.g. via the Slurm or PBS [executor plugins](https://snakemake.github.io/snakemake-plugin-catalog/)), without any changes to the pipeline itself. This has not yet been specifically tested with pastForward — testing on a Slurm-based HPC cluster is planned.
 
 **Q: Can I stop a running pastForward instance without corrupting the results?**
 Yes. pastForward is designed to handle interruptions gracefully. If you need to stop a running instance, you can safely terminate the process (e.g., using `Ctrl+C` or `kill`). pastForward will leave behind a lock file to prevent concurrent runs from interfering with each other.

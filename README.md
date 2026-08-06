@@ -26,7 +26,7 @@ The pastForward pipeline is implemented using Snakemake, a workflow management s
 
 ### Running the Pipeline
 
-To run the pipeline, navigate to the root directory containing the `workflow/Snakefile` and execute:
+Run `snakemake` from the **project root directory** — the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. This is *not* the `workflow/` folder itself; do not `cd` into `workflow/` before running the commands below. See [Project Structure](config/README.md#project-structure) for how a project is laid out.
 
 ```bash
 # minimum command to run the pipeline
@@ -68,6 +68,10 @@ nohup snakemake --cores 40 --use-conda --keep-going --rerun-trigger mtime > pipe
 Snakemake automatically tracks the state of the pipeline and will only re-run steps that are incomplete or outdated. If you want to restart the pipeline from the beginning, you can delete the relevant output files and re-run the pipeline.
 
 If you want to restart the pipeline, because it has crashed or was terminated, you might need to use the `--rerun-incomplete` flag. This will re-run all incomplete steps, even if they have not been modified since the last run.
+
+### Running on an HPC Cluster
+
+pastForward is a plain Snakemake workflow, so it should in principle work with Snakemake's [cluster/HPC execution support](https://snakemake.readthedocs.io/en/stable/executing/cluster.html) (e.g. Slurm, PBS) via the corresponding [executor plugins](https://snakemake.github.io/snakemake-plugin-catalog/), without any changes to the pipeline itself. This has not yet been specifically tested with pastForward — testing on a Slurm-based HPC cluster is planned. If you try it yourself, feedback is very welcome.
 
 ## Reports
 
