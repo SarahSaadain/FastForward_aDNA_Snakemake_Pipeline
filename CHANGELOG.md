@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 
-## [2.0.0] - Unreleased
+## [2.0.0]
 
 > ⚠️ NOTE: This release restructures the pipeline's configuration and output layout, renames all four pipeline stages for naming consistency, and replaces the vendored `teplotter` scripts with the standalone [REVEAL](https://github.com/SarahSaadain/REVEAL) toolkit. Existing configs and output directories will need to be updated/reorganized to match.
 
