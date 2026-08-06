@@ -8,7 +8,7 @@ When `pipeline.reveal_module.scg_selector.execute: true` is set and no FASTA fil
 
 If a FASTA is provided in `{species}/input/reveal_module/scg/`, this step is skipped entirely and the user-supplied file is used.
 
-See [config/README.md](../config/README.md) for all configuration options (`lineage`, `num_top_scgs`, `min_length_scg`, `max_length_scg`, etc.).
+See [config/parameters.md](../config/parameters.md) for all configuration options (`lineage`, `num_top_scgs`, `min_length_scg`, `max_length_scg`, etc.).
 
 ---
 

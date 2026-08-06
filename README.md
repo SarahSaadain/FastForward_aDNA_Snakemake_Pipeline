@@ -26,7 +26,7 @@ The pastForward pipeline is implemented using Snakemake, a workflow management s
 
 ### Running the Pipeline
 
-Run `snakemake` from the **project root directory** — the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. This is *not* the `workflow/` folder itself; do not `cd` into `workflow/` before running the commands below. See [Project Structure](config/README.md#project-structure) for how a project is laid out.
+Run `snakemake` from the **project root directory** — the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. This is *not* the `workflow/` folder itself. See [Project Structure](config/README.md#project-structure) for how a project is laid out.
 
 ```bash
 # minimum command to run the pipeline

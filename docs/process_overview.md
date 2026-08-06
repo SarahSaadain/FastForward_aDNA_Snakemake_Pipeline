@@ -186,6 +186,6 @@ Because Qualimap and mapDamage2 output directories need to be co-located with ot
 
 The entire Past Forward aDNA Pipeline is controlled through a single `config/config.yaml` file. Species to be processed are defined as a top-level mapping under `species:`, each with an optional display name, and all modules run for every species listed. Every major processing step can be independently enabled or disabled.
 
-For a full description of all configuration options, defaults, and an annotated example config, see [config/README.md](../config/README.md).
+For a full description of all configuration options and defaults, see [config/parameters.md](../config/parameters.md). For an annotated example config, see [config/max_config_sample.yaml](../config/max_config_sample.yaml).
 
 On every execution the pipeline logs extensive provenance information: timestamp, platform and OS details, Python and Snakemake versions, the active conda environment, the git commit hash of the pipeline code, the full command line used, all config file paths, and the complete loaded configuration. A minimum Snakemake version of 9.9.0 is enforced at startup.
