@@ -14,6 +14,9 @@ from pathlib import Path
 import yaml
 import json
 
+# import version from workflow/scripts/version.py
+from scripts.version import __version__
+
 # Import Snakemake plugin settings for executor modes
 from snakemake_interface_executor_plugins.settings import ExecMode
 
@@ -52,18 +55,7 @@ configfile: "config/config.yaml"
 # (spawned by a parent Snakemake process — the parent already printed this)
 if workflow.exec_mode != ExecMode.SUBPROCESS:
 
-    # --- Git version ---
-    pastForward_version = "unknown"
-    try:
-        _git = subprocess.run(
-            ["git", "describe", "--tags", "--always"],
-            capture_output=True, text=True, cwd=workflow.basedir
-        )
-        if _git.returncode == 0:
-            pastForward_version = _git.stdout.strip()
-        del _git
-    except Exception:
-        pass
+    pastForward_version = __version__
 
     try:
         process = subprocess.Popen(
@@ -74,7 +66,7 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
         out = out.decode("ascii")
         pastForward_git_hash = out.strip()
         if pastForward_git_hash and pastForward_git_hash not in pastForward_version:
-            pastForward_version += "-" + pastForward_git_hash
+            pastForward_version += " (git: " + pastForward_git_hash + ")"
         del process, out, err, pastForward_git_hash
     except Exception:
         pass
@@ -155,12 +147,6 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
 
     config_str = yaml.dump(config.get("pipeline", {}), sort_keys=False, default_flow_style=False)
     logging.info("Loaded configuration:\n%s", config_str)
-
-    species_section = config.get("species", {})
-    species_list = [
-        f"{sdata.get('name', sname)} [{sname}]" for sname, sdata in species_section.items()
-    ]
-    logging.info("Detected species:\n- %s", "\n- ".join(species_list))
 
 # =================================================================================================
 # End of initialize.smk

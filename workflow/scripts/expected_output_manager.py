@@ -45,11 +45,14 @@ def get_expected_outputs_from_pipeline(wildcards):
 
     # Loop over each species defined in the config (must be available in the global scope)
     for species in config.get("species", {}):
+        if not config.get("species", {}).get(species, {}).get("execute", True):
+            logging.info("Skipping species '%s' (execute: false)", species)
+            continue
         # For each species, gather expected output file paths from all relevant processing stages
-        expected_output += get_expexted_output_raw_read_processing(species)
-        expected_output += get_expected_output_reference_processing(species)
-        expected_output += get_expected_output_dynamics_processing(species)
-        expected_output += get_expected_output_summary_processing(species)
+        expected_output += get_expected_output_read_module(species)
+        expected_output += get_expected_output_reference_module(species)
+        expected_output += get_expected_output_reveal_module_processing(species)
+        expected_output += get_expected_output_summary_module(species)
 
     # Optionally skip files that already exist to avoid redundant processing
     expected_output = skip_existing_files(expected_output)

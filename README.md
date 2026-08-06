@@ -8,13 +8,15 @@ A pipeline for analyzing raw historical/ancient DNA obtained from a sequencing f
 
 Below is an overview of the steps of the pipeline:
 
-![Pipeline Overview](docs/img/pf_workflow_withoutLogo.svg)
+![Pipeline Overview](docs/img/pf_pipeline_process_withoutLogo.svg)
 
-For detailed information about the processing steps, see the [Process Overview](docs/process_overview.md) page.
+For detailed information about the processing steps, see the [Process Overview](docs/process_overview.md) page. For common questions and troubleshooting, see the [FAQ](docs/FAQ.md).
 
 ## Setup Overview
 
 The pastForward pipeline is implemented using Snakemake. Information about the setup as well as configuration options can be found in the [Setup Instructions](config/README.md).
+
+All pipeline stages are enabled by default, so a minimal `config.yaml` with just the project name and species list is sufficient to get started. If you want to adjust any settings, open [config/config_designer.html](config/config_designer.html) in a browser — the interactive Config Designer lets you configure pipeline stages and species settings through a graphical interface and exports a ready-to-use `config.yaml`.
 
 For more information on Snakemake, see the [Snakemake website](https://snakemake.github.io).
 
@@ -24,7 +26,7 @@ The pastForward pipeline is implemented using Snakemake, a workflow management s
 
 ### Running the Pipeline
 
-To run the pipeline, navigate to the root directory containing the `workflow/Snakefile` and execute:
+Run `snakemake` from the **project root directory** — the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. This is *not* the `workflow/` folder itself. See [Project Structure](config/README.md#project-structure) for how a project is laid out.
 
 ```bash
 # minimum command to run the pipeline
@@ -67,14 +69,18 @@ Snakemake automatically tracks the state of the pipeline and will only re-run st
 
 If you want to restart the pipeline, because it has crashed or was terminated, you might need to use the `--rerun-incomplete` flag. This will re-run all incomplete steps, even if they have not been modified since the last run.
 
+### Running on an HPC Cluster
+
+pastForward is a plain Snakemake workflow, so it should in principle work with Snakemake's [cluster/HPC execution support](https://snakemake.readthedocs.io/en/stable/executing/cluster.html) (e.g. Slurm, PBS) via the corresponding [executor plugins](https://snakemake.github.io/snakemake-plugin-catalog/), without any changes to the pipeline itself. This has not yet been specifically tested with pastForward — testing on a Slurm-based HPC cluster is planned. If you try it yourself, feedback is very welcome.
+
 ## Reports
 
 pastForward generates a MultiQC report for:
 - each species (including all samples from this species, to compare the results across all samples)
-   - **Location**: `{species}/results/summary/individual_level/{individual}_multiqc.html`
+   - **Location**: `{species}/results/summary/species_level/{species}_multiqc.overall.html`
 
 - each individual sample
-   - **Location**: `{species}/results/summary/species_level/{species}_multiqc.overall.html`
+   - **Location**: `{species}/results/summary/individual_level/{individual}_multiqc.html`
 
 The reports include a comprehensive summary of reads before and after trimming, contamination analysis, coverage analysis, deduplication and damage rescaling. The reports are essential for assessing the quality of the sequenced reads and for making decisions about the need of additional library preparation.
 

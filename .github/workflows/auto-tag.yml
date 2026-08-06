@@ -11,7 +11,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -22,6 +22,23 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: false
           release_branches: main
+
+      - name: Update version.py from tag
+        if: steps.tag.outputs.new_tag != ''
+        run: |
+          TAG=${{ steps.tag.outputs.new_tag }}
+          VERSION=${TAG#v}
+          sed -i "s/__version__ = .*/__version__ = \"$VERSION\"/" workflow/scripts/version.py
+
+      - name: Commit version.py back to main
+        if: steps.tag.outputs.new_tag != ''
+        run: |
+          git config user.name "${{ github.event.head_commit.author.name }}"
+          git config user.email "${{ github.event.head_commit.author.email }}"
+          
+          git add workflow/scripts/version.py
+          git commit -m "chore: sync version.py to ${{ steps.tag.outputs.new_tag }} [skip ci]" || true
+          git push origin HEAD:main
 
       - name: Create GitHub Release
         if: steps.tag.outputs.new_tag != ''

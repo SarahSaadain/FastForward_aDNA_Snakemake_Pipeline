@@ -1,5 +1,10 @@
 # Setup Overview
 
+## Requirements
+
+* [Snakemake](https://snakemake.readthedocs.io) **>= 9.9.0** — pastForward checks this at startup and refuses to run on older versions.
+* [Conda](https://docs.conda.io) **>= 24.7.1** (or a compatible drop-in such as Mamba/Miniforge) — used by `--use-conda` to manage all tool dependencies automatically.
+
 ## Install Snakemake
 To install Snakemake, you can use conda, which is a package manager that simplifies the installation of software and its dependencies. You can create a new conda environment for Snakemake and install it using the following commands:
 
@@ -18,19 +23,46 @@ Refer to the [Snakemake documentation](https://snakemake.readthedocs.io/en/stabl
 
 ## Folder Structure
 
+### Project Structure
+
+A pastForward **project** is a directory that contains the `workflow/` and `config/` folders (i.e. a copy/clone of this repository) plus one `<species>/` folder for each species you want to process:
+
+```
+my_project/                  <- project root — run `snakemake` from here
+├── workflow/                <- pastForward pipeline code (Snakefile, rules, scripts)
+├── config/                  <- config.yaml, config_designer.html
+├── Dmel/                    <- one folder per species; name must match the `species:` key in config.yaml
+│   ├── input/
+│   ├── processed/
+│   └── results/
+└── Dsim/
+    ├── input/
+    ├── processed/
+    └── results/
+```
+
+There is currently no separation between the pipeline code and your input/output data — a project is a self-contained directory. To start a new project, copy (or `git clone`) pastForward into a new folder and add your species folders there.
+
+One project can process 1–n species. Which layout to use depends on how you want to run them:
+
+* **Combined** — several species in one project folder, sharing one `snakemake` invocation and one config. Convenient when you just want a quick look across many species at once, e.g. checking data quality for a low-depth trial-sequencing batch covering several species with a single command.
+* **Separate** — one project folder per species. Each species can then be started, re-run, and configured independently without affecting the others. This is the better choice for deep-sequencing / production runs.
+
 ### Species Folders
 
 The project contains folders for different species, which each contain the raw data, processed data, and results for the particular species.
 
-The species folders should be placed in the root folder of your pipeline.
+The species folders should be placed in the project root, alongside `workflow/` and `config/` (see [Project Structure](#project-structure) above).
 
 #### Providing Raw Data
-The pipeline supports automatically moving the raw reads to the `<species>/raw/reads/` folder as well as the reference to the `<species>/raw/ref/` folder. Simply provide the files in the `<species>` folder. Alternatively, you can manually move the files to the respective folders.
-  - provide the raw reads in `<species>/raw/reads/` folder
-  - provide the reference in `<species>/raw/ref/` folder
+The pipeline supports automatically moving the raw reads to the `<species>/input/read_module/` folder as well as the reference to the `<species>/input/reference_module/` folder. Simply provide the files in the `<species>` folder. Alternatively, you can manually move the files to the respective folders.
+  - provide the raw reads in `<species>/input/read_module/` folder
+  - provide the reference in `<species>/input/reference_module/` folder
+
+If you don't want to move or copy the original files (e.g. they are large, shared with other tools, or live on a different volume), place a **symlink** in the expected location instead — pastForward detects symlinks and uses them directly without copying. The symlink itself must follow pastForward's naming convention, but the file it points to can keep its own name and live anywhere on disk.
 
 When adding a new species, make sure to 
-- the species folder should be placed in the root folder of your pipeline
+- the species folder should be placed in the project root, alongside `workflow/` and `config/`
 - add the folder name should match the species key which is defined in `config.yaml` below `species:` 
 
 #### Folder Structure
@@ -49,7 +81,8 @@ Some exemptions include `*.sam` and unsorted `*.bam` files. These are deleted to
 The pipeline expects input read files to follow a standardized naming convention:
 
 ```
-<Individual>_[<FreeText>_]R<1/2>[_<FreeText>].fastq.gz
+<Individual>_[<FreeText>_]<ReadNumber>[_<FreeText>].fastq.gz
+<Individual>_[<FreeText>_]<ReadNumber>[_<FreeText>].fq.gz
 ```
 
 Following this convention ensures proper organization and automated processing within the pipeline.  
@@ -57,193 +90,30 @@ Following this convention ensures proper organization and automated processing w
 ##### Filename Components:
 - **`<Individual>`** – A unique identifier for the sample or individual.  
 - **`<FreeText>`** – Any additional text or identifier that can be included in the filename. Typically, this is used to differentiate between different samples within the same individual, e.g. the same sample was extracted twice using different protocols.
-- **`R<1/2>`** – Indicates the read pair number, typically `R1` for the first read and `R2` for the second read. If the data is single-end, only `R1` should be present.
-- **`.fastq.gz`** – The expected file extension, indicating compressed FASTQ format. Only `.fastq.gz` files are supported.
+- **`<ReadNumber>`** – Indicates the read pair number: either `R1`/`R2`, or a bare `1`/`2`. Typically read 1 for the first read and read 2 for the second read. If the data is single-end, only read 1 should be present. A bare `1`/`2` must stand alone as its own segment, either immediately before the extension (`..._1.fastq.gz`) or between underscores (`..._1_<FreeText>.fastq.gz`) — it will not match inside a longer number such as `_10_` or `_21`.
+- **`.fastq.gz` / `.fq.gz`** – The expected file extensions, indicating compressed FASTQ format. Only these two compressed extensions are supported; uncompressed `.fastq`/`.fq` files are ignored.
 
-#### Example:
+#### Examples:
 ```
 Dmel01_DabneyProtocol_R1_001.fastq.gz
+Dmel01_DabneyProtocol_1_001.fastq.gz
+Dmel01_DabneyProtocol_R1_001.fq.gz
 ```
 
-# Configuration File Structure for aDNA Pipeline (`config.yaml`)
+# Configuration (`config.yaml`)
 
 The `config.yaml` file is used to configure the aDNA pipeline. It contains settings such as project name, the species list and the pipeline stages and their process steps.
 
-## Global Settings
-
-* **project\_name**: Name of the aDNA project.
-
-## Pipeline Settings
-
-Defines the overall pipeline behavior, including execution controls and process details.
-
-### Pipeline Stages and Process Steps
-
-* The pipeline is broken into **stages** (e.g., `raw_reads_processing`, `reference_processing`).
-* Each stage contains multiple **process steps** (e.g., `adapter_removal`, `deduplication`, ...).
-* Both stages and process steps can be controlled with `execute: true/false` flags to enable or disable them.
-* Some process steps include additional configurable settings (e.g., adapter sequences, database paths, ...).
-* If an enabled process step requires data from a previous stage which is disabled in the config, the pipeline will execute the disabled process step anyway.
-
-### Important Defaults
-
-* You **do not need to specify all stages or process steps** explicitly.
-* Any **stage or process step not provided in the config defaults to `execute: true`** and will be executed.
-
-### Example `config.yaml`
+All pipeline stages are enabled by default, so a minimal config containing only the project name and species list is sufficient to run the pipeline without any further changes:
 
 ```yaml
-# config.yaml - Configuration file for aDNA pipeline
-# This file contains settings for various stages of the pipeline
+project_name: "pastForward_Project"
 
-project_name: "aDNA_Project"
-
-# Pipeline stages and their configurations
-pipeline:
-
-  # Global settings
-  global:
-    # When true, existing output files will be skipped to avoid re-computation (Default: true)
-    skip_existing_files: true
-
-  # Stages of the pipeline
-
-  # Raw reads processing
-  # Includes quality checking, adapter removal, quality filtering, merging, 
-  # contamination analysis, and statistical analysis
-  raw_reads_processing:
-    # When true, this stage will be executed. (Default: true)
-    execute: true
-
-    # Sub-stages with their respective settings
-    # Quality checking of raw reads
-    quality_checking_raw:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-    
-    # Adapter removal from raw reads
-    adapter_removal:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-      # Settings for adapter removal
-      settings: 
-        # Minimum quality score for adapter removal
-        min_quality: 0
-        # Minimum length of reads after adapter removal
-        min_length: 0
-        # Optional: Adapter sequences for read 1 and read 2
-        # If not provided, fastp will try to identify adapters automatically
-        adapters_sequences:
-          # Adapter sequence for read 1
-          r1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"
-          # Adapter sequence for read 2
-          r2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT" 
-    
-    # Quality checking of trimmed reads
-    quality_checking_trimmed:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-    # Quality filtering of trimmed reads
-    quality_filtering:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-      settings:
-        # Minimum quality score for quality filtering
-        min_quality: 15
-        # Minimum length of reads after quality filtering
-        min_length: 30
-
-    # Quality checking of quality-filtered reads
-    quality_checking_quality_filtered:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-    # Quality checking of merged reads
-    quality_checking_merged:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-    # Contamination analysis
-    contamination_analysis:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-      tools:
-        # ECMSD tool settings for contamination analysis
-        ecmsd:
-          # When true, this tool will be executed (Default: true)
-          execute: true
-        # Centrifuge tool settings for contamination analysis
-        centrifuge:
-          # When true, this tool will be executed (Default: true)
-          execute: true
-          settings:
-            # Optional: Path to the conda environment for Centrifuge
-            # If not provided, the default environment will be used
-            #conda_env: "../../../../envs/centrifuge.yaml"
-            # Path to the Centrifuge index
-            index: "/path/to/centrifuge_index"
-    
-    # Statistical analysis
-    statistical_analysis:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-  # Reference processing
-  reference_processing:
-    # When true, this stage will be executed (Default: true)
-    execute: true
-    
-    # Deduplication settings
-    deduplication:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: false
-      settings:
-        # To increase performance, deduplication will be done per cluster of contigs
-        # Below settings define how the contigs will be clustered
-        # Optional: Maximum number of contigs per cluster (Default: 10 if not specified)
-        max_contigs_per_cluster: 10
-        # Optional: Maximum number of contigs per cluster (Default: 500 if not specified)
-        max_contigs_per_cluster: 500
-    
-    # Damage rescaling settings for mapDamage2
-    damage_rescaling:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-    # Damage analysis settings for mapDamage2
-    damage_analysis:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-    # Endogenous reads analysis settings
-    endogenous_reads_analysis: 
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-    # Coverage analysis settings
-    coverage_analysis: 
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-  dynamics:
-    # When true, this stage will be executed (Default: true)
-    execute: true
-    teplotter:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-    pf_normalization:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-  
-  summary_processing:
-    # When true, this stage will be executed (Default: true)
-    execute: true
-
-# Species details
 species:
-  Clup:
-    name: "Canis lupus"
   Dmel:
     name: "Drosophila melanogaster"
+```
+
+* To adjust any pipeline settings, open [config_designer.html](config_designer.html) in a browser. The interactive Config Designer guides you through all available options and exports a ready-to-use `config.yaml`.
+* For the full list of settings, their defaults, and descriptions, see [parameters.md](parameters.md).
+* For a fully-commented example config using every available setting, see [max_config_sample.yaml](max_config_sample.yaml).

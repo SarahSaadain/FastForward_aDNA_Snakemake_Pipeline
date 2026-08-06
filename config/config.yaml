@@ -1,159 +1,42 @@
-# config.yaml - Configuration file for pastForward
-# This file contains settings for various stages of the pipeline
-
+# config_demo.yaml - Minimum configuration for pastForward
+#
+# Only project_name and at least one species entry are required.
+# All pipeline stages run with their defaults when not specified.
+#
+# For a full list of settings and an interactive editor, open config_designer.html in a browser.
 
 project_name: "pastForward_Project"
 
-# Pipeline stages and their configurations
-pipeline:
-
-  # Global settings
-  global:
-    # When true, existing output files will be skipped to avoid re-computation (Default: true)
-    skip_existing_files: true
-
-  # Stages of the pipeline
-
-  # Raw reads processing
-  # Includes quality checking, adapter removal, quality filtering, merging, 
-  # contamination analysis, and statistical analysis
-  raw_reads_processing:
-    # When true, this stage will be executed. (Default: true)
-    execute: true
-
-    # Sub-stages with their respective settings
-    # Quality checking of raw reads
-    quality_checking_raw:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-    
-    # Adapter removal from raw reads
-    adapter_removal:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-      # Settings for adapter removal
-      settings: 
-        # Minimum quality score for adapter removal
-        min_quality: 0
-        # Minimum length of reads after adapter removal
-        min_length: 0
-        # Optional: Adapter sequences for read 1 and read 2
-        # If not provided, fastp will try to identify adapters automatically
-        #adapters_sequences:
-          # Adapter sequence for read 1
-          #r1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"
-          # Adapter sequence for read 2
-          #r2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT" 
-        # Optional: Extra parameters for adapter removal (Default: "")
-        #extra_params: ""
-    
-    # Quality checking of trimmed reads
-    quality_checking_trimmed:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-    # Quality filtering of trimmed reads
-    quality_filtering:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-      settings:
-        # Minimum quality score for quality filtering
-        min_quality: 15
-        # Minimum length of reads after quality filtering
-        min_length: 30
-
-    # Quality checking of quality-filtered reads
-    quality_checking_quality_filtered:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-    # Quality checking of merged reads
-    quality_checking_merged:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-    # Contamination analysis
-    contamination_analysis:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-      tools:
-        # ECMSD tool settings for contamination analysis
-        ecmsd:
-          # When true, this tool will be executed (Default: true)
-          execute: true
-        # Centrifuge tool settings for contamination analysis
-        centrifuge:
-          # When true, this tool will be executed (Default: true)
-          execute: true
-          settings:
-            # Optional: When true, human will be included in the Centrifuge analysis (Default: false)
-            include_human_taxid: true
-            # Optional: Path to the conda environment for Centrifuge
-            # If not provided, the default environment will be used
-            #conda_env: "../../../../envs/centrifuge.yaml"
-            # Path to the Centrifuge index. If not provided, the default index will be downloaded and used
-            # index: "/path/to/centrifuge_index"
-    
-    # Statistical analysis
-    statistical_analysis:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-  # Reference processing
-  reference_processing:
-    # When true, this stage will be executed (Default: true)
-    execute: true
-    
-    # Deduplication settings
-    deduplication:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: false
-      settings:
-        # To increase performance, deduplication will be done per cluster of contigs
-        # Below settings define how the contigs will be clustered
-        # Optional: Maximum number of contigs per cluster (Default: 10 if not specified)
-        max_contigs_per_cluster: 10
-        # Optional: Maximum number of contigs per cluster (Default: 500 if not specified)
-        max_contigs_per_cluster: 500
-    
-    # Damage rescaling settings for mapDamage2
-    damage_rescaling:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-    # Damage analysis settings for mapDamage2
-    damage_analysis:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-    # Endogenous reads analysis settings
-    endogenous_reads_analysis: 
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-    # Coverage analysis settings
-    coverage_analysis: 
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-
-  dynamics:
-    # When true, this stage will be executed (Default: true)
-    execute: true
-    teplotter:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-    pf_normalization:
-      # When true, this sub-stage will be executed (Default: true)
-      execute: true
-  
-  summary_processing:
-    # When true, this stage will be executed (Default: true)
-    execute: true
-
-# Species-specific settings
+# Species settings
+# The key (e.g. "Dmel") must match the species folder name in the pipeline root directory.
 species:
-  # Settings for the demo species
-  demo:
-    # Name of the species
-    name: "Dmel Demo"
+  Dmel:
+    name: "Drosophila melanogaster"
+
+    # Required only when using the REVEAL stage with SCG auto-determination
+    # (i.e. no pre-built SCG FASTA is placed in {species}/input/reveal_module/scg/).
+    # Find available lineages at https://busco.ezlab.org/
+    lineage: "drosophilidae_odb12"
+
+    # Optional: limit which individuals to process (all discovered by default)
+    #individuals:
+    #  - IND001
+    #  - IND002
+
+    # Optional: limit which reference genomes to use (all discovered by default)
+    # IDs are filename stems with dots replaced by underscores (e.g. genome.fna → genome)
+    #references:
+    #  - genome
+
+    # Optional: limit which feature libraries to use (all discovered by default)
+    #feature_libraries:
+    #  - my_lib
+
+# To add more species, duplicate the block above:
+# species:
+#   Dmel:
+#     name: "Drosophila melanogaster"
+#     lineage: "drosophilidae_odb12"
+#   Equus:
+#     name: "Equus caballus"
+#     lineage: "equidae_odb10"
