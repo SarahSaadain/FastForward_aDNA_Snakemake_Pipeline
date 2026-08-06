@@ -101,7 +101,7 @@ Merged per-individual reads are mapped to the reference genome. Mapping always r
 
 | Setting | Default | Description |
 |---|---|---|
-| `settings.mapper` | `bwa-mem2` | Mapper to use. Options: `bwa-aln` (classic seed-and-extend, recommended for short aDNA reads <70 bp), `bwa-mem2` (faster, for longer reads), `minimap2` (versatile, uses `-ax sr` preset for short reads). |
+| `settings.mapper` | `bwa-mem2` | Mapper to use. Options: `bwa-aln` (classic seed-and-extend), `bwa-mem2` (default), `minimap2` (versatile, uses `-ax sr` preset for short reads). |
 | `settings.mapper_extra_params` | — | Optional extra parameters passed directly to the mapper. For `bwa-aln`, defaults to `-n 0.01 -k 2 -l 1024 -o 2` (Oliva et al. 2021). |
 
 #### `deduplication`

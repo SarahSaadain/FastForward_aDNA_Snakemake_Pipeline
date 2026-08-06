@@ -1,8 +1,8 @@
 <p align="center"><img src="docs/img/pastforward_logo_block.svg" width="250"/></p>
 
-# pastForward - An aDNA Pipeline based on snakemake
+# pastForward - A pipeline for ancient and historical DNA based on Snakemake
 
-A pipeline for analyzing raw historical/ancient DNA obtained from a sequencing facility. Using Snakemake, it ensures efficient resource management and automated handling of software dependencies. It processes and generates reports on sequence quality and contamination, with checks specifically suited for ancient and historical DNA short reads, to assess whether an extraction was successful and the sample is free of major contamination. Additionally, reads are mapped and rescaled according to their damage profiles, ready for downstream analyses. It also optionally enables comparisons of key genomic features across time points, such as transposon insertions, gene copy number changes, or endosymbiont strain replacements.
+A pipeline for analyzing raw ancient and historical DNA obtained from a sequencing facility. Using Snakemake, it ensures efficient resource management and automated handling of software dependencies. It processes and generates reports on sequence quality and contamination, with checks specifically suited for ancient and historical DNA short reads, to assess whether an extraction was successful and the sample is free of major contamination. Additionally, reads are mapped and rescaled according to their damage profiles, ready for downstream analyses. It also optionally enables comparisons of key genomic features across time points, such as transposon insertions, gene copy number changes, or endosymbiont strain replacements.
 
 ## Workflow Overview
 

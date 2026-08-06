@@ -1,5 +1,5 @@
-# Past Forward aDNA Pipeline — Process Overview
-This document describes the processing logic of the Past Forward aDNA Pipeline across its three main modules: raw read processing, reference processing, and REVEAL processing. A fourth module handles summary reporting across all results. All pipeline behaviour is controlled through `config/config.yaml`.
+# pastForward aDNA/hDNA Pipeline — Process Overview
+This document describes the processing logic of the pastForward aDNA/hDNA Pipeline across its three main modules: raw read processing, reference processing, and REVEAL processing. A fourth module handles summary reporting across all results. All pipeline behaviour is controlled through `config/config.yaml`.
 
 ![Pipeline Overview](img/pf_pipeline_process.svg)
 
@@ -17,7 +17,7 @@ Adapter sequences are removed from raw reads using **fastp**. This step can be t
 
 For single-end data, an adapter sequence can optionally be provided via **`pipeline.read_module.adapter_removal.settings.adapters_sequences.r1`**. If left empty, fastp performs automatic adapter detection. For paired-end data, separate sequences can be set for R1 and R2 via **`adapters_sequences.r1`** and **`adapters_sequences.r2`**; if neither is provided, fastp's built-in paired-end detection is used instead. Beyond adapters, the step enforces a minimum read length (**`settings.min_length`**, default 0) and a minimum per-base quality score (**`settings.min_quality`**, default 0). Poly-X tail trimming is always active. Additional fastp parameters can be passed directly via **`settings.extra_params`**.
 
-Paired-end reads receive additional treatment: overlapping read pairs are merged into single reads, which is particularly important for ancient DNA where fragment lengths are often shorter than the combined read length. The final output for PE samples concatenates the merged reads, the unmerged trimmed R1 and R2, and any unpaired reads into a single FASTQ file — ensuring no data is discarded. Fastp generates an HTML and JSON report for every sample, which feed into later QC aggregation.
+Paired-end reads receive additional treatment: overlapping read pairs are merged into single reads, which is particularly important for ancient and historical DNA where fragment lengths are often shorter than the combined read length. The final output for PE samples concatenates the merged reads, the unmerged trimmed R1 and R2, and any unpaired reads into a single FASTQ file — ensuring no data is discarded. Fastp generates an HTML and JSON report for every sample, which feed into later QC aggregation.
 
 ### Quality Filtering
 
@@ -43,7 +43,7 @@ Two R-based plots are generated from the read count statistics: one showing tota
 
 ### Contamination Analysis
 
-The Past Forward aDNA Pipeline supports two contamination detection tools, both operating on the quality-filtered reads. The entire contamination analysis block is controlled by **`pipeline.read_module.contamination.execute`**, and each tool can additionally be toggled individually.
+The pastForward aDNA/hDNA Pipeline supports two contamination detection tools, both operating on the quality-filtered reads. The entire contamination analysis block is controlled by **`pipeline.read_module.contamination.execute`**, and each tool can additionally be toggled individually.
 
 Both tools are, mechanically, taxonomic read classifiers — they assign reads to reference taxa and report abundance/proportions, the same kind of output a general metagenomic profiling pipeline would produce. There is no dedicated contamination statistic (e.g. mismatch-to-consensus or heterozygosity-based estimates) computed here. The "contamination" framing comes from how the results are interpreted: since each sample is expected to derive from one known target organism, any substantial proportion of reads assigned to other taxa is treated as evidence of exogenous/contaminating DNA rather than as a community worth profiling for its own sake.
 
@@ -61,13 +61,13 @@ Before mapping can begin, the reference genome is standardised to a `.fa` extens
 
 ### Read Mapping
 
-The merged per-individual reads are mapped to the reference using a configurable mapper, set via **`pipeline.reference_module.mapping.settings.mapper`** (default `bwa-mem2`). Three mappers are supported: **bwa-aln** (classic seed-and-extend, recommended for short aDNA reads <70 bp), **bwa-mem2** (faster modern aligner, suited for longer reads), and **minimap2** (versatile aligner, uses the `-ax sr` preset for short reads). Additional mapper flags can be supplied via **`settings.mapper_extra_params`**; for `bwa-aln`, the pipeline defaults to `-n 0.01 -k 2 -l 1024 -o 2` (Oliva et al. 2021) if no custom parameters are provided.
+The merged per-individual reads are mapped to the reference using a configurable mapper, set via **`pipeline.reference_module.mapping.settings.mapper`** (default `bwa-mem2`). Three mappers are supported: **bwa-aln** (classic seed-and-extend, recommended for ultra short aDNA/hDNA reads (<70 bp). Generates the most accurate alignments, but can be very slow), **bwa-mem2** (faster aligner, designed for reads around 70 bp, but performs also well on shorter reads), and **minimap2** (versatile aligner, uses the `-ax sr` preset for short reads around 100 bp). Additional mapper flags can be supplied via **`settings.mapper_extra_params`**; for `bwa-aln`, the pipeline defaults to `-n 0.01 -k 2 -l 1024 -o 2` (Oliva et al. 2021) if no custom parameters are provided.
 
 The resulting alignments are immediately sorted by coordinate and indexed. The unsorted BAM is discarded to save disk space. At this point the sorted BAM represents all mapped reads including duplicates, and is used as-is for library complexity estimation before any duplicate removal or damage rescaling.
 
 ### Deduplication
 
-PCR and sequencing duplicates are removed using **DeDup**, a tool specifically designed for ancient DNA that correctly handles merged single-stranded reads. Deduplication is controlled by **`pipeline.reference_module.deduplication.execute`** (default `true`). If disabled, the sorted BAM from mapping is passed directly to subsequent steps.
+PCR and sequencing duplicates are removed using **DeDup**, a tool specifically designed for ancient and historical DNA that correctly handles merged single-stranded reads. Deduplication is controlled by **`pipeline.reference_module.deduplication.execute`** (default `true`). If disabled, the sorted BAM from mapping is passed directly to subsequent steps.
 
 The pipeline uses a [modified DeDup fork](https://github.com/SarahSaadain/DeDup) for performance improvements over upstream DeDup; since the fork isn't on bioconda, the jar is side-loaded automatically into the `dedup` conda environment on first creation (see `workflow/envs/dedup.post-deploy.sh`). Benchmarks against upstream DeDup are tracked in a [separate comparison repo](https://github.com/SarahSaadain/DeDup_comparison_fork).
 
@@ -75,7 +75,7 @@ Because DeDup can be memory-intensive on reference genomes with many contigs, th
 
 ### DNA Damage Analysis and BAM Rescaling
 
-Ancient DNA is characterised by cytosine deamination, appearing as C→T substitutions at the 5' end and G→A substitutions at the 3' end of reads. This step profiles those damage patterns and optionally corrects for them. It is controlled by **`pipeline.reference_module.damage_rescaling.execute`** (default `true`).
+ancient and historical DNA and historical DNA is characterised by cytosine deamination, appearing as C→T substitutions at the 5' end and G→A substitutions at the 3' end of reads. This step profiles those damage patterns and optionally corrects for them. It is controlled by **`pipeline.reference_module.damage_rescaling.execute`** (default `true`).
 
 The input BAM for this step is selected dynamically: if deduplication was enabled the deduplicated BAM is used, otherwise the sorted BAM from mapping. The tool **mapDamage2** is run on the selected BAM to estimate damage patterns and rescale base quality scores accordingly. The rescaled BAM is then sorted and indexed, and the unsorted rescaled BAM is discarded. The mapDamage2 output directory, including the rescaled BAM and all statistics files, is copied into the summary folder structure to be included in the MultiQC report.
 
@@ -87,7 +87,7 @@ After all optional processing steps, a single canonical `_final.bam` is produced
 
 ### Filter Unmapped Reads
 
-This optional step is controlled by **`pipeline.reference_module.filter_unmapped_reads.execute`** (default `false`) and is not needed for standard aDNA workflows. When enabled, it processes the final BAM to handle reads that did not map to the reference. The **`settings.action`** parameter determines the behaviour:
+This optional step is controlled by **`pipeline.reference_module.filter_unmapped_reads.execute`** (default `false`) and is not needed for standard aDNA/hDNA workflows. When enabled, it processes the final BAM to handle reads that did not map to the reference. The **`settings.action`** parameter determines the behaviour:
 
 - **`remove`** — writes a mapped-reads-only BAM (`{individual}_{reference}_mapped_only.bam`), reducing file size by stripping unmapped reads.
 - **`extract_fastq`** — writes unmapped reads to a compressed FASTQ (`{individual}_{reference}_unmapped.fastq.gz`), useful for downstream metagenomic screening of non-endogenous content.
@@ -184,7 +184,7 @@ Because Qualimap and mapDamage2 output directories need to be co-located with ot
 
 ## Global Configuration and Pipeline Behaviour
 
-The entire Past Forward aDNA Pipeline is controlled through a single `config/config.yaml` file. Species to be processed are defined as a top-level mapping under `species:`, each with an optional display name, and all modules run for every species listed. Every major processing step can be independently enabled or disabled.
+The entire pastForward Pipeline is controlled through a single `config/config.yaml` file. Species to be processed are defined as a top-level mapping under `species:`, each with an optional display name, and all modules run for every species listed. Every major processing step can be independently enabled or disabled.
 
 For a full description of all configuration options and defaults, see [config/parameters.md](../config/parameters.md). For an annotated example config, see [config/max_config_sample.yaml](../config/max_config_sample.yaml).
 

@@ -102,7 +102,7 @@ Dmel01_DabneyProtocol_R1_001.fq.gz
 
 # Configuration (`config.yaml`)
 
-The `config.yaml` file is used to configure the aDNA pipeline. It contains settings such as project name, the species list and the pipeline stages and their process steps.
+The `config.yaml` file is used to configure the aDNA/hDNA pipeline. It contains settings such as project name, the species list and the pipeline stages and their process steps.
 
 All pipeline stages are enabled by default, so a minimal config containing only the project name and species list is sufficient to run the pipeline without any further changes:
 

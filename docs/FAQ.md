@@ -259,9 +259,9 @@ When you are ready to resume, simply run pastForward again with the same command
 ## Read Mapping
 
 **Q: Which mapper should I use for my data?**
-- **bwa-aln** — recommended for short aDNA reads (<70 bp). Uses aDNA-optimised defaults from Oliva et al. 2021 if no custom params are provided. While this one is recommended for short reads, it is very slow in some cases. Thats why bwa-mem2 is the default mapper, as it is much faster and still performs well on short reads.
-- **bwa-mem2** — default; faster and suitable for longer reads.
-- **minimap2** — versatile; uses the `-ax sr` preset for short reads. If you want to get a "quick and dirty" mapping to check your aDNA data, minimap2 is a good choice. However, it is not optimised for the specific challenges of aDNA and may produce lower-quality alignments compared to bwa-aln or bwa-mem2.
+- **bwa-aln** — recommended for very short aDNA/hDNA reads (<70 bp). Generates the most accurate alignments, but can be very slow. Thats why bwa-mem2 is the default mapper, as it is much faster and still performs well on short reads.
+- **bwa-mem2** — default; faster, desigened for reads above 70 bp, but performs also well on shorter reads.
+- **minimap2** — versatile; uses the `-ax sr` preset for short reads. If you want to get a "quick and dirty" mapping to check your data, minimap2 is a good choice. However, it is not optimised for the specific challenges of aDNA/hDNA and may produce lower-quality alignments compared to bwa-aln or bwa-mem2.
 
 Set the mapper via `pipeline.reference_module.mapping.settings.mapper`.
 

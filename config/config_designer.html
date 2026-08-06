@@ -524,7 +524,7 @@
               Removes adapter sequences and enforces per-base quality and length thresholds.
               Single-end vs. paired-end is detected automatically from the presence of an R2 file.
               For <strong>paired-end</strong> data, overlapping read pairs are <strong>merged</strong> into single reads &mdash;
-              critical for ancient DNA where fragment lengths are often shorter than the combined read length.
+              critical for ancient and historical DNA where fragment lengths are often shorter than the combined read length.
               Unmerged trimmed R1/R2 and any unpaired reads are concatenated into one FASTQ so no data is lost.
               <strong>Poly-X tail trimming is always active.</strong>
               If no adapter sequences are provided, fastp performs automatic detection.
@@ -888,7 +888,7 @@
             <div class="step-desc">
               <span class="tool-pill purple">DeDup</span>
               Removes PCR and sequencing duplicates using <strong>DeDup</strong>, which is specifically designed for
-              ancient DNA and correctly handles merged single-stranded reads.
+              ancient and historical DNA and correctly handles merged single-stranded reads.
               If disabled, the sorted BAM from mapping is passed directly to subsequent steps.
               <br><br>
               To manage memory on references with many contigs, contigs are grouped into clusters and each cluster is
@@ -930,7 +930,7 @@
             <div class="adv-content">
             <div class="step-desc">
               <span class="tool-pill orange">mapDamage2</span>
-              Profiles <strong>cytosine deamination</strong> &mdash; the hallmark of ancient DNA &mdash; appearing as
+              Profiles <strong>cytosine deamination</strong> &mdash; the hallmark of ancient and historical DNA &mdash; appearing as
               C&rarr;T substitutions at the 5&prime; end and G&rarr;A substitutions at the 3&prime; end of reads.
               mapDamage2 estimates these damage patterns and <strong>rescales base quality scores</strong> accordingly,
               reducing the influence of damage-induced errors in downstream variant calling.

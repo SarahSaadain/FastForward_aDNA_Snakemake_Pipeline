@@ -14,7 +14,7 @@ See [config/parameters.md](../config/parameters.md) for all configuration option
 
 ## Why Not Just Use BUSCO Directly?
 
-The naïve approach — using every gene BUSCO calls "Complete" — is insufficient for aDNA work. BUSCO operates on a polished modern assembly under ideal conditions and says nothing about how a gene behaves when short, degraded ancient reads are mapped onto it. The three-step pipeline below forces each candidate SCG to earn its place empirically.
+The naïve approach — using every gene BUSCO calls "Complete" — is insufficient for aDNA/hDNA work. BUSCO operates on a polished modern assembly under ideal conditions and says nothing about how a gene behaves when short, degraded ancient reads are mapped onto it. The three-step pipeline below forces each candidate SCG to earn its place empirically.
 
 ---
 

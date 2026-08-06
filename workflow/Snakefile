@@ -1,7 +1,7 @@
 ################################################
 # Snakefile for pastForward
 ################################################
-# This Snakefile orchestrates the workflow for aDNA reads analysis.
+# This Snakefile orchestrates the workflow for aDNA/hDNA reads analysis.
 # It includes rules for different processing steps, such as raw read processing, mapping to reference, and quality control.
 
 # initialize_pipeline.smk: Sets up initial configurations and outputs
@@ -23,7 +23,7 @@ include: "scripts/expected_output/expected_output_manager_reference_module_proce
 include: "scripts/expected_output/expected_output_manager_summary_module_processing.py"
 include: "scripts/expected_output_manager.py"
 
-# rules/read_module_processing.smk: Contains rules for processing raw aDNA reads.
+# rules/read_module_processing.smk: Contains rules for processing raw aDNA/hDNA reads.
 include: "rules/read_module_processing.smk"
 
 # rules/reference_module_processing.smk: Contains rules for mapping reads to reference.
