@@ -56,6 +56,8 @@ rule filter_top_scgs:
         num_top_scgs=lambda wildcards: (
             config.get("pipeline", {}).get("reveal_module", {}).get("scg_selector", {}).get("settings", {}).get("num_top_scgs", 20)
         )
+    conda:
+        "../../../envs/python_and_r.yaml"
     message: "Selecting top {params.num_top_scgs} SCGs for {wildcards.species}"
     log:
         "{species}/processed/reveal_module/scg/{species}_relevant_scg.log"
@@ -72,18 +74,10 @@ rule filter_scg_fasta:
         id_list="{species}/processed/reveal_module/scg/{species}_relevant_scg.txt"
     output:
         filtered="{species}/processed/reveal_module/scg/{species}_relevant_scg.fasta"
+    conda:
+        "../../../envs/python_and_r.yaml"
     message: "Filtering SCG FASTA to top-ranked sequences for {wildcards.species}"
     log:
         "{species}/processed/reveal_module/scg/{species}_relevant_scg_fasta.log"
-    run:
-        with open(input.id_list) as f:
-            ids_to_keep = set(line.strip() for line in f if line.strip())
-
-        with open(input.fasta) as fin, open(output.filtered, "w") as fout:
-            write = False
-            for line in fin:
-                if line.startswith(">"):
-                    seq_id = line[1:].split()[0].strip()
-                    write = seq_id in ids_to_keep
-                if write:
-                    fout.write(line)
+    script:
+        "../../../scripts/reveal_module/scg/filter_scg_fasta.py"

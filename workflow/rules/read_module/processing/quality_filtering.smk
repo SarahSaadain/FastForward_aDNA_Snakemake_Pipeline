@@ -37,6 +37,8 @@ rule get_quality_filtered_final:
         ),
     output:
         final=temp("{species}/processed/read_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz")
+    conda:
+        "../../../envs/python_and_r.yaml"
     message: "Selecting quality filtered reads for {wildcards.sample}"
     log:
         "{species}/processed/read_module/reads_quality_filtered/{sample}_quality_filtered_final.log"

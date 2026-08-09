@@ -28,6 +28,8 @@ rule prepare_scg_determination_reference:
         ref=lambda wildcards: get_scg_determination_reference_path(wildcards.species)
     output:
         ref_link=temp("{species}/processed/reveal_module/scg/ref/{species}_scg_ref.fasta")
+    conda:
+        "../../../envs/python_and_r.yaml"
     message: "Preparing reference genome for SCG determination for {wildcards.species}"
     log:
         "{species}/processed/reveal_module/scg/ref/{species}_scg_ref.log"

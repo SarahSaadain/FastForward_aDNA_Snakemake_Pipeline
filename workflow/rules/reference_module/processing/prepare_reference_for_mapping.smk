@@ -3,46 +3,38 @@
 ####################################################
 _ref_mapper = config.get("pipeline", {}).get("reference_module", {}).get("mapping", {}).get("settings", {}).get("mapper", "bwa-mem2")
 
+def _standardize_reference_extension_to_fa_ref_path(wildcards):
+    # Get the list of reference tuples (sanitized_name, full_path)
+    # the full_path contains the original file path
+    reference_tuples = get_reference_file_list_for_species(wildcards.species)
+
+    # Find the path corresponding to the sanitized reference name
+    ref_path = next((path for name, path in reference_tuples if name == wildcards.reference), None)
+
+    if ref_path is None:
+        raise ValueError(
+            f"Reference {wildcards.reference} not found for species {wildcards.species}. "
+            f"Available references: {reference_tuples}"
+        )
+
+    if not os.path.exists(ref_path):
+        raise FileNotFoundError(f"Reference file {ref_path} does not exist.")
+
+    return ref_path
+
 rule standardize_reference_extension_to_fa:
     output:
         fa="{species}/input/reference_module/{reference}.fa"
-    message:
-        "Ensuring reference {wildcards.reference} for {wildcards.species} is standardized to .fa"
     conda:
         "../../../envs/python_and_r.yaml",
+    params:
+        ref_path=_standardize_reference_extension_to_fa_ref_path
+    message:
+        "Ensuring reference {wildcards.reference} for {wildcards.species} is standardized to .fa"
     log:
         "{species}/input/reference_module/{reference}_standardize.log"
-    run:
-        # we use python to rename the file if necessary
-        import os
-        import shutil
-
-        # Get the list of reference tuples (sanitized_name, full_path)
-        # the full_path contains the original file path
-        reference_tuples = get_reference_file_list_for_species(wildcards.species)
-
-        # Find the path corresponding to the sanitized reference name
-        ref_path = next((path for name, path in reference_tuples if name == wildcards.reference), None)
-
-        if ref_path is None:
-            logger.error(f"Reference {wildcards.reference} not found for species {wildcards.species}")
-            logger.error(f"Available references: {reference_tuples}")
-            raise ValueError(f"Reference {wildcards.reference} not found for species {wildcards.species}")
-
-        if not os.path.exists(ref_path):
-            logger.error(f"Reference file {ref_path} does not exist.")
-            raise FileNotFoundError(f"Reference file {ref_path} does not exist.")
-
-        # Create the output folder if it doesn't exist
-        os.makedirs(os.path.dirname(output.fa), exist_ok=True)
-
-        # Only rename if the standardized file doesn't already exist
-        if not os.path.exists(output.fa):
-            # Use symlink if you don't want to copy the file
-            os.rename(ref_path, output.fa)
-            logger.info(f"Reference {ref_path} renamed to {output.fa}")
-        else:
-            logger.info(f"Reference {output.fa} already exists, skipping.")
+    script:
+        "../../../scripts/reference_module/processing/standardize_reference_extension_to_fa.py"
 
 
 if _ref_mapper == "minimap2":

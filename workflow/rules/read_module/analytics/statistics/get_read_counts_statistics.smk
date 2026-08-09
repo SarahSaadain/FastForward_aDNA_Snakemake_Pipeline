@@ -52,11 +52,8 @@ rule count_reads_raw:
     message: "Counting reads in raw FASTQ file(s) {input.fastq}"
     conda:
         "../../../../envs/python_and_r.yaml",
-    run:
-        files = input.fastq if isinstance(input.fastq, list) else [input.fastq]
-        count = sum(get_fastq_read_count(f) for f in files)
-        with open(output.counted, "w") as f:
-            f.write(str(count))
+    script:
+        "../../../../scripts/read_module/analytics/statistics/count_reads_raw.py"
 
 # Rule: Count reads in trimmed FASTQ files
 # If adapter removal is inactive, copy count from raw reads instead
@@ -109,20 +106,8 @@ rule combine_counts_per_sample:
     message: "Combining read counts for sample {wildcards.sample}"
     conda:
         "../../../../envs/python_and_r.yaml",
-    run:
-
-        with open(input.raw_reads, "r") as f:
-            raw = int(f.read())
-        with open(input.trimmed_reads, "r") as f:
-            trimmed = int(f.read())
-        with open(input.quality_filtered_reads, "r") as f:
-            quality_filtered = int(f.read())
-
-        parts = wildcards.sample.split("_")
-        individual = parts[0] if len(parts) > 0 else "N/A"      
-
-        with open(output.counts, "w") as f:
-            f.write(f"{wildcards.sample},{individual},{str(raw)},{str(trimmed)},{str(quality_filtered)}\n")
+    script:
+        "../../../../scripts/read_module/analytics/statistics/combine_counts_per_sample.py"
 
 # Rule: Combine read counts per species
 rule combine_counts_per_species:

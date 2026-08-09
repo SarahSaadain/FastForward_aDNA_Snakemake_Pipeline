@@ -95,6 +95,8 @@ rule ecmsd_merge_hits_per_individual:
         "{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
     params:
         taxonomic_hierarchy = _ecmsd_taxonomic_hierarchy
+    conda:
+        "../../../envs/python_and_r.yaml"
     log:
         "{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.log"
     script:
@@ -108,6 +110,8 @@ rule ecmsd_analyze_proportions:
         "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/pipeline/{sample}_ecmsd_proportions.tsv"
     params:
         sample = "{sample}"
+    conda:
+        "../../../envs/python_and_r.yaml"
     log:
         "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/pipeline/{sample}_ecmsd_proportions.log"
     script:

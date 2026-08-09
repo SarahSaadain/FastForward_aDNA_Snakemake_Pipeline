@@ -32,6 +32,8 @@ if _filter_remove:
         output:
             bam = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
             bai = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai"
+        conda:
+            "../../../envs/python_and_r.yaml"
         message:
             "Getting final (mapped-only) BAM for {wildcards.individual} of {wildcards.species}."
         log:
@@ -56,6 +58,8 @@ else:
         output:
             bam = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
             bai = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai"
+        conda:
+            "../../../envs/python_and_r.yaml"
         message:
             "Getting final bam for {wildcards.individual} of {wildcards.species}."
         log:

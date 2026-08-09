@@ -97,6 +97,8 @@ rule move_rescaled_bam:
     output:
         sorted_bam=temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled.bam"),
         bam_index =temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled.bam.bai")
+    conda:
+        "../../../envs/python_and_r.yaml"
     message:
         "Move rescaled BAM and index to processed directory for {input.sorted_bam}",
     log:

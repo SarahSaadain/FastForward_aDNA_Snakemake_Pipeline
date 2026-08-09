@@ -68,6 +68,8 @@ rule clean_feature_library_name:
         clean_feature_library_name_input
     output:
         temp("{species}/processed/reveal_module/{feature_library}/library/{feature_library}.clean.fasta")
+    conda:
+        "../../../envs/python_and_r.yaml"
     message: "Preparing TE library for {wildcards.species}"
     log:
         "{species}/processed/reveal_module/{feature_library}/library/{feature_library}.clean.log"
@@ -81,6 +83,8 @@ rule prepare_feature_library:
         "{species}/processed/reveal_module/{feature_library}/library/{feature_library}.clean.fasta"
     output:
         temp("{species}/processed/reveal_module/{feature_library}/library/{feature_library}.suffixed.fasta")
+    conda:
+        "../../../envs/python_and_r.yaml"
     message: "Preparing TE library for {wildcards.species}"
     log:
         "{species}/processed/reveal_module/{feature_library}/library/{feature_library}.suffixed.log"
@@ -95,6 +99,8 @@ rule clean_scg_library_name:
         clean_scg_library_name_input
     output:
         temp("{species}/processed/reveal_module/scg/library/{scg_library}.clean.fasta")
+    conda:
+        "../../../envs/python_and_r.yaml"
     message: "Preparing SCG library for {wildcards.species}"
     log:
         "{species}/processed/reveal_module/scg/library/{scg_library}.clean.log"
@@ -108,6 +114,8 @@ rule prepare_scg_library:
         "{species}/processed/reveal_module/scg/library/{scg_library}.clean.fasta"
     output:
         temp("{species}/processed/reveal_module/scg/library/{scg_library}.suffixed.fasta")
+    conda:
+        "../../../envs/python_and_r.yaml"
     message: "Preparing SCG library for {wildcards.species}"
     log:
         "{species}/processed/reveal_module/scg/library/{scg_library}.suffixed.log"
@@ -127,7 +135,7 @@ if _comp_execute:
         shell:
             # Skip any FASTA entry whose header ends in _comp (header + its sequence lines)
             """
-            awk '/^>/{{skip=/_comp$/}} !skip' "{input}" > "{output}"
+            awk -f workflow/scripts/reveal_module/mapping/filter_out_comp_fasta_entries.awk "{input}" > "{output}"
             """
 
     rule prepare_competition_library:
@@ -149,6 +157,8 @@ rule combine_scg_and_ref_library:
         comp=_comp_library_input
     output:
         library="{species}/processed/reveal_module/{feature_library}/library/{feature_library}_and_scg.suffixed.fasta"
+    conda:
+        "../../../envs/python_and_r.yaml"
     message: "Concatenating SCG and Feature libraries for {wildcards.species}"
     log:
         "{species}/processed/reveal_module/{feature_library}/library/{feature_library}_and_scg.suffixed.log"

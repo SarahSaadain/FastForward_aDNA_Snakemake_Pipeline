@@ -75,6 +75,8 @@ rule analyze_centrifuge_report_taxon_counts:
         centrifuge_out = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv"
     output:
         taxon_counts = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_taxon_counts.tsv"
+    conda:
+        "../../../envs/python_and_r.yaml"
     message: "Counting taxon occurrences in {input.centrifuge_out}"
     log:
         "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_taxon_counts.log"
@@ -95,6 +97,8 @@ rule analyze_centrifuge_report_proportions:
         "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_proportions.tsv",
     params:
         sample = "{sample}"
+    conda:
+        "../../../envs/python_and_r.yaml"
     log:
         "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_proportions.log"
     script:
@@ -109,6 +113,8 @@ rule analyze_centrifuge_report_top_taxa:
     params:
         sample = "{sample}",
         include_human = config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("include_human_taxid", False)
+    conda:
+        "../../../envs/python_and_r.yaml"
     log:
         "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top_taxa.log"
     script:

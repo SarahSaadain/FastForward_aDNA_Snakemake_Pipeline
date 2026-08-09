@@ -3,6 +3,8 @@ rule link_qualimap_for_multiqc:
         "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/qualimap"
     output:
         directory("{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}")
+    conda:
+        "../../../envs/python_and_r.yaml"
     message:
         "Linking qualimap results for {wildcards.individual} of {wildcards.species} to multiqc custom content."
     log:
@@ -23,6 +25,8 @@ rule copy_mapdamage_result_for_multiqc:
         GtoA3p  = "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt",
         CtoT5p  = "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt",
         lg_dist = "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt",
+    conda:
+        "../../../envs/python_and_r.yaml"
     message:
         "Copying mapdamage results for {wildcards.individual} of {wildcards.species} to multiqc custom content."
     log:

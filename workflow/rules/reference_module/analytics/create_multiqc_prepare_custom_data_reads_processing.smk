@@ -54,23 +54,8 @@ rule combine_custom_data_reads_processing_absolute_values:
         "../../../envs/python_and_r.yaml",
     log:
         "{species}/results/summary/species_level/{species}_overall/multiqc_custom_content/{species}_{reference}_reads_processing_summary_combined.log"
-    run:
-        import pandas as pd
-        import os
-
-        input_files = input
-        output_file = output[0]
-
-        combined_df = pd.DataFrame()
-
-        for file in input_files:
-            if os.path.exists(file):
-                df = pd.read_csv(file, sep="\t")
-                combined_df = pd.concat([combined_df, df], ignore_index=True)
-            else:
-                print(f"Warning: Input file {file} does not exist and will be skipped.")
-
-        combined_df.to_csv(output_file, sep="\t", index=False)
+    script:
+        "../../../scripts/reference_module/analytics/combine_custom_data_reads_processing_absolute_values.py"
 
 rule prepare_custom_data_reads_processing_stacked_values:
     input:
@@ -81,29 +66,8 @@ rule prepare_custom_data_reads_processing_stacked_values:
         "../../../envs/python_and_r.yaml",
     log:
         "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.log"
-    run:
-        import pandas as pd
-
-        input_file = input[0]
-        output_file = output[0]
-
-        df = pd.read_csv(input_file, sep="\t")
-
-        df_out = pd.DataFrame()
-        df_out["individual"] = df["individual"]
-
-        # delta calculations
-        #df_out["adapter_removed"] = df["raw_reads"] - df["after_adapter_removed"]
-        #df_out["quality_filtered"] = df["after_adapter_removed"] - df["after_quality_filter"]
-        df_out["non_endogenous"] = df["after_quality_filter"] - df["mapped_endogenous_reads"]
-        df_out["duplicates"] = df["mapped_endogenous_reads"] - df["endogenous_duplicates_removed"]
-        df_out["endogenous"] = df["endogenous_duplicates_removed"]
-
-        #sort the columns: endogenous, duplicates, non_endogenous
-        columns_order = ["individual", "endogenous", "duplicates", "non_endogenous"]
-        df_out = df_out[columns_order]
-
-        df_out.to_csv(output_file, sep="\t", index=False)
+    script:
+        "../../../scripts/reference_module/analytics/prepare_custom_data_reads_processing_stacked_values.py"
 
 rule combine_custom_data_reads_processing_stacked_values:
     input:
@@ -119,24 +83,5 @@ rule combine_custom_data_reads_processing_stacked_values:
         "../../../envs/python_and_r.yaml",
     log:
         "{species}/results/summary/species_level/{species}_overall/multiqc_custom_content/{species}_{reference}_reads_processing_summary_stacked_combined.log"
-    run:
-        import pandas as pd
-        import os
-
-        input_files = input
-        output_file = output[0]
-
-        combined_df = pd.DataFrame()
-
-        for file in input_files:
-            if os.path.exists(file):
-                df = pd.read_csv(file, sep="\t")
-                combined_df = pd.concat([combined_df, df], ignore_index=True)
-            else:
-                print(f"Warning: Input file {file} does not exist and will be skipped.")
-
-        #sort the columns: endogenous, duplicates, non_endogenous
-        columns_order = ["individual", "endogenous", "duplicates", "non_endogenous"]
-        combined_df = combined_df[columns_order]
-
-        combined_df.to_csv(output_file, sep="\t", index=False)
+    script:
+        "../../../scripts/reference_module/analytics/combine_custom_data_reads_processing_stacked_values.py"

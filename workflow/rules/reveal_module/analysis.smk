@@ -174,19 +174,14 @@ rule combine_visualization_stats_across_feature_libraries:
         combined="{species}/results/reveal_module/{species}_reveal_coverage_comparison.tsv"
     conda:
         "../../envs/python_and_r.yaml"
+    params:
+        feature_libraries=lambda wildcards: get_feature_library_ids_for_species(wildcards.species)
     message:
         "Combining REVEAL stats comparisons across all feature libraries for {wildcards.species}."
     log:
         "{species}/results/reveal_module/{species}_reveal_coverage_comparison.log"
-    run:
-        import pandas as pd
-        feature_libraries = get_feature_library_ids_for_species(wildcards.species)
-        frames = []
-        for feature_library, tsv_file in zip(feature_libraries, input):
-            df = pd.read_csv(tsv_file, sep="\t")
-            df.insert(0, "feature_library", feature_library)
-            frames.append(df)
-        pd.concat(frames, ignore_index=True).to_csv(output.combined, sep="\t", index=False)
+    script:
+        "../../scripts/reveal_module/combine_visualization_stats_across_feature_libraries.py"
 
 rule extract_flagged_seqids:
     input:
@@ -197,11 +192,8 @@ rule extract_flagged_seqids:
         "../../envs/python_and_r.yaml"
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_flagged_seqids.log"
-    run:
-        import pandas as pd
-        df = pd.read_csv(input.tsv, sep="\t")
-        flagged = df[df["flag"].notna() & (df["flag"] != "")][["seqid", "flag"]]
-        flagged.to_csv(output.txt, sep="\t", index=False)
+    script:
+        "../../scripts/reveal_module/extract_flagged_seqids.py"
 
 rule compress_visualization_snp_stats_of_individual:
     input:

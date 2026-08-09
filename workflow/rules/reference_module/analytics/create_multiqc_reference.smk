@@ -73,6 +73,8 @@ rule create_multiqc_reference:
 rule create_multiqc_reference_config:
     output:
         "{species}/results/reference_module/{reference}/analytics/species_level/{species}_{reference}/{species}_{reference}_multiqc_config.yaml"
+    conda:
+        "../../../envs/python_and_r.yaml"
     log:
         "{species}/results/reference_module/{reference}/analytics/species_level/{species}_{reference}/{species}_{reference}_multiqc_config.log"
     script:

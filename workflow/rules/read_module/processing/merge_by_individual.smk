@@ -33,9 +33,11 @@ rule merge_reads_by_individual:
         merge_reads_by_individual_input
     output:
         "{species}/results/read_module/reads_merged/{individual}.fastq.gz"
+    conda:
+        "../../../envs/python_and_r.yaml"
     log:
         "{species}/processed/read_module/reads_merged/{individual}_merge_reads.log"
-    message: 
+    message:
         "Merging individual {wildcards.individual} of species {wildcards.species}."
     shell:
         """

@@ -161,7 +161,7 @@ if _comp_execute:
             # No index needed because we process the stream linearly.
             """
             samtools view -h "{input.bam}" | \
-            awk '/^@SQ/ && $2~/^SN:.*_comp$/{{next}} /^@/{{print; next}} $3~/_comp$/{{next}} {{print}}' | \
+            awk -f workflow/scripts/reveal_module/mapping/filter_out_comp_bam_records.awk | \
             samtools view -b > "{output.bam}" 2>"{log}"
             """
 

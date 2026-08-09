@@ -100,6 +100,8 @@ rule dedup_extract_contigs_from_reference_fai:
         fai="{species}/input/reference_module/{reference}.fa.fai"
     output:
         bed=temp("{species}/processed/reference_module/{reference}/dedup_cluster/contigs.bed")
+    conda:
+        "../../../envs/python_and_r.yaml"
     message:
         "Extracting full-length contig BED from FAI for {wildcards.species} / {wildcards.reference}"
     log:

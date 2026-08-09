@@ -102,6 +102,8 @@ rule get_adapter_removal_final:
         determine_reads_trimmed_final_input,
     output:
         temp("{species}/processed/read_module/reads_trimmed/{sample}_trimmed_final.fastq.gz"),
+    conda:
+        "../../../envs/python_and_r.yaml"
     log:
         "{species}/processed/read_module/reads_trimmed/{sample}_determine_trimmed_final.log",
     message: "Getting trimmed reads in {wildcards.sample}"
@@ -123,6 +125,8 @@ rule merge_reads_adapter_removal_pe:
         unpaired2="{species}/processed/read_module/reads_trimmed/{sample}_trimmed.pe.unpaired.R2.fastq.gz",
     output:
         temp("{species}/processed/read_module/reads_trimmed/{sample}_trimmed.pe.merged.fastq.gz"),
+    conda:
+        "../../../envs/python_and_r.yaml"
     log:
         "{species}/processed/read_module/reads_trimmed/{sample}_merge_trimmed_pe.log",
     message: "Merging trimmed reads for paired-end"
