@@ -6,19 +6,6 @@
 # Refseq: bacteria, archaea, viral, human
 _configured_index = config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("index")
 
-def get_centrifuge_index(wildcards):
-    if _configured_index:
-        return _configured_index
-    else:
-        return "resources/centrifuge_index/p+h+v"
-
-def get_centrifuge_index_input(wildcards):
-    
-    if _configured_index:
-        return []
-    else:
-        return expand("resources/centrifuge_index/p+h+v.{ext}.cf", ext=["1", "2", "3"])
-
 rule download_centrifuge_index:
     output:
         expand("resources/centrifuge_index/p+h+v.{ext}.cf", ext=["1", "2", "3"])
@@ -48,13 +35,13 @@ rule download_centrifuge_index:
 rule analyze_contamination_with_centrifuge:
     input:
         fastq = "{species}/processed/read_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
-        index = get_centrifuge_index_input
+        index = lambda wildcards: [] if _configured_index else expand("resources/centrifuge_index/p+h+v.{ext}.cf", ext=["1", "2", "3"])
     output:
         output = temp("{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv"),
         report = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv"
     threads: 15
     params:
-        index = get_centrifuge_index,
+        index = lambda wildcards: _configured_index if _configured_index else "resources/centrifuge_index/p+h+v",
     conda:
         config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("conda_env", "../../../envs/centrifuge.yaml")
     message: "Running Centrifuge contamination analysis for {input.fastq}"

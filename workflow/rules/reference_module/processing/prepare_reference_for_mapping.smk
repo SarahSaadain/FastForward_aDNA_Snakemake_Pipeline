@@ -3,25 +3,6 @@
 ####################################################
 _ref_mapper = config.get("pipeline", {}).get("reference_module", {}).get("mapping", {}).get("settings", {}).get("mapper", "bwa-mem2")
 
-def _standardize_reference_extension_to_fa_ref_path(wildcards):
-    # Get the list of reference tuples (sanitized_name, full_path)
-    # the full_path contains the original file path
-    reference_tuples = get_reference_file_list_for_species(wildcards.species)
-
-    # Find the path corresponding to the sanitized reference name
-    ref_path = next((path for name, path in reference_tuples if name == wildcards.reference), None)
-
-    if ref_path is None:
-        raise ValueError(
-            f"Reference {wildcards.reference} not found for species {wildcards.species}. "
-            f"Available references: {reference_tuples}"
-        )
-
-    if not os.path.exists(ref_path):
-        raise FileNotFoundError(f"Reference file {ref_path} does not exist.")
-
-    return ref_path
-
 rule standardize_reference_extension_to_fa:
     output:
         fa="{species}/input/reference_module/{reference}.fa"

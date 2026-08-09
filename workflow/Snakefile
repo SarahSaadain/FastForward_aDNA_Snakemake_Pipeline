@@ -27,6 +27,11 @@ include: "scripts/expected_output/expected_output_manager_reference_module_proce
 include: "scripts/expected_output/expected_output_manager_summary_module_processing.py"
 include: "scripts/expected_output_manager.py"
 
+# rules/common.smk: Shared Python helper functions used by more than one rule
+# file's input/params functions. Included before the rule files so its
+# functions are in scope wherever they're referenced.
+include: "rules/common.smk"
+
 # rules/read_module_processing.smk: Contains rules for processing raw aDNA/hDNA reads.
 include: "rules/read_module_processing.smk"
 

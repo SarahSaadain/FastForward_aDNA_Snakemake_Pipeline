@@ -1,27 +1,4 @@
 ####################################################
-# Python helper functions for rules
-# Naming of functions: <rule_name>_<rule_parameter>[_<rule_subparameter>]>
-####################################################
-
-def determine_reads_trimmed_final_input(wildcards):
-    
-    species = wildcards.species
-    sample = wildcards.sample
-    
-    adapter_removal_active = config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('execute', True)
-    reads = get_raw_reads_for_sample(species, sample)
-    if adapter_removal_active:
-        if len(reads) == 2:
-            # Paired-end: use the merged reads from fastp_pe
-            return f"{species}/processed/read_module/reads_trimmed/{sample}_trimmed.pe.merged.fastq.gz"
-        else:
-            # Single-end: use the trimmed reads from fastp_se
-            return f"{species}/processed/read_module/reads_trimmed/{sample}_trimmed.se.fastq.gz"
-    else:
-        # Adapter removal inactive: pass raw reads through directly (SE: 1 file, PE: 2 files)
-        return reads
-
-####################################################
 # Snakemake rules
 ####################################################
 

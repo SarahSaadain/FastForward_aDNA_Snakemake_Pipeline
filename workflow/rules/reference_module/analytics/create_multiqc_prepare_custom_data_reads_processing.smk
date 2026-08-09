@@ -2,32 +2,23 @@
 # Snakemake rules
 ####################################################
 
-def prepare_custom_data_reads_processing_dedup(wildcards):
-
-    if config.get("pipeline", {}).get("reference_module", {}).get("execute", True) == False:
-        return []
-    
-    if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
-        return f"{wildcards.species}/results/reference_module/{wildcards.reference}/analytics/individual_level/{wildcards.individual}/dedup/{wildcards.individual}_{wildcards.reference}_final.dedup.json"
-    else:
-        return []
-
-def prepare_custom_data_reads_processing_endogenous(wildcards):
-
-    if config.get("pipeline", {}).get("reference_module", {}).get("execute", True) == True:
-        return f"{wildcards.species}/results/reference_module/{wildcards.reference}/analytics/individual_level/{wildcards.individual}/endogenous/{wildcards.individual}_{wildcards.reference}.endogenous.csv"
-    else:
-        return []
-
-####################################################
-# Snakemake rules
-####################################################
-
 rule prepare_custom_data_reads_processing_absolute_values:
     input:
         reads = "{species}/results/read_module/statistics/{species}_reads_counts.csv",
-        endogenous = prepare_custom_data_reads_processing_endogenous,
-        dedup = prepare_custom_data_reads_processing_dedup
+        endogenous = lambda wildcards: (
+            f"{wildcards.species}/results/reference_module/{wildcards.reference}/analytics/individual_level/{wildcards.individual}/endogenous/{wildcards.individual}_{wildcards.reference}.endogenous.csv"
+            if config.get("pipeline", {}).get("reference_module", {}).get("execute", True) == True
+            else []
+        ),
+        dedup = lambda wildcards: (
+            []
+            if config.get("pipeline", {}).get("reference_module", {}).get("execute", True) == False
+            else (
+                f"{wildcards.species}/results/reference_module/{wildcards.reference}/analytics/individual_level/{wildcards.individual}/dedup/{wildcards.individual}_{wildcards.reference}_final.dedup.json"
+                if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True
+                else []
+            )
+        )
     output:
         "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv",
     conda:

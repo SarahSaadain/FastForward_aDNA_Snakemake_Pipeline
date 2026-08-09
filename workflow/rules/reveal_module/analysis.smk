@@ -1,32 +1,4 @@
 ####################################################
-# Python helper functions for rules
-####################################################
-
-def combine_visualizations_for_species_input_coverage_files(wildcards):
-    species = wildcards.species
-    feature_library = wildcards.feature_library
-
-    individuals = get_individuals_for_species(species)
-
-    list_of_visualization_files_of_individuals = []
-
-    for individual in individuals:
-        list_of_visualization_files_of_individuals.append(f"{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_estimation.tsv")
-
-    if not list_of_visualization_files_of_individuals:
-        raise ValueError(f"No visualization files could be determined for species {species}.")
-
-    return list_of_visualization_files_of_individuals
-
-def combine_visualization_coverage_stats_across_feature_libraries_input(wildcards):
-    feature_libraries = get_feature_library_ids_for_species(wildcards.species)
-    return expand(
-        "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv.gz",
-        species=wildcards.species,
-        feature_library=feature_libraries
-    )
-
-####################################################
 # Snakemake rules
 ####################################################
 
@@ -169,7 +141,11 @@ rule compare_visualization_indel_stats_across_individuals_of_species:
 
 rule combine_visualization_stats_across_feature_libraries:
     input:
-        combine_visualization_coverage_stats_across_feature_libraries_input
+        lambda wildcards: expand(
+            "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.tsv.gz",
+            species=wildcards.species,
+            feature_library=get_feature_library_ids_for_species(wildcards.species)
+        )
     output:
         combined="{species}/results/reveal_module/{species}_reveal_coverage_comparison.tsv"
     conda:

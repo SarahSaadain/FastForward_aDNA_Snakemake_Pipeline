@@ -1,36 +1,15 @@
 ####################################################
-# Python helper functions for rules
-# Naming of functions: <rule_name>_<rule_parameter>[_<rule_subparameter>]>
-####################################################
-
-def helper_get_bam_for_damage_analysis(wildcards):
-
-    species = wildcards["species"]
-    reference = wildcards["reference"]
-    individual = wildcards["individual"]
-
-    # if deduplication is enabled, return the dedupped bam
-    # if map_reads_to_reference is enabled, return the sorted bam
-
-    if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
-        return f"{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped.bam"
-
-    return f"{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted.bam"
-
-def analyze_mapdamage_and_rescale_bam_input_bam(wildcards):
-    return helper_get_bam_for_damage_analysis(wildcards)
-
-def analyze_mapdamage_and_rescale_bam_input_bam_index(wildcards):
-    return f"{analyze_mapdamage_and_rescale_bam_input_bam(wildcards)}.bai"
-
-####################################################
 # Snakemake rules
 ####################################################
 
 # Rule: Analyze DNA damage and rescale BAM using mapDamage2
 rule analyze_mapdamage_and_rescale_bam:
     input:
-        bam = analyze_mapdamage_and_rescale_bam_input_bam,
+        bam = lambda wildcards: (
+            f"{wildcards.species}/processed/reference_module/{wildcards.reference}/mapped/{wildcards.individual}_{wildcards.reference}_sorted_dedupped.bam"
+            if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True
+            else f"{wildcards.species}/processed/reference_module/{wildcards.reference}/mapped/{wildcards.individual}_{wildcards.reference}_sorted.bam"
+        ),
         ref = "{species}/input/reference_module/{reference}.fa"
     output:
         directory           = directory("{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/"),

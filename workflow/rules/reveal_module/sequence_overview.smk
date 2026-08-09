@@ -1,18 +1,8 @@
 ####################################################
-# Python helper functions for rules
+# Module-level settings for rules
 ####################################################
 
 _comp_execute = config.get("pipeline", {}).get("reveal_module", {}).get("mapping", {}).get("settings", {}).get("competitive_mapping", False)
-
-
-def _visualization_fasta_input(wildcards):
-
-    species = wildcards.species
-    feature_library = wildcards.feature_library
-
-    if _comp_execute:
-        return (f"{species}/processed/reveal_module/{feature_library}/library/{feature_library}_and_scg.no_comp.suffixed.fasta")
-    return (f"{species}/processed/reveal_module/{feature_library}/library/{feature_library}_and_scg.suffixed.fasta")
 
 ####################################################
 # Snakemake rules
@@ -21,7 +11,11 @@ def _visualization_fasta_input(wildcards):
 rule determine_visualization_of_individual_bam_to_so:
     input:
         bam="{species}/processed/reveal_module/{feature_library}/mapped/{individual}_{feature_library}_and_scg.sorted.bam",
-        fasta=_visualization_fasta_input
+        fasta=lambda wildcards: (
+            f"{wildcards.species}/processed/reveal_module/{wildcards.feature_library}/library/{wildcards.feature_library}_and_scg.no_comp.suffixed.fasta"
+            if _comp_execute
+            else f"{wildcards.species}/processed/reveal_module/{wildcards.feature_library}/library/{wildcards.feature_library}_and_scg.suffixed.fasta"
+        )
     output:
         coverage=temp("{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.tsv")
     log:

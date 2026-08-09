@@ -1,18 +1,7 @@
-# Python helper functions for rules
-# Naming of functions: <rule_name>_<rule_parameter>[_<rule_subparameter>]>
+# Module-level settings for rules
 ####################################################
 
-def get_ecmsd_database(wildcards):
-    configured_db = config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("database")
-    if configured_db:
-        return configured_db
-    else:
-        return "resources/ecmsd_database"
-
-def get_ecmsd_taxonomic_hierarchy():
-     return config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("taxonomic_hierarchy", "species")
-
-_ecmsd_taxonomic_hierarchy = get_ecmsd_taxonomic_hierarchy()
+_ecmsd_taxonomic_hierarchy = config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("taxonomic_hierarchy", "species")
 
 _ecmsd_tax_hierarchy_readlength_output        = f"{{species}}/results/read_module/contamination/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}_ReadLengths.png"
 _ecmsd_tax_hierarchy_proportions_png_output   = f"{{species}}/results/read_module/contamination/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}_Proportions.png"
@@ -40,7 +29,7 @@ rule ecmsd_database_setup:
 rule ecmsd_analyze_contamination:
     input:
         fastq = "{species}/processed/read_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
-        database = get_ecmsd_database
+        database = lambda wildcards: config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("ecmsd", {}).get("settings", {}).get("database") or "resources/ecmsd_database"
     output:
         summary                         = "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.txt",
         paf                             = "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito.paf.gz",

@@ -58,7 +58,7 @@ def get_expected_outputs_from_pipeline(wildcards):
     expected_output = skip_existing_files(expected_output)
 
     # Log all determined inputs for debugging and traceability
-    logging.info("Determined input for rule 'all':")
+    logging.info("Determined input for the 'all' rule:")
     for input in expected_output:
         logging.info("\t" + "- Requesting: " + input)
 

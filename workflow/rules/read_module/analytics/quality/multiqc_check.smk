@@ -1,28 +1,11 @@
 ####################################################
-# Python helper functions for rules
-# Naming of functions: <rule_name>_<rule_parameter>[_<rule_subparameter>]>
-####################################################
-
-def run_multiqc_raw_input(wildcards):
-    return get_expected_output_fastqc_raw(wildcards.species)
-
-def run_multiqc_trimmed_input(wildcards):
-    return get_expected_output_fastqc_trimmed(wildcards.species)
-
-def run_multiqc_quality_filtered_input(wildcards):
-    return get_expected_output_fastqc_quality_filtered(wildcards.species)
-
-def run_multiqc_merged_input(wildcards):
-    return get_expected_output_fastqc_merged(wildcards.species)
-
-####################################################
 # Snakemake rules
 ####################################################
 
 # Rule: Run MultiQC on raw FastQC outputs
 rule run_multiqc_raw:
     input:
-        run_multiqc_raw_input
+        lambda wildcards: get_expected_output_fastqc_raw(wildcards.species)
     output:
         "{species}/results/read_module/{species}_multiqc_raw.html"
     params:
@@ -36,7 +19,7 @@ rule run_multiqc_raw:
 # Rule: Run MultiQC on trimmed FastQC outputs
 rule run_multiqc_trimmed:
     input:
-        run_multiqc_trimmed_input
+        lambda wildcards: get_expected_output_fastqc_trimmed(wildcards.species)
     output:
         "{species}/results/read_module/{species}_multiqc_trimmed.html"
     params:
@@ -50,7 +33,7 @@ rule run_multiqc_trimmed:
 # Rule: Run MultiQC on quality-filtered FastQC outputs
 rule run_multiqc_quality_filtered:
     input:
-        run_multiqc_quality_filtered_input
+        lambda wildcards: get_expected_output_fastqc_quality_filtered(wildcards.species)
     output:
         "{species}/results/read_module/{species}_multiqc_quality_filtered.html"
     params:
@@ -64,7 +47,7 @@ rule run_multiqc_quality_filtered:
 # Rule: Run MultiQC on merged FastQC outputs
 rule run_multiqc_merged:
     input:
-        run_multiqc_merged_input
+        lambda wildcards: get_expected_output_fastqc_merged(wildcards.species)
     output:
         "{species}/results/read_module/{species}_multiqc_merged.html"
     params:

@@ -1,18 +1,5 @@
 
 ####################################################
-# Helper functions
-####################################################
-
-def _scg_ranking_input_stats(wildcards):
-    """Collect per-individual SCG stats JSON files for ranking."""
-    individuals = get_individuals_for_species(wildcards.species)
-    return expand(
-        "{species}/processed/reveal_module/scg/stats/{individual}_scg_stats.json",
-        species=wildcards.species,
-        individual=individuals
-    )
-
-####################################################
 # Snakemake rules
 ####################################################
 
@@ -33,7 +20,11 @@ rule compute_scg_stats_for_bam:
 # Ranking TSV/JSON go to results/ — they are primary outputs the user cares about
 rule determine_scg_ranking:
     input:
-        stats=_scg_ranking_input_stats
+        stats=lambda wildcards: expand(
+            "{species}/processed/reveal_module/scg/stats/{individual}_scg_stats.json",
+            species=wildcards.species,
+            individual=get_individuals_for_species(wildcards.species)
+        )
     output:
         ranked_tsv="{species}/results/reveal_module/scg/{species}_scg_ranked.tsv",
         ranked_json="{species}/results/reveal_module/scg/{species}_scg_ranked.json"

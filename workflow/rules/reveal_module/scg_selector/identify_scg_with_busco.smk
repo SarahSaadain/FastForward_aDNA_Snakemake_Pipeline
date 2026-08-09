@@ -2,27 +2,6 @@
 # Snakemake rules
 ####################################################
 
-def _scg_setting(wildcards, key, default):
-    """Return pipeline-level reveal_module.scg_selector.settings.{key}, falling back to default."""
-    return (
-        config.get("pipeline", {})
-              .get("reveal_module", {})
-              .get("scg_selector", {})
-              .get("settings", {})
-              .get(key, default)
-    )
-
-
-def _get_busco_lineage(wildcards):
-    lineage = config.get("species", {}).get(wildcards.species, {}).get("lineage")
-    if lineage is None:
-        raise ValueError(
-            f"BUSCO lineage is required for species '{wildcards.species}' but was not provided. "
-            f"Set species.{wildcards.species}.lineage in your config."
-        )
-    return lineage
-
-
 rule prepare_scg_determination_reference:
     input:
         ref=lambda wildcards: get_scg_determination_reference_path(wildcards.species)
