@@ -77,12 +77,14 @@ To add a new species:
 
 #### Providing Your Data
 
-The simplest option: drop your raw read files and reference genome anywhere inside the `<species>` folder. The first time you run pastForward, it automatically sorts them into the right places for you.
+The simplest option: drop your raw read files and reference genome anywhere inside the `<species>` folder. The first time you run pastForward, it automatically finds them there. This shortcut only works for reads and the reference genome — REVEAL input files (feature library, and optionally SCG) must go in their specific folders below, not just anywhere in `<species>`.
 
-If you'd rather place them yourself, put:
+Put your files here:
 
 * raw reads in `<species>/input/read_module/`
 * the reference genome in `<species>/input/reference_module/`
+* (optional) a feature library — a FASTA of TE or other genomic feature sequences to compare across samples — in `<species>/input/reveal_module/feature_library/`, needed only if you're using the REVEAL comparison stage
+* (optional) a pre-built SCG (single-copy gene) FASTA in `<species>/input/reveal_module/scg/`. If you skip this, pastForward determines SCGs automatically via BUSCO, as long as `pipeline.reveal_module.scg_selector.execute` is `true` (the default) and `species.<key>.lineage` is set to a BUSCO lineage name (e.g. `drosophilidae_odb12`, see [busco.ezlab.org](https://busco.ezlab.org/)). No lineage configured and no FASTA provided means SCG determination is skipped.
 
 If your files are large, shared with other tools, or already live somewhere else on disk, you don't need to copy them. Place a **symlink** (a shortcut/pointer file) in the expected location instead, and pastForward will use it directly. The symlink's name must follow pastForward's naming convention (below), but the real file it points to can keep its own name and live anywhere.
 
