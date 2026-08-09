@@ -1,12 +1,27 @@
-# Setup Overview
+# Setup Guide
 
-## Requirements
+This guide walks through everything you need to set up and configure pastForward. It assumes no prior experience with the command line or bioinformatics tools.
 
-* [Snakemake](https://snakemake.readthedocs.io) **>= 9.9.0** — pastForward checks this at startup and refuses to run on older versions.
-* [Conda](https://docs.conda.io) **>= 24.7.1** (or a compatible drop-in such as Mamba/Miniforge) — used by `--use-conda` to manage all tool dependencies automatically.
+## What You'll Need
 
-## Install Snakemake
-To install Snakemake, you can use conda, which is a package manager that simplifies the installation of software and its dependencies. You can create a new conda environment for Snakemake and install it using the following commands:
+pastForward runs on two free tools:
+
+* **Conda** installs and manages all the other software the pipeline needs. You don't install anything else by hand.
+* **Snakemake** runs the pipeline itself. Version **9.9.0** or newer is required. pastForward checks this automatically at startup and stops with a clear message if your version is too old.
+
+You'll also need a **terminal** (also called a "command line" or "shell"). This is a text window where you type commands instead of clicking buttons. Every computer has one:
+
+* **macOS**: open the "Terminal" app. You can find it by pressing Cmd+Space and typing "Terminal".
+* **Windows**: after installing conda (Step 1 below), use the "Anaconda Prompt" that comes with it.
+* **Linux**: open your distribution's terminal app.
+
+## Step 1: Install Conda
+
+If you don't already have conda, download and install [Miniforge](https://github.com/conda-forge/miniforge). It's a small, free installer for conda. Follow the instructions on that page for your operating system.
+
+## Step 2: Install Snakemake
+
+Open a terminal and type each of these lines, pressing Enter after each one:
 
 ```bash
 conda create -c conda-forge -c bioconda -c nodefaults -n snakemake snakemake
@@ -14,22 +29,27 @@ conda activate snakemake
 snakemake --help
 ```
 
-Refer to the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) for more installation options and details.
+What each line does:
 
-## Setup Instructions
-- Before running the pipeline, ensure you have an environment with Snakemake and it is activated.
-- You need to add species details to the pipeline (config and files).
-- Your reads should be renamed according to the naming convention specified below.
+1. Creates a separate, self-contained space called `snakemake` and installs Snakemake into it. You only need to do this once.
+2. Switches your terminal into that space. Run this line every time you open a new terminal window, before using pastForward.
+3. Checks that the install worked. You should see a page of help text print out.
 
-## Folder Structure
+For more installation options, see the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
+
+## Step 3: Get pastForward
+
+Download or `git clone` this repository into a folder on your computer. That folder becomes your **project folder**. Your pipeline code, your data, and your results will all live inside it. See [Project Structure](#project-structure) below for what this folder should contain.
+
+## Step 4: Add Your Species and Data
 
 ### Project Structure
 
-A pastForward **project** is a directory that contains the `workflow/` and `config/` folders (i.e. a copy/clone of this repository) plus one `<species>/` folder for each species you want to process:
+A pastForward **project** is a single folder containing the `workflow/` and `config/` folders (the pipeline code you just downloaded) plus one folder per species you want to process:
 
-```
-my_project/                  <- project root — run `snakemake` from here
-├── workflow/                <- pastForward pipeline code (Snakefile, rules, scripts)
+```text
+my_project/                  <- project folder — run `snakemake` from here
+├── workflow/                <- pastForward pipeline code (do not edit)
 ├── config/                  <- config.yaml, config_designer.html
 ├── Dmel/                    <- one folder per species; name must match the `species:` key in config.yaml
 │   ├── input/
@@ -41,37 +61,36 @@ my_project/                  <- project root — run `snakemake` from here
     └── results/
 ```
 
-There is currently no separation between the pipeline code and your input/output data — a project is a self-contained directory. To start a new project, copy (or `git clone`) pastForward into a new folder and add your species folders there.
+The pipeline code and your data live side by side in this one folder. There's no separate install location. To start a new project, copy (or `git clone`) pastForward into a new folder and add your species folders next to `workflow/` and `config/`.
 
-One project can process 1–n species. Which layout to use depends on how you want to run them:
+One project can handle one species or many. Which you choose depends on how you want to work:
 
-* **Combined** — several species in one project folder, sharing one `snakemake` invocation and one config. Convenient when you just want a quick look across many species at once, e.g. checking data quality for a low-depth trial-sequencing batch covering several species with a single command.
-* **Separate** — one project folder per species. Each species can then be started, re-run, and configured independently without affecting the others. This is the better choice for deep-sequencing / production runs.
+* **Combine several species in one project folder** if you just want a quick look across many species at once, sharing a single command and config. For example, checking data quality across a batch from a low-depth trial run.
+* **Give each species its own project folder** if you want to start, re-run, and configure each one independently without affecting the others. This is the better choice for a full production run.
 
-### Species Folders
+### Add a Species
 
-The project contains folders for different species, which each contain the raw data, processed data, and results for the particular species.
+To add a new species:
 
-The species folders should be placed in the project root, alongside `workflow/` and `config/` (see [Project Structure](#project-structure) above).
+1. Create a folder for it in the project root (next to `workflow/` and `config/`). The folder name must exactly match the species key you'll use under `species:` in `config.yaml` (see [Configuration](#configuration-configyaml) below).
+2. Put your raw read files and reference genome inside that folder (see below).
 
-#### Providing Raw Data
-The pipeline supports automatically moving the raw reads to the `<species>/input/read_module/` folder as well as the reference to the `<species>/input/reference_module/` folder. Simply provide the files in the `<species>` folder. Alternatively, you can manually move the files to the respective folders.
-  - provide the raw reads in `<species>/input/read_module/` folder
-  - provide the reference in `<species>/input/reference_module/` folder
+#### Providing Your Data
 
-If you don't want to move or copy the original files (e.g. they are large, shared with other tools, or live on a different volume), place a **symlink** in the expected location instead — pastForward detects symlinks and uses them directly without copying. The symlink itself must follow pastForward's naming convention, but the file it points to can keep its own name and live anywhere on disk.
+The simplest option: drop your raw read files and reference genome anywhere inside the `<species>` folder. The first time you run pastForward, it automatically sorts them into the right places for you.
 
-When adding a new species, make sure to 
-- the species folder should be placed in the project root, alongside `workflow/` and `config/`
-- add the folder name should match the species key which is defined in `config.yaml` below `species:` 
+If you'd rather place them yourself, put:
+
+* raw reads in `<species>/input/read_module/`
+* the reference genome in `<species>/input/reference_module/`
+
+If your files are large, shared with other tools, or already live somewhere else on disk, you don't need to copy them. Place a **symlink** (a shortcut/pointer file) in the expected location instead, and pastForward will use it directly. The symlink's name must follow pastForward's naming convention (below), but the real file it points to can keep its own name and live anywhere.
 
 #### Storing Species Data Elsewhere
 
-By default, a species' data must live inside the project directory as shown above. If you'd
-rather keep some or all of it elsewhere (a different disk, a shared mount, a location outside the
-project entirely), set one or more of the following **optional** settings under `species.<key>`
-in `config.yaml`. **If none of these are set, behavior is exactly as described above** — nothing
-on disk is touched beyond what pastForward already does today.
+> This is an optional, advanced feature. Skip this section if your data lives inside the project folder as shown above. That's the default, and most people don't need to change it.
+
+If you'd rather keep some or all of a species' data elsewhere (a different disk, a shared network drive, or a folder outside the project entirely), set one or more of the following optional settings under `species.<key>` in `config.yaml`. If you don't set any of these, nothing changes from the default behavior described above.
 
 | Setting | Overrides |
 |---|---|
@@ -84,8 +103,7 @@ on disk is touched beyond what pastForward already does today.
 | `processed_dir` | `<species>/processed/` |
 | `results_dir` | `<species>/results/` |
 
-Resolution order per setting: an explicit setting (e.g. `reads_dir`) wins over a path derived from
-`species_dir`, which wins over today's in-project default.
+If you set both `species_dir` and one of the more specific settings, the specific setting wins.
 
 ```yaml
 species:
@@ -97,59 +115,50 @@ species:
     processed_dir: "/scratch/pastforward_processed/Dmel"
 ```
 
-At startup, pastForward creates a symlink at the conventional in-project location (e.g.
-`Dmel/input/read_module`) pointing at the configured target, so every rule and script keeps
-working with the paths documented throughout this repo without any changes. This is set up once
-per run, before any input files are discovered:
-- It's idempotent — re-running pastForward with the same config is a no-op.
-- If something already exists at the conventional location (a real folder, or a symlink to
-  somewhere else) pastForward refuses to touch it and raises an error instead of overwriting it —
-  fix the config or move/remove the conflicting folder.
-- `processed_dir`/`results_dir` targets (explicit or `species_dir`-derived) are additionally
-  protected by a cross-project lock, since two separate pastForward projects could otherwise be
-  pointed at the same output location at the same time. See [FAQ.md](../docs/FAQ.md) for details
-  and how to recover from a stale lock.
+At startup, pastForward creates a shortcut (symlink) at the usual in-project location (e.g. `Dmel/input/read_module`) pointing at your configured target, so every part of the pipeline keeps working normally. A few things to know:
 
-#### Folder Structure
+* This happens automatically, once per run, before pastForward looks for any input files.
+* It's safe to run more than once. Nothing bad happens if you run pastForward again with the same config.
+* If something already exists at the usual location (a real folder, or a shortcut to somewhere else), pastForward will stop and show an error instead of overwriting it. Fix the config, or move/remove the conflicting folder, then try again.
+* `processed_dir` and `results_dir` are additionally protected against two different projects accidentally writing to the same place at the same time. See [FAQ.md](../docs/FAQ.md) if you run into a lock error.
 
-All other folders will be created and populated automatically
+#### What Gets Created Automatically
 
-- Folder `<species>/processed/` contains the intermediary files during processing. Most of these files are marked as temporary and will be deleted at the end of the pipeline. Some files are kept to allow reprocessing the pipeline from different points in case something fails.
-- Folder `<species>/results/` contains the final results and reports. 
+You don't need to create any folders beyond your species folder. Everything else is created for you as the pipeline runs:
 
-Everything related to a reference will have a `<reference>` folder under `processed`or `results`. Typically, only the `results` folder will contain information required for further analyis. In case more information is required, the original files can often be found in the `processed` folder. 
+* `<species>/processed/` holds files created while the pipeline is working. Most are deleted automatically once they're no longer needed. Some are kept so the pipeline can pick up from a failed step without starting over.
+* `<species>/results/` holds your final results and reports. This is what you'll actually look at.
 
-Some exemptions include `*.sam` and unsorted `*.bam` files. These are deleted to save storage space. Most other files are kept in order to allow reprocessing the pipeline from different points in case something fails. If a step should be repeated, the relevant files need to be deleted manually. 
+Everything related to one reference genome is grouped under a `<reference>` folder inside `processed/` or `results/`. For most purposes, only `results/` matters. If you need more detail, the `processed/` folder usually has it. A couple of large intermediate file types (`.sam` and unsorted `.bam` files) are always deleted to save disk space. If you ever need to redo a step, just delete its output files and re-run pastForward.
 
-#### RAW Reads Filenames
+#### Naming Your Read Files
 
-The pipeline expects input read files to follow a standardized naming convention:
+pastForward needs your raw read filenames to follow one consistent pattern, so it can tell which files belong to which sample and which read pair they are. A few correct examples:
 
-```
-<Individual>_[<FreeText>_]<ReadNumber>[_<FreeText>].fastq.gz
-<Individual>_[<FreeText>_]<ReadNumber>[_<FreeText>].fq.gz
-```
-
-Following this convention ensures proper organization and automated processing within the pipeline.  
-
-##### Filename Components:
-- **`<Individual>`** – A unique identifier for the sample or individual.  
-- **`<FreeText>`** – Any additional text or identifier that can be included in the filename. Typically, this is used to differentiate between different samples within the same individual, e.g. the same sample was extracted twice using different protocols.
-- **`<ReadNumber>`** – Indicates the read pair number: either `R1`/`R2`, or a bare `1`/`2`. Typically read 1 for the first read and read 2 for the second read. If the data is single-end, only read 1 should be present. A bare `1`/`2` must stand alone as its own segment, either immediately before the extension (`..._1.fastq.gz`) or between underscores (`..._1_<FreeText>.fastq.gz`) — it will not match inside a longer number such as `_10_` or `_21`.
-- **`.fastq.gz` / `.fq.gz`** – The expected file extensions, indicating compressed FASTQ format. Only these two compressed extensions are supported; uncompressed `.fastq`/`.fq` files are ignored.
-
-#### Examples:
-```
+```text
 Dmel01_DabneyProtocol_R1_001.fastq.gz
 Dmel01_DabneyProtocol_1_001.fastq.gz
 Dmel01_DabneyProtocol_R1_001.fq.gz
 ```
 
-# Configuration (`config.yaml`)
+The pattern, piece by piece:
 
-The `config.yaml` file is used to configure the aDNA/hDNA pipeline. It contains settings such as project name, the species list and the pipeline stages and their process steps.
+```text
+<Individual>_[<FreeText>_]<ReadNumber>[_<FreeText>].fastq.gz
+```
 
-All pipeline stages are enabled by default, so a minimal config containing only the project name and species list is sufficient to run the pipeline without any further changes:
+* **`<Individual>`** is a unique ID for the sample, e.g. `Dmel01`. It's everything before the first underscore, and pastForward uses it to group files that belong together.
+* **`<FreeText>`** (optional, can appear before or after the read number) is any extra label you want, e.g. a protocol name. Useful when the same individual was extracted twice with different methods.
+* **`<ReadNumber>`** marks which read of the pair this file is: `R1`/`R2`, or a plain `1`/`2`. Use read 1 only for single-end data. A plain `1` or `2` must stand on its own between underscores or right before the file extension. It won't be picked up inside a longer number like `_10_` or `_21`.
+* The file must end in **`.fastq.gz`** or **`.fq.gz`** (compressed FASTQ). Uncompressed `.fastq`/`.fq` files are not supported.
+
+## Configuration (`config.yaml`)
+
+`config.yaml` tells pastForward which species to process and which pipeline options to use.
+
+**If you're not comfortable editing text files by hand**, open [config_designer.html](config_designer.html) in your web browser. This interactive tool walks you through every option with a graphical interface and generates a ready-to-use `config.yaml` for you. No code required.
+
+If you'd rather write it yourself, every pipeline stage is turned on by default, so a minimal config only needs a project name and species list:
 
 ```yaml
 project_name: "pastForward_Project"
@@ -159,6 +168,7 @@ species:
     name: "Drosophila melanogaster"
 ```
 
-* To adjust any pipeline settings, open [config_designer.html](config_designer.html) in a browser. The interactive Config Designer guides you through all available options and exports a ready-to-use `config.yaml`.
-* For the full list of settings, their defaults, and descriptions, see [parameters.md](parameters.md).
-* For a fully-commented example config using every available setting, see [max_config_sample.yaml](max_config_sample.yaml).
+* For the full list of settings, their defaults, and what they do, see [parameters.md](parameters.md).
+* For a fully-commented example using every available setting, see [max_config_sample.yaml](max_config_sample.yaml).
+
+Once your data is in place and your config is ready, head back to the main [README](../README.md#running-the-pipeline) to start the pipeline.

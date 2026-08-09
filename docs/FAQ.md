@@ -2,29 +2,31 @@
 
 ## Setup & Installation
 
-**Q: What is the minimum Snakemake version required?**
-Snakemake 9.9.0 or higher is required. pastForward enforces this at startup and will refuse to run on older versions.
+For a full step-by-step walkthrough, including installing conda and Snakemake from scratch, see the [Setup Guide](../config/README.md). The questions below cover specific details.
 
-**Q: What is the minimum conda version required?**
-Conda 24.7.1 or higher (or a compatible drop-in such as Mamba/Miniforge) is recommended. Conda is used to manage all tool dependencies automatically via `--use-conda`.
+**Q: What version of Snakemake do I need?**
+Version 9.9.0 or newer. pastForward checks this automatically at startup and won't run on an older version.
 
-**Q: Do I need to pre-install all the bioinformatics tools?**
-No. pastForward manages all tool dependencies through conda environments automatically when you pass `--use-conda`. Snakemake creates the environments on the first run.
+**Q: What version of conda do I need?**
+24.7.1 or newer is recommended (or a compatible tool such as Mamba or Miniforge). Conda installs and manages all the other software the pipeline needs, through the `--use-conda` flag.
+
+**Q: Do I need to install all the bioinformatics tools myself?**
+No. As long as you run with `--use-conda`, Snakemake installs everything each step needs automatically, the first time you run it.
 
 **Q: Can I run pastForward without conda?**
-Not reliably. Each pastForward rule is tied to a specific conda environment that ensures reproducible software versions. Running without `--use-conda` will fail unless you have all required tools installed and on your PATH with compatible versions.
+Not reliably. Every step is tied to a specific conda environment, which keeps software versions consistent and reproducible. Without `--use-conda`, you'd need to install every required tool yourself, with matching versions, and put them all on your PATH.
 
-**Q: Where does pastForward live relative to my input/output data, and do I need a separate copy for each project?**
-A pastForward **project** is a directory that contains the `workflow/` and `config/` folders (i.e. a copy/clone of the pastForward repository) plus one `<species>/` folder for each species you want to process — pipeline code and data live side by side in the same directory by default. To start a new project, copy pastForward into a new folder and add your species folders there.
+**Q: Where does pastForward live relative to my input/output data? Do I need a separate copy for each project?**
+A pastForward **project** is a single folder containing the `workflow/` and `config/` folders (a copy of the pastForward repository) plus one `<species>/` folder for each species you want to process. By default, the pipeline code and your data live side by side in that same folder. To start a new project, copy pastForward into a new folder and add your species folders there.
 
-If you'd rather keep some or all of a species' data outside the project directory (a different disk, a shared mount, ...), you can — see "Can I store a species' data outside the project directory?" in the Configuration section below. Without that configuration, behavior is exactly as described above.
+If you'd rather keep some or all of a species' data outside the project folder (a different disk, a shared mount, and so on), you can. See "Can I store a species' data outside the project directory?" in the Configuration section below. Without that setting, everything works exactly as described above.
 
-One project can process 1–n species. Whether to combine several species in one project folder or give each its own project folder depends on how you want to run them: combining them shares one `snakemake` invocation and config, which is handy for a quick look across a batch (e.g. checking data quality for several species from a low-depth trial-sequencing run); separating them lets each species be started, re-run, and configured independently, which is preferable for deep-sequencing/production runs. See [Project Structure](../config/README.md#project-structure) for a folder diagram.
+One project can process one species or many. Combining several species in one project folder shares a single `snakemake` command and config, which is handy for a quick look across a batch, for example checking data quality for several species from a low-depth trial-sequencing run. Giving each species its own project folder lets you start, re-run, and configure it independently, which is usually the better choice for a full production run. See [Project Structure](../config/README.md#project-structure) for a folder diagram.
 
-**Q: How does the pastForward know which files to create?**
-pastForward defines a set of expected output files based on the configuration and the input data. At the start of each run, it performs an input validation step that checks for the presence of available input files and prints a summary of the detected files.
+**Q: How does pastForward know which files to create?**
+It works out the expected output files from your config and whatever input data it finds. At the start of every run, it checks which input files are present and prints a summary.
 
-Based on your configuration and the detected input files, pastForward determines which output files will be generated in a particular run. It prints a list of all the files that will be requested by pastForward based on the current config. You can review this list in a dry run to ensure that all your input files are correctly detected and will be processed as expected.
+From that, it prints a list of every file it plans to create during this run. Use a dry run to check this list before running the pipeline for real, so you can confirm your input files are being detected and will be processed the way you expect.
 
 ---
 
