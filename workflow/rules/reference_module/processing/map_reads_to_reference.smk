@@ -98,5 +98,7 @@ rule index_mapped_sorted_reads_bam:
     params:
         extra="",  # optional params string
     threads: 5
+    log:
+        "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted.bam.bai.log"
     wrapper:
         "v9.3.0/bio/samtools/index"

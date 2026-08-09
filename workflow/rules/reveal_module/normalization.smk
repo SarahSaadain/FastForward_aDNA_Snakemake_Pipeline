@@ -14,13 +14,15 @@ rule normalize_visualization_of_individual:
         exclude_quantile = lambda _: config.get("pipeline", {}).get("reveal_module", {}).get("normalization", {}).get("settings", {}).get("exclude_quantile", 25)
     message:
         "Normalizing REVEAL coverage for {wildcards.individual} of {wildcards.species}."
+    log:
+        "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.log"
     shell:
         """
         REVEAL normalize \
             --so "{input.coverage}" \
             --outfile "{output.normalized}" \
             --end-distance {params.end_distance} \
-            --exclude-quantile {params.exclude_quantile}
+            --exclude-quantile {params.exclude_quantile} > "{log}" 2>&1
         """
 
 rule compress_visualization_coverage_normalized_of_individual:
@@ -32,5 +34,7 @@ rule compress_visualization_coverage_normalized_of_individual:
     conda:
         "../../envs/pigz.yaml"
     message: "Compressing REVEAL normalized output for {wildcards.individual} of {wildcards.species}"
+    log:
+        "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.normalized_compress.log"
     shell:
-        "pigz -p {threads} -c \"{input.source}\" > \"{output.target}\""
+        "pigz -p {threads} -c \"{input.source}\" > \"{output.target}\" 2> \"{log}\""

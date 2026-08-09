@@ -90,6 +90,8 @@ rule create_multiqc_species:
 rule create_multiqc_species_config:
     output:
         "{species}/results/summary/species_level/{species}_overall/{species}_species_overall_multiqc_config.yaml"
+    log:
+        "{species}/results/summary/species_level/{species}_overall/{species}_species_overall_multiqc_config.log"
     script:
         "../../scripts/summary_module/create_multiqc_species_individual_script_create_multiqc_species_individual_config.py"
         

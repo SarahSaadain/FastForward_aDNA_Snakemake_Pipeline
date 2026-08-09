@@ -9,8 +9,10 @@ rule prepare_raw_reads:
     output:
         raw_read = "{species}/input/read_module/{raw_read}",
     message: "Moving raw read file {input.raw_read} to {output.raw_read}"
-    shell: 
+    log:
+        "{species}/input/read_module/{raw_read}.prepare.log"
+    shell:
         """
-        mv "{input.raw_read}" "{output.raw_read}"
-        echo "Done moving raw read file {input.raw_read} to {output.raw_read}"
+        mv "{input.raw_read}" "{output.raw_read}" > "{log}" 2>&1
+        echo "Done moving raw read file {input.raw_read} to {output.raw_read}" >> "{log}" 2>&1
         """

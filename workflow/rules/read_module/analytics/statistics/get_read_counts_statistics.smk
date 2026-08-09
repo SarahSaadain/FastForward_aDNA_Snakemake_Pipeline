@@ -47,6 +47,8 @@ rule count_reads_raw:
         fastq=lambda wc: get_raw_reads_for_sample(wc.species, wc.sample), 
     output:
         counted="{species}/processed/read_module/statistics/{sample}_raw.count"
+    log:
+        "{species}/processed/read_module/statistics/{sample}_raw.log"
     message: "Counting reads in raw FASTQ file(s) {input.fastq}"
     conda:
         "../../../../envs/python_and_r.yaml",
@@ -67,6 +69,8 @@ rule count_reads_trimmed:
         )
     output:
         counted="{species}/processed/read_module/statistics/{sample}_trimmed.count"
+    log:
+        "{species}/processed/read_module/statistics/{sample}_trimmed.log"
     message: "Counting reads in {input.source}"
     conda:
         "../../../../envs/python_and_r.yaml",
@@ -84,6 +88,8 @@ rule count_reads_quality_filtered:
         )
     output:
         counted="{species}/processed/read_module/statistics/{sample}_quality_filtered.count"
+    log:
+        "{species}/processed/read_module/statistics/{sample}_quality_filtered.log"
     message: "Counting reads in {input.source}"
     conda:
         "../../../../envs/python_and_r.yaml",
@@ -98,6 +104,8 @@ rule combine_counts_per_sample:
         quality_filtered_reads="{species}/processed/read_module/statistics/{sample}_quality_filtered.count"
     output:
         counts="{species}/processed/read_module/statistics/{sample}_reads_counts.csv"
+    log:
+        "{species}/processed/read_module/statistics/{sample}_reads_counts.log"
     message: "Combining read counts for sample {wildcards.sample}"
     conda:
         "../../../../envs/python_and_r.yaml",
@@ -124,6 +132,8 @@ rule combine_counts_per_species:
             species=wildcards.species)
     output:
         counts="{species}/results/read_module/statistics/{species}_reads_counts.csv"
+    log:
+        "{species}/results/read_module/statistics/{species}_reads_counts.log"
     conda:
         "../../../../envs/python_and_r.yaml",
     run:

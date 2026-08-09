@@ -102,9 +102,11 @@ rule dedup_extract_contigs_from_reference_fai:
         bed=temp("{species}/processed/reference_module/{reference}/dedup_cluster/contigs.bed")
     message:
         "Extracting full-length contig BED from FAI for {wildcards.species} / {wildcards.reference}"
+    log:
+        "{species}/processed/reference_module/{reference}/dedup_cluster/contigs.log"
     shell:
         """
-        awk '{{print $1 "\t0\t" $2}}' "{input.fai}" > "{output.bed}"
+        awk '{{print $1 "\t0\t" $2}}' "{input.fai}" > "{output.bed}" 2> "{log}"
         """
 
 # Checkpoint: Create all contig clusters for deduplication
@@ -121,6 +123,8 @@ checkpoint dedup_create_all_contig_clusters:
         max_contigs_per_cluster = config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("settings", {}).get("max_contigs_per_cluster", 500)
     conda:
         "../../../envs/python_and_r.yaml",
+    log:
+        "{species}/processed/reference_module/{reference}/dedup_cluster/dedup_create_all_contig_clusters.log"
     script:
         "../../../scripts/reference_module/processing/deduplication_script_dedup_create_all_contig_clusters.py"
 
@@ -133,6 +137,8 @@ rule save_unmapped_reads_from_bam:
     params:
         extra="-b -f 4",  # optional params string
     threads: 2
+    log:
+        "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_unmapped_reads.log"
     wrapper:
         "v9.3.0/bio/samtools/view"
 
@@ -164,6 +170,8 @@ rule dedup_index_split_cluster_bam:
     params:
         extra="",  # optional params string
     threads: 2
+    log:
+        "{species}/processed/reference_module/{reference}/dedup_cluster/{individual}/split_cluster/{individual}_{reference}_cluster_{start}_{end}.bam.bai.log"
     wrapper:
         "v9.3.0/bio/samtools/index"
 
@@ -234,6 +242,8 @@ rule dedup_index_dedupped_bam:
     params:
         extra="",  # optional params string
     threads: 5
+    log:
+        "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped.bam.bai.log"
     wrapper:
         "v9.3.0/bio/samtools/index"
 
@@ -247,6 +257,8 @@ rule dedup_merge_cluster_jsons:
         "Merging DeDup JSON files for individual {wildcards.individual} in species {wildcards.species}"
     conda:
         "../../../envs/python_and_r.yaml",
+    log:
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.log"
     script:
         "../../../scripts/reference_module/processing/deduplication_script_dedup_merge_cluster_jsons.py"
 

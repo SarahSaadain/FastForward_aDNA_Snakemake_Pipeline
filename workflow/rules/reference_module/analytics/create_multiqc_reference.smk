@@ -73,5 +73,7 @@ rule create_multiqc_reference:
 rule create_multiqc_reference_config:
     output:
         "{species}/results/reference_module/{reference}/analytics/species_level/{species}_{reference}/{species}_{reference}_multiqc_config.yaml"
+    log:
+        "{species}/results/reference_module/{reference}/analytics/species_level/{species}_{reference}/{species}_{reference}_multiqc_config.log"
     script:
         "../../../scripts/summary_module/create_multiqc_species_individual_script_create_multiqc_species_individual_config.py"

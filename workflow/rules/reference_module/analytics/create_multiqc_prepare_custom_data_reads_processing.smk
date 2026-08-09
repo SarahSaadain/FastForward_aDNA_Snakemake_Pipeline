@@ -35,6 +35,8 @@ rule prepare_custom_data_reads_processing_absolute_values:
     params:
         individual="{individual}",
         reference="{reference}",
+    log:
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.log"
     script:
         "../../../scripts/summary_module/prepare_custom_data_reads_processing.py"
         
@@ -50,6 +52,8 @@ rule combine_custom_data_reads_processing_absolute_values:
         "{species}/results/summary/species_level/{species}_overall/multiqc_custom_content/{species}_{reference}_reads_processing_summary_combined.tsv",
     conda:
         "../../../envs/python_and_r.yaml",
+    log:
+        "{species}/results/summary/species_level/{species}_overall/multiqc_custom_content/{species}_{reference}_reads_processing_summary_combined.log"
     run:
         import pandas as pd
         import os
@@ -75,6 +79,8 @@ rule prepare_custom_data_reads_processing_stacked_values:
         "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv",
     conda:
         "../../../envs/python_and_r.yaml",
+    log:
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.log"
     run:
         import pandas as pd
 
@@ -111,6 +117,8 @@ rule combine_custom_data_reads_processing_stacked_values:
         "{species}/results/summary/species_level/{species}_overall/multiqc_custom_content/{species}_{reference}_reads_processing_summary_stacked_combined.tsv",
     conda:
         "../../../envs/python_and_r.yaml",
+    log:
+        "{species}/results/summary/species_level/{species}_overall/multiqc_custom_content/{species}_{reference}_reads_processing_summary_stacked_combined.log"
     run:
         import pandas as pd
         import os

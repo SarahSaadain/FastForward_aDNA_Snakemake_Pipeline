@@ -5,10 +5,12 @@ rule link_qualimap_for_multiqc:
         directory("{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}")
     message:
         "Linking qualimap results for {wildcards.individual} of {wildcards.species} to multiqc custom content."
+    log:
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}_link.log"
     shell:
         """
         mkdir -p "$(dirname "{output}")"
-        cp -r "{input}" "{output}"
+        cp -r "{input}" "{output}" > "{log}" 2>&1
         """
 
 rule copy_mapdamage_result_for_multiqc:
@@ -23,10 +25,12 @@ rule copy_mapdamage_result_for_multiqc:
         lg_dist = "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt",
     message:
         "Copying mapdamage results for {wildcards.individual} of {wildcards.species} to multiqc custom content."
+    log:
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}_copy.log"
     shell:
         """
         mkdir -p "{output.folder}"
-        cp "{input.GtoA3p}" "{output.GtoA3p}"
-        cp "{input.CtoT5p}" "{output.CtoT5p}"
-        cp "{input.lg_dist}" "{output.lg_dist}"
+        cp "{input.GtoA3p}" "{output.GtoA3p}" > "{log}" 2>&1
+        cp "{input.CtoT5p}" "{output.CtoT5p}" >> "{log}" 2>&1
+        cp "{input.lg_dist}" "{output.lg_dist}" >> "{log}" 2>&1
         """

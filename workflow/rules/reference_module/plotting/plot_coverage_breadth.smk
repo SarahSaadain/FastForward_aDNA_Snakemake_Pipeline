@@ -9,7 +9,7 @@ rule plot_mapped_reads_coverage_breadth_violin:
     output:
         "{species}/results/reference_module/{reference}/plots/coverage/{species}_{reference}_individual_coverage_breadth_violin.png"
     params:
-        species="{species}"
+        species=lambda wildcards: wildcards.species
     message: "Plotting coverage breadth violin for species {wildcards.species} and reference {wildcards.reference}"
     log:
         "{species}/processed/reference_module/{reference}/plots/coverage/{species}_{reference}_individual_coverage_breadth_violin.log"
@@ -26,7 +26,9 @@ rule plot_mapped_reads_coverage_breadth_bar:
         "{species}/results/reference_module/{reference}/plots/coverage/{species}_{reference}_individual_coverage_breadth_bar.png"
     message: "Plotting coverage breadth bar for species {wildcards.species} and reference {wildcards.reference}"
     params:
-        species="{species}"
+        species=lambda wildcards: wildcards.species
+    log:
+        "{species}/results/reference_module/{reference}/plots/coverage/{species}_{reference}_individual_coverage_breadth_bar.log"
     conda:
         "../../../envs/python_and_r.yaml"
     script:

@@ -59,5 +59,7 @@ rule compress_visualization_coverage_of_individual:
     conda:
         "../../envs/pigz.yaml"
     message: "Compressing REVEAL coverage output for {wildcards.individual} of {wildcards.species}"
+    log:
+        "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage_compress.log"
     shell:
-        "pigz -p {threads} -c \"{input.source}\" > \"{output.target}\""
+        "pigz -p {threads} -c \"{input.source}\" > \"{output.target}\" 2> \"{log}\""

@@ -57,10 +57,12 @@ rule filter_top_scgs:
             config.get("pipeline", {}).get("reveal_module", {}).get("scg_selector", {}).get("settings", {}).get("num_top_scgs", 20)
         )
     message: "Selecting top {params.num_top_scgs} SCGs for {wildcards.species}"
+    log:
+        "{species}/processed/reveal_module/scg/{species}_relevant_scg.log"
     shell:
         """
-        awk 'NR>1 && NR<={params.num_top_scgs}+1 {{print $1}}' "{input.ranked_scgs}" | sort -u > "{output.relevant_contigs}"
-        awk '{{print $1 "\t0\t1000000000"}}' "{output.relevant_contigs}" | sort -u > "{output.relevant_contigs_bed}"
+        awk 'NR>1 && NR<={params.num_top_scgs}+1 {{print $1}}' "{input.ranked_scgs}" | sort -u > "{output.relevant_contigs}" 2> "{log}"
+        awk '{{print $1 "\t0\t1000000000"}}' "{output.relevant_contigs}" | sort -u > "{output.relevant_contigs_bed}" 2>> "{log}"
         """
 
 # The filtered FASTA stays in processed/ — it feeds into the REVEAL prepare_libraries pipeline
@@ -71,6 +73,8 @@ rule filter_scg_fasta:
     output:
         filtered="{species}/processed/reveal_module/scg/{species}_relevant_scg.fasta"
     message: "Filtering SCG FASTA to top-ranked sequences for {wildcards.species}"
+    log:
+        "{species}/processed/reveal_module/scg/{species}_relevant_scg_fasta.log"
     run:
         with open(input.id_list) as f:
             ids_to_keep = set(line.strip() for line in f if line.strip())

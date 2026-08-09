@@ -13,7 +13,7 @@ _dyn_min_mapq_fle    = _dyn_settings.get("min_mapq_fle", 0)
 _comp_execute        = config.get("pipeline", {}).get("reveal_module", {}).get("mapping", {}).get("settings", {}).get("competitive_mapping", False)
 
 _MAPPED_BAM = "{species}/processed/reveal_module/{feature_library}/mapped/{individual}_{feature_library}_and_scg.sorted.bam"
-_MAPPED_BAI = _MAPPED_BAM + ".bai"
+_MAPPED_BAI = f"{_MAPPED_BAM}.bai"
 _MAPPED_BAM_PRECOMP  = "{species}/processed/reveal_module/{feature_library}/mapped/{individual}_{feature_library}_and_scg.sorted.precomp.bam"
 _MAPPED_BAM_PREMAPQ  = "{species}/processed/reveal_module/{feature_library}/mapped/{individual}_{feature_library}_and_scg.sorted.premapq.bam"
 
@@ -176,6 +176,8 @@ else:
         params:
             extra="-b -F 4",
         threads: 2
+        log:
+            "{species}/processed/reveal_module/{feature_library}/mapped/{individual}_{feature_library}_remove_unmapped.log"
         wrapper:
             "v9.3.0/bio/samtools/view"
 
@@ -213,5 +215,7 @@ rule index_bam_reads_to_library:
     params:
         extra="",
     threads: 5
+    log:
+        "{species}/processed/reveal_module/{feature_library}/mapped/{individual}_{feature_library}_and_scg_index.log"
     wrapper:
         "v9.3.0/bio/samtools/index"

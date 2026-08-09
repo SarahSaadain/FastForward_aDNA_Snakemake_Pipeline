@@ -30,9 +30,11 @@ rule ecmsd_database_setup:
         "../../../envs/ecmsd.yaml"
     message:
         "Setting up ECMSD database."
+    log:
+        "resources/ecmsd_database_setup.log"
     shell:
         """
-        ECMSD --create-db --db-folder "{output}"
+        ECMSD --create-db --db-folder "{output}" > "{log}" 2>&1
         """
 
 rule ecmsd_analyze_contamination:
@@ -58,14 +60,16 @@ rule ecmsd_analyze_contamination:
     conda:
         "../../../envs/ecmsd.yaml"
     message: "Running ECMSD contamination analysis for {input.fastq}"
+    log:
+        "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_ecmsd.log"
     shell:
         """
         outdir=$(dirname "$(dirname "{output.summary}")")
         mkdir -p "$outdir"
 
-        echo "Running ECMSD for sample {wildcards.sample}"
-        echo "Input FASTQ: {input.fastq}"
-        echo "Output folder: $outdir"
+        echo "Running ECMSD for sample {wildcards.sample}" > "{log}" 2>&1
+        echo "Input FASTQ: {input.fastq}" >> "{log}" 2>&1
+        echo "Output folder: $outdir" >> "{log}" 2>&1
 
         ECMSD \
             --fwd "{input.fastq}" \
@@ -77,7 +81,7 @@ rule ecmsd_analyze_contamination:
             --mapping_quality {params.mapping_quality} \
             --taxonomic-hierarchy "{params.taxonomic_hierarchy}" \
             --db-folder "{input.database}" \
-            --force
+            --force >> "{log}" 2>&1
         """
 
 rule ecmsd_merge_hits_per_individual:
@@ -91,6 +95,8 @@ rule ecmsd_merge_hits_per_individual:
         "{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
     params:
         taxonomic_hierarchy = _ecmsd_taxonomic_hierarchy
+    log:
+        "{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.log"
     script:
         "../../../scripts/read_module/contamination/check_contamination_ecmsd_script_ecmsd_merge_hits_per_individual.py"
 
@@ -102,5 +108,7 @@ rule ecmsd_analyze_proportions:
         "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/pipeline/{sample}_ecmsd_proportions.tsv"
     params:
         sample = "{sample}"
+    log:
+        "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/pipeline/{sample}_ecmsd_proportions.log"
     script:
         "../../../scripts/read_module/contamination/check_contamination_ecmsd_script_ecmsd_analyze_proportions.py"

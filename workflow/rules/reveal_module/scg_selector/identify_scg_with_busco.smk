@@ -29,9 +29,11 @@ rule prepare_scg_determination_reference:
     output:
         ref_link=temp("{species}/processed/reveal_module/scg/ref/{species}_scg_ref.fasta")
     message: "Preparing reference genome for SCG determination for {wildcards.species}"
+    log:
+        "{species}/processed/reveal_module/scg/ref/{species}_scg_ref.log"
     shell:
         """
-        ln -sf "$(realpath "{input.ref}")" "{output.ref_link}"
+        ln -sf "$(realpath "{input.ref}")" "{output.ref_link}" > "{log}" 2>&1
         """
 
 rule run_busco_for_scg_determination:
@@ -67,5 +69,7 @@ rule prepare_scg_library_from_busco:
     params:
         min_length_scg=lambda wildcards: _scg_setting(wildcards, "min_length_scg", 4000),
         max_length_scg=lambda wildcards: _scg_setting(wildcards, "max_length_scg", 8000)
+    log:
+        "{species}/processed/reveal_module/scg/{species}_scg_library.log"
     script:
         "../../../scripts/reveal_module/scg/get_scg_from_busco.py"

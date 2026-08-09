@@ -26,6 +26,8 @@ rule analyze_mapped_reads_coverage:
     message: "Analyzing coverage depth and breadth for {input.depth_txt}"
     conda:
         "../../../envs/python_and_r.yaml",
+    log:
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/coverage/{individual}_{reference}_coverage_analysis.log"
     script:
         "../../../scripts/reference_module/analytics/statistics/analyze_samtools_depth_individual_file.py"
 
@@ -45,6 +47,8 @@ rule combine_analyzed_mapped_reads_coverage:
     conda:
         "../../../envs/python_and_r.yaml",
     params:
-        species="{species}"
+        species=lambda wildcards: wildcards.species
+    log:
+        "{species}/results/reference_module/{reference}/analytics/species_level/{species}/coverage/{reference}_combined_coverage_analysis.log"
     script:
         "../../../scripts/reference_module/analytics/statistics/combine_analyzed_depth_breadth_files.py"

@@ -69,9 +69,11 @@ rule clean_feature_library_name:
     output:
         temp("{species}/processed/reveal_module/{feature_library}/library/{feature_library}.clean.fasta")
     message: "Preparing TE library for {wildcards.species}"
+    log:
+        "{species}/processed/reveal_module/{feature_library}/library/{feature_library}.clean.log"
     shell:
         """
-        ln -sf "$(realpath "{input}")" "{output}"
+        ln -sf "$(realpath "{input}")" "{output}" > "{log}" 2>&1
         """
 
 rule prepare_feature_library:
@@ -80,10 +82,12 @@ rule prepare_feature_library:
     output:
         temp("{species}/processed/reveal_module/{feature_library}/library/{feature_library}.suffixed.fasta")
     message: "Preparing TE library for {wildcards.species}"
+    log:
+        "{species}/processed/reveal_module/{feature_library}/library/{feature_library}.suffixed.log"
     shell:
         # remove trailing whitespace from headers and append _fle to each header
         """
-        sed -E '/^>/ s/[[:space:]]//g; /^>/ s/(_fle)?$/_fle/' "{input}" > "{output}"
+        sed -E '/^>/ s/[[:space:]]//g; /^>/ s/(_fle)?$/_fle/' "{input}" > "{output}" 2> "{log}"
         """
 
 rule clean_scg_library_name:
@@ -92,9 +96,11 @@ rule clean_scg_library_name:
     output:
         temp("{species}/processed/reveal_module/scg/library/{scg_library}.clean.fasta")
     message: "Preparing SCG library for {wildcards.species}"
+    log:
+        "{species}/processed/reveal_module/scg/library/{scg_library}.clean.log"
     shell:
         """
-        ln -sf "$(realpath "{input}")" "{output}"
+        ln -sf "$(realpath "{input}")" "{output}" > "{log}" 2>&1
         """
 
 rule prepare_scg_library:
@@ -103,10 +109,12 @@ rule prepare_scg_library:
     output:
         temp("{species}/processed/reveal_module/scg/library/{scg_library}.suffixed.fasta")
     message: "Preparing SCG library for {wildcards.species}"
+    log:
+        "{species}/processed/reveal_module/scg/library/{scg_library}.suffixed.log"
     shell:
         # remove trailing whitespace from headers and append _scg to each header
         """
-        sed -E '/^>/ s/[[:space:]]//g; /^>/ s/(_scg)?$/_scg/' "{input}" > "{output}"
+        sed -E '/^>/ s/[[:space:]]//g; /^>/ s/(_scg)?$/_scg/' "{input}" > "{output}" 2> "{log}"
         """
 
 if _comp_execute:
@@ -142,7 +150,9 @@ rule combine_scg_and_ref_library:
     output:
         library="{species}/processed/reveal_module/{feature_library}/library/{feature_library}_and_scg.suffixed.fasta"
     message: "Concatenating SCG and Feature libraries for {wildcards.species}"
+    log:
+        "{species}/processed/reveal_module/{feature_library}/library/{feature_library}_and_scg.suffixed.log"
     shell:
         """
-        cat "{input.scg}" "{input.fl}" {input.comp} > "{output.library}"
+        cat "{input.scg}" "{input.fl}" {input.comp} > "{output.library}" 2> "{log}"
         """

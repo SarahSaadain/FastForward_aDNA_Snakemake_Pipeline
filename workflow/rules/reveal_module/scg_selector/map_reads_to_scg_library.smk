@@ -22,7 +22,7 @@ _scg_keep_bam  = _scg_sel_settings.get("keep_mapped_bam", False)
 _scg_min_mapq  = _scg_sel_settings.get("min_mapq", 0)
 
 _SCG_SORTED_BAM      = "{species}/processed/reveal_module/scg/reads_mapped/{individual}_scg_library.sorted.bam"
-_SCG_SORTED_BAI      = _SCG_SORTED_BAM + ".bai"
+_SCG_SORTED_BAI      = f"{_SCG_SORTED_BAM}.bai"
 
 if _scg_sel_mapper == "minimap2":
 
@@ -151,6 +151,8 @@ rule remove_unmapped_reads_and_filter_by_mapq_from_scg_bam:
     params:
         extra=f"-b -F 4{f' -q {_scg_min_mapq}' if _scg_min_mapq > 0 else ''}",
     threads: 2
+    log:
+        "{species}/processed/reveal_module/scg/reads_mapped/{individual}_scg_library_remove_unmapped.log"
     wrapper:
         "v9.3.0/bio/samtools/view"
 
@@ -164,5 +166,7 @@ rule index_scg_bam_reads:
     params:
         extra="",
     threads: 5
+    log:
+        "{species}/processed/reveal_module/scg/reads_mapped/{individual}_scg_library_index.log"
     wrapper:
         "v9.3.0/bio/samtools/index"

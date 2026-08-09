@@ -34,28 +34,32 @@ if _filter_remove:
             bai = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai"
         message:
             "Getting final (mapped-only) BAM for {wildcards.individual} of {wildcards.species}."
+        log:
+            "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.log"
         shell:
             # Use copy so the mapped-only intermediate is still available for any
             # other rule that depends on it; temp() handles deletion afterwards.
             """
-            echo "Copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}..."
-            echo "Input bam: {input.bam}"
-            echo "Output bam: {output.bam}"
-            cp "{input.bam}" "{output.bam}"
-            cp "{input.bai}" "{output.bai}"
-            echo "Done copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}."
+            echo "Copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}..." > "{log}" 2>&1
+            echo "Input bam: {input.bam}" >> "{log}" 2>&1
+            echo "Output bam: {output.bam}" >> "{log}" 2>&1
+            cp "{input.bam}" "{output.bam}" >> "{log}" 2>&1
+            cp "{input.bai}" "{output.bai}" >> "{log}" 2>&1
+            echo "Done copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}." >> "{log}" 2>&1
             """
 else:
     # Default: copy directly from the last processing-step BAM (_pre_filter_bam).
     rule get_final_bam:
         input:
             bam = _pre_filter_bam,
-            bai = _pre_filter_bam + ".bai"
+            bai = f"{_pre_filter_bam}.bai"
         output:
             bam = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
             bai = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai"
         message:
             "Getting final bam for {wildcards.individual} of {wildcards.species}."
+        log:
+            "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.log"
         shell:
             # The final bam is just a copy of the bam that is output from the last step of the reference
             # processing pipeline (either damage rescaling, deduplication, or mapping)
@@ -64,10 +68,10 @@ else:
             # By using copy, we ensure that the input bam is still available for other rules that need it.
             # The input bam will be deleted at the end of the pipeline when the intermediate files are cleaned up.
             """
-            echo "Copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}..."
-            echo "Input bam: {input.bam}"
-            echo "Output bam: {output.bam}"
-            cp "{input.bam}" "{output.bam}"
-            cp "{input.bai}" "{output.bai}"
-            echo "Done copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}."
+            echo "Copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}..." > "{log}" 2>&1
+            echo "Input bam: {input.bam}" >> "{log}" 2>&1
+            echo "Output bam: {output.bam}" >> "{log}" 2>&1
+            cp "{input.bam}" "{output.bam}" >> "{log}" 2>&1
+            cp "{input.bai}" "{output.bai}" >> "{log}" 2>&1
+            echo "Done copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}." >> "{log}" 2>&1
             """

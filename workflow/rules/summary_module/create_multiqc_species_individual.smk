@@ -91,6 +91,8 @@ rule create_multiqc_species_individual:
 rule create_multiqc_species_individual_config:
     output:
         "{species}/results/summary/individual_level/{individual}/{individual}_multiqc_config.yaml"
+    log:
+        "{species}/results/summary/individual_level/{individual}/{individual}_multiqc_config.log"
     script:
         "../../scripts/summary_module/create_multiqc_species_individual_script_create_multiqc_species_individual_config.py"
         

@@ -78,6 +78,8 @@ rule create_multiqc_bam_individual_config:
         "{species}/results/summary/individual_level/{individual}/{individual}_{reference}_multiqc_config.yaml"
     conda:
         "../../../envs/python_and_r.yaml",
+    log:
+        "{species}/results/summary/individual_level/{individual}/{individual}_{reference}_multiqc_config.log"
     script:
         "../../../scripts/summary_module/create_multiqc_species_individual_script_create_multiqc_species_individual_config.py"
         

@@ -33,7 +33,7 @@
 rule filter_mapped_only_bam:
     input:
         bam = _pre_filter_bam,
-        bai = _pre_filter_bam + ".bai"
+        bai = f"{_pre_filter_bam}.bai"
     output:
         temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam")
     params:

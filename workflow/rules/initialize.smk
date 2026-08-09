@@ -83,7 +83,7 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
         pastForward_git_state = out.strip()
         pastForward_git_hash = pastForward_git_state[:-len("-dirty")] if pastForward_git_state.endswith("-dirty") else pastForward_git_state
         if pastForward_git_state and (pastForward_git_hash not in pastForward_version or pastForward_git_state.endswith("-dirty")):
-            pastForward_version += " (git: " + pastForward_git_state + ")"
+            pastForward_version = f"{pastForward_version} (git: {pastForward_git_state})"
         del process, out, err, pastForward_git_state, pastForward_git_hash
     except Exception:
         pass
@@ -93,7 +93,7 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
     try:
         ld = platform.linux_distribution()
         if len(ld):
-            pltfrm += "; " + ld
+            pltfrm = f"{pltfrm}; {ld}"
         del ld
     except:
         pass
@@ -109,7 +109,7 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
 
         mv = " ".join(merge_osx_tuple(platform.mac_ver()))
         if not mv.isspace():
-            pltfrm += "; " + mv
+            pltfrm = f"{pltfrm}; {mv}"
         del mv, merge_osx_tuple
     except:
         pass
@@ -117,7 +117,8 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
     # --- User / host ---
     username = pwd.getpwuid(os.getuid())[0]
     hostname = socket.gethostname()
-    hostname = hostname + ("; " + platform.node() if platform.node() != socket.gethostname() else "")
+    node_name = platform.node()
+    hostname = f"{hostname}; {node_name}" if node_name != socket.gethostname() else hostname
 
     # --- Conda ---
     try:
@@ -131,14 +132,14 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
     except:
         conda_ver = "n/a"
 
-    conda_env = f"{os.environ['CONDA_DEFAULT_ENV']} ({os.environ['CONDA_PREFIX']})"
+    _conda_default_env = os.environ['CONDA_DEFAULT_ENV']
+    _conda_prefix = os.environ['CONDA_PREFIX']
+    conda_env = f"{_conda_default_env} ({_conda_prefix})"
     if conda_env == " ()":
         conda_env = "n/a"
 
     # --- Command line ---
-    cmdline = sys.argv[0]
-    for i in range(1, len(sys.argv)):
-        cmdline += " " + sys.argv[i]
+    cmdline = " ".join(sys.argv)
 
     # --- Config file paths ---
     cfgfiles = []
@@ -147,20 +148,20 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
     cfgfiles = "\n                        ".join(cfgfiles)
 
     # --- Output ---
-    logger.info("pastForward " + pastForward_version + " run:")
-    logger.info("\tDate:               " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    logger.info("\tProcess ID:         " + str(os.getpid()))
-    logger.info("\tPlatform:           " + pltfrm)
-    logger.info("\tHost:               " + hostname)
-    logger.info("\tUser:               " + username)
-    logger.info("\tConda:              " + str(conda_ver))
-    logger.info("\tPython:             " + str(sys.version.split(" ")[0]))
-    logger.info("\tSnakemake:          " + str(snakemake.__version__))
-    logger.info("\tConda env:          " + str(conda_env))
-    logger.info("\tCommand:            " + cmdline)
-    logger.info("\tBase directory:     " + workflow.basedir)
-    logger.info("\tWorking directory:  " + os.getcwd())
-    logger.info("\tConfig file(s):     " + cfgfiles)
+    logger.info(f"pastForward {pastForward_version} run:")
+    logger.info(f"\tDate:               {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"\tProcess ID:         {os.getpid()}")
+    logger.info(f"\tPlatform:           {pltfrm}")
+    logger.info(f"\tHost:               {hostname}")
+    logger.info(f"\tUser:               {username}")
+    logger.info(f"\tConda:              {conda_ver}")
+    logger.info(f"\tPython:             {sys.version.split(' ')[0]}")
+    logger.info(f"\tSnakemake:          {snakemake.__version__}")
+    logger.info(f"\tConda env:          {conda_env}")
+    logger.info(f"\tCommand:            {cmdline}")
+    logger.info(f"\tBase directory:     {workflow.basedir}")
+    logger.info(f"\tWorking directory:  {os.getcwd()}")
+    logger.info(f"\tConfig file(s):     {cfgfiles}")
 
     config_str = yaml.dump(config.get("pipeline", {}), sort_keys=False, default_flow_style=False)
     logging.info("Loaded configuration:\n%s", config_str)

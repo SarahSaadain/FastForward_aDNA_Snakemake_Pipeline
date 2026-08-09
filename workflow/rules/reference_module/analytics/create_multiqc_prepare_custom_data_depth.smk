@@ -9,6 +9,8 @@ rule summarize_coverage:
         reference="{reference}"
     conda:
         "../../../envs/python_and_r.yaml",
+    log:
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.log"
     script:
         "../../../scripts/summary_module/summarize_coverage.py"
 
@@ -20,5 +22,7 @@ rule prepare_custom_data_depth:
         max="{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_depth_coverage_max.csv"
     conda:
         "../../../envs/python_and_r.yaml",
+    log:
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_depth_coverage.log"
     script:
         "../../../scripts/summary_module/prepare_custom_data_depth.py"

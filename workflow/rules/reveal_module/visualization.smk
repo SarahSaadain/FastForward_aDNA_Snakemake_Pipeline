@@ -13,6 +13,8 @@ rule prepare_visualization_plotables_of_individual:
         "Preparing REVEAL visualization for {wildcards.individual} of {wildcards.species}."
     params:
         bin_size = lambda _: config.get("pipeline", {}).get("reveal_module", {}).get("visualization", {}).get("settings", {}).get("visualization_bin_size", "target:5000")
+    log:
+        "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_plotable.log"
     shell:
         """
         REVEAL so2plotable \
@@ -20,7 +22,7 @@ rule prepare_visualization_plotables_of_individual:
             --outdir "{output.plotable}" \
             --bin-size "{params.bin_size}" \
             --seq-ids ALL \
-            --sample-id "{wildcards.individual}"
+            --sample-id "{wildcards.individual}" > "{log}" 2>&1
         """
 
 rule run_visualization_plots_of_individual:
@@ -35,9 +37,11 @@ rule run_visualization_plots_of_individual:
         log_threshhold = lambda _: config.get("pipeline", {}).get("reveal_module", {}).get("visualization", {}).get("settings", {}).get("y_axis_log_scale_threshold_individual", 25)
     message:
         "Running REVEAL visualization for {wildcards.individual} of {wildcards.species}."
+    log:
+        "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_plots.log"
     shell:
         """
-        REVEAL plot --folder "{input}" --outdir "{output}"  --log {params.log_threshhold}  --threads {threads}
+        REVEAL plot --folder "{input}" --outdir "{output}"  --log {params.log_threshhold}  --threads {threads} > "{log}" 2>&1
         """
 
 rule run_visualization_plots_of_species:
@@ -57,9 +61,11 @@ rule run_visualization_plots_of_species:
         log_threshhold = lambda _: config.get("pipeline", {}).get("reveal_module", {}).get("visualization", {}).get("settings", {}).get("y_axis_log_scale_threshold_species", 25)
     message:
         "Running REVEAL visualization for {wildcards.species}."
+    log:
+        "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_plots_facet.log"
     shell:
         """
-        REVEAL plot --folders {input} --outdir "{output.plots}" --merged-dir "{output.merged}" --log {params.log_threshhold} --threads {threads}
+        REVEAL plot --folders {input} --outdir "{output.plots}" --merged-dir "{output.merged}" --log {params.log_threshhold} --threads {threads} > "{log}" 2>&1
         """
 
 rule compress_visualization_plotable_of_individual:
@@ -71,8 +77,10 @@ rule compress_visualization_plotable_of_individual:
     conda:
         "../../envs/pigz.yaml"
     message: "Compressing REVEAL plotables of individual for {wildcards.individual} of {wildcards.species}"
+    log:
+        "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_plotable_compress.log"
     shell:
-        "tar -c \"{input.source}\" | pigz -p {threads} > \"{output.target}\""
+        "tar -c \"{input.source}\" | pigz -p {threads} > \"{output.target}\" 2> \"{log}\""
 
 rule compress_visualization_plotable_of_species:
     input:
@@ -83,5 +91,7 @@ rule compress_visualization_plotable_of_species:
     conda:
         "../../envs/pigz.yaml"
     message: "Compressing REVEAL plotables of species for {wildcards.species}"
+    log:
+        "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_plotables_facet_compress.log"
     shell:
-        "tar -c \"{input.source}\" | pigz -p {threads} > \"{output.target}\""
+        "tar -c \"{input.source}\" | pigz -p {threads} > \"{output.target}\" 2> \"{log}\""

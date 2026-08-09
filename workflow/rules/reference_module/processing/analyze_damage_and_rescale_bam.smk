@@ -99,9 +99,11 @@ rule move_rescaled_bam:
         bam_index =temp("{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled.bam.bai")
     message:
         "Move rescaled BAM and index to processed directory for {input.sorted_bam}",
+    log:
+        "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled_move.log"
     shell:
         """
-        cp "{input.sorted_bam}" "{output.sorted_bam}"
-        cp "{input.bam_index}" "{output.bam_index}"
+        cp "{input.sorted_bam}" "{output.sorted_bam}" > "{log}" 2>&1
+        cp "{input.bam_index}" "{output.bam_index}" >> "{log}" 2>&1
         """
 

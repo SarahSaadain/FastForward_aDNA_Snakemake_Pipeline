@@ -10,6 +10,8 @@ rule standardize_reference_extension_to_fa:
         "Ensuring reference {wildcards.reference} for {wildcards.species} is standardized to .fa"
     conda:
         "../../../envs/python_and_r.yaml",
+    log:
+        "{species}/input/reference_module/{reference}_standardize.log"
     run:
         # we use python to rename the file if necessary
         import os

@@ -9,5 +9,7 @@ rule prepare_custom_data_breadth:
         reference="{reference}"
     conda:
         "../../../envs/python_and_r.yaml",
+    log:
+        "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_analysis.log"
     script:
         "../../../scripts/summary_module/prepare_custom_data_breadth.py"

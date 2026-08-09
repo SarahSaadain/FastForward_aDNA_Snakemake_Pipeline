@@ -10,7 +10,7 @@ rule plot_mapped_reads_depth_coverage_violin:
         "{species}/results/reference_module/{reference}/plots/coverage/{species}_{reference}_individual_depth_coverage_violin.png"
     message: "Plotting depth coverage violin for species {wildcards.species} and reference {wildcards.reference}"
     params:
-        species="{species}"
+        species=lambda wildcards: wildcards.species
     log:
         "{species}/processed/reference_module/{reference}/plots/coverage/{species}_{reference}_individual_depth_coverage_violin.log"
     conda:
@@ -26,7 +26,9 @@ rule plot_mapped_reads_depth_coverage_bar:
         "{species}/results/reference_module/{reference}/plots/coverage/{species}_{reference}_individual_depth_coverage_bar.png"
     message: "Plotting depth coverage bar for species {wildcards.species} and reference {wildcards.reference}"
     params:
-        species="{species}"
+        species=lambda wildcards: wildcards.species
+    log:
+        "{species}/results/reference_module/{reference}/plots/coverage/{species}_{reference}_individual_depth_coverage_bar.log"
     conda:
         "../../../envs/python_and_r.yaml"
     script:
