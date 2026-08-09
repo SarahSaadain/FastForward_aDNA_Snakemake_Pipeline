@@ -25,19 +25,21 @@ from snakemake_interface_executor_plugins.settings import ExecMode
 
 # --- Logging Setup (EARLY) ---
 # Configure logging format and output for workflow debugging and status reporting
-LOG_FORMAT = '[%(asctime)s] [%(levelname)s] %(message)s'
-LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S (%Z)'
+LOG_FORMAT = "[%(asctime)s] [%(levelname)s] %(message)s"
+LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S (%Z)"
 
 logging.basicConfig(  # Basic config ASAP (for fallback)
     level=logging.INFO,
     format=LOG_FORMAT,
     datefmt=LOG_DATE_FORMAT,
-    handlers=[logging.StreamHandler()]  # Only console for now
+    handlers=[logging.StreamHandler()],  # Only console for now
 )
+
 
 envvars:
     "CONDA_DEFAULT_ENV",
-    "CONDA_PREFIX"
+    "CONDA_PREFIX",
+
 
 # =================================================================================================
 #     Snakemake Version Check
@@ -45,11 +47,13 @@ envvars:
 # Ensure the minimum required Snakemake version is available for compatibility
 snakemake.utils.min_version("9.9.0")
 
+
 # =================================================================================================
 #     Configuration Files and Reporting
 # =================================================================================================
 # Specify the main configuration file for the workflow
 configfile: "config/config.yaml"
+
 
 # =================================================================================================
 #     Workflow Header Logging
@@ -66,7 +70,9 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
     # this - re-acquiring here would see the parent's own live lock and fail.
     # dry_run is passed through so the lock (but not the symlinks) is skipped on --dryrun - see
     # setup_species_data_locations's docstring in species_paths.py for why.
-    _pastforward_dryrun = getattr(getattr(workflow, "output_settings", None), "dryrun", False)
+    _pastforward_dryrun = getattr(
+        getattr(workflow, "output_settings", None), "dryrun", False
+    )
     setup_species_data_locations(config, dry_run=_pastforward_dryrun)
 
     pastForward_version = __version__
@@ -75,15 +81,26 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
         # --dirty appends "-dirty" if the working tree has uncommitted changes,
         # so local edits ahead of the last CI-stamped version.py are still visible
         process = subprocess.Popen(
-            ["git", "describe", "--always", "--dirty"], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            cwd=workflow.basedir
+            ["git", "describe", "--always", "--dirty"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=workflow.basedir,
         )
         out, err = process.communicate()
         out = out.decode("ascii")
         pastForward_git_state = out.strip()
-        pastForward_git_hash = pastForward_git_state[:-len("-dirty")] if pastForward_git_state.endswith("-dirty") else pastForward_git_state
-        if pastForward_git_state and (pastForward_git_hash not in pastForward_version or pastForward_git_state.endswith("-dirty")):
-            pastForward_version = f"{pastForward_version} (git: {pastForward_git_state})"
+        pastForward_git_hash = (
+            pastForward_git_state[: -len("-dirty")]
+            if pastForward_git_state.endswith("-dirty")
+            else pastForward_git_state
+        )
+        if pastForward_git_state and (
+            pastForward_git_hash not in pastForward_version
+            or pastForward_git_state.endswith("-dirty")
+        ):
+            pastForward_version = (
+                f"{pastForward_version} (git: {pastForward_git_state})"
+            )
         del process, out, err, pastForward_git_state, pastForward_git_hash
     except Exception:
         pass
@@ -99,6 +116,7 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
         pass
 
     try:
+
         def merge_osx_tuple(x, bases=(tuple, list)):
             for e in x:
                 if type(e) in bases:
@@ -118,22 +136,26 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
     username = pwd.getpwuid(os.getuid())[0]
     hostname = socket.gethostname()
     node_name = platform.node()
-    hostname = f"{hostname}; {node_name}" if node_name != socket.gethostname() else hostname
+    hostname = (
+        f"{hostname}; {node_name}" if node_name != socket.gethostname() else hostname
+    )
 
     # --- Conda ---
     try:
-        process = subprocess.Popen(["conda", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(
+            ["conda", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         out, err = process.communicate()
         out = out.decode("ascii")
-        conda_ver = out[out.startswith("conda") and len("conda"):].strip()
+        conda_ver = out[out.startswith("conda") and len("conda") :].strip()
         del process, out, err
         if not conda_ver:
             conda_ver = "n/a"
     except:
         conda_ver = "n/a"
 
-    _conda_default_env = os.environ['CONDA_DEFAULT_ENV']
-    _conda_prefix = os.environ['CONDA_PREFIX']
+    _conda_default_env = os.environ["CONDA_DEFAULT_ENV"]
+    _conda_prefix = os.environ["CONDA_PREFIX"]
     conda_env = f"{_conda_default_env} ({_conda_prefix})"
     if conda_env == " ()":
         conda_env = "n/a"
@@ -163,7 +185,9 @@ if workflow.exec_mode != ExecMode.SUBPROCESS:
     logger.info(f"\tWorking directory:  {os.getcwd()}")
     logger.info(f"\tConfig file(s):     {cfgfiles}")
 
-    config_str = yaml.dump(config.get("pipeline", {}), sort_keys=False, default_flow_style=False)
+    config_str = yaml.dump(
+        config.get("pipeline", {}), sort_keys=False, default_flow_style=False
+    )
     logging.info("Loaded configuration:\n%s", config_str)
 
 # =================================================================================================

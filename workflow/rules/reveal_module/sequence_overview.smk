@@ -2,11 +2,18 @@
 # Module-level settings for rules
 ####################################################
 
-_comp_execute = config.get("pipeline", {}).get("reveal_module", {}).get("mapping", {}).get("settings", {}).get("competitive_mapping", False)
+_comp_execute = (
+    config.get("pipeline", {})
+    .get("reveal_module", {})
+    .get("mapping", {})
+    .get("settings", {})
+    .get("competitive_mapping", False)
+)
 
 ####################################################
 # Snakemake rules
 ####################################################
+
 
 rule determine_visualization_of_individual_bam_to_so:
     input:
@@ -15,19 +22,41 @@ rule determine_visualization_of_individual_bam_to_so:
             f"{wildcards.species}/processed/reveal_module/{wildcards.feature_library}/library/{wildcards.feature_library}_and_scg.no_comp.suffixed.fasta"
             if _comp_execute
             else f"{wildcards.species}/processed/reveal_module/{wildcards.feature_library}/library/{wildcards.feature_library}_and_scg.suffixed.fasta"
-        )
+        ),
     output:
-        coverage=temp("{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.tsv")
+        coverage=temp(
+            "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.tsv"
+        ),
     log:
-        "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_bam2so.log"
+        "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_bam2so.log",
     conda:
         "../../envs/reveal_module.yaml"
     params:
-        mapqth    = lambda _: config.get("pipeline", {}).get("reveal_module", {}).get("sequence_overview", {}).get("settings", {}).get("mapping_quality_threshold", 5),
-        mc_snp    = lambda _: config.get("pipeline", {}).get("reveal_module", {}).get("sequence_overview", {}).get("settings", {}).get("minimum_count_snp", 5),
-        mf_snp    = lambda _: config.get("pipeline", {}).get("reveal_module", {}).get("sequence_overview", {}).get("settings", {}).get("minimum_frequency_snp", 0.1),
-        mc_indel  = lambda _: config.get("pipeline", {}).get("reveal_module", {}).get("sequence_overview", {}).get("settings", {}).get("minimum_count_indel", 3),
-        mf_indel  = lambda _: config.get("pipeline", {}).get("reveal_module", {}).get("sequence_overview", {}).get("settings", {}).get("minimum_frequency_indel", 0.01)
+        mapqth=lambda _: config.get("pipeline", {})
+        .get("reveal_module", {})
+        .get("sequence_overview", {})
+        .get("settings", {})
+        .get("mapping_quality_threshold", 5),
+        mc_snp=lambda _: config.get("pipeline", {})
+        .get("reveal_module", {})
+        .get("sequence_overview", {})
+        .get("settings", {})
+        .get("minimum_count_snp", 5),
+        mf_snp=lambda _: config.get("pipeline", {})
+        .get("reveal_module", {})
+        .get("sequence_overview", {})
+        .get("settings", {})
+        .get("minimum_frequency_snp", 0.1),
+        mc_indel=lambda _: config.get("pipeline", {})
+        .get("reveal_module", {})
+        .get("sequence_overview", {})
+        .get("settings", {})
+        .get("minimum_count_indel", 3),
+        mf_indel=lambda _: config.get("pipeline", {})
+        .get("reveal_module", {})
+        .get("sequence_overview", {})
+        .get("settings", {})
+        .get("minimum_frequency_indel", 0.01),
     message:
         "Determining REVEAL coverage for {wildcards.individual} of {wildcards.species} using bam2so."
     shell:
@@ -41,19 +70,21 @@ rule determine_visualization_of_individual_bam_to_so:
             --mf-snp {params.mf_snp} \
             --mc-indel {params.mc_indel} \
             --mf-indel {params.mf_indel} \
-            2> "{log}"
+            2>"{log}"
         """
+
 
 rule compress_visualization_coverage_of_individual:
     input:
-        source = "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.tsv",
+        source="{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.tsv",
     output:
-        target = "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.tsv.gz"
-    threads: 4
+        target="{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.tsv.gz",
+    log:
+        "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage_compress.log",
     conda:
         "../../envs/pigz.yaml"
-    message: "Compressing REVEAL coverage output for {wildcards.individual} of {wildcards.species}"
-    log:
-        "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage_compress.log"
+    threads: 4
+    message:
+        "Compressing REVEAL coverage output for {wildcards.individual} of {wildcards.species}"
     shell:
-        "pigz -p {threads} -c \"{input.source}\" > \"{output.target}\" 2> \"{log}\""
+        'pigz -p {threads} -c "{input.source}" > "{output.target}" 2> "{log}"'

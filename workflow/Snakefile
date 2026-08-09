@@ -4,47 +4,42 @@
 # This Snakefile orchestrates the workflow for aDNA/hDNA reads analysis.
 # It includes rules for different processing steps, such as raw read processing, mapping to reference, and quality control.
 
+
 # initialize_pipeline.smk: Sets up initial configurations and outputs
 # information for the pipeline.
 include: "rules/initialize.smk"
+
 
 # species_paths.py: release_pastforward_locks is called from the onsuccess:/onerror: hooks below
 # to release any cross-project locks this run acquired (see rules/initialize.smk).
 from scripts.species_paths import release_pastforward_locks
 
+
 # file_manager.py: Manages file paths and directories.
 include: "scripts/file_manager.py"
-
 # preview.py: Logs the per-species summary (individuals, references, libraries).
 # Included after file_manager.py so all functions see config via the Snakemake namespace.
 include: "scripts/preview.py"
-
-# expected_output_manager.py: Manages expected output of pipeline 
+# expected_output_manager.py: Manages expected output of pipeline
 # and requests the files for rule all
 include: "scripts/expected_output/expected_output_manager_reveal_module_processing.py"
 include: "scripts/expected_output/expected_output_manager_read_module_processing.py"
 include: "scripts/expected_output/expected_output_manager_reference_module_processing.py"
 include: "scripts/expected_output/expected_output_manager_summary_module_processing.py"
 include: "scripts/expected_output_manager.py"
-
 # rules/common.smk: Shared Python helper functions used by more than one rule
 # file's input/params functions. Included before the rule files so its
 # functions are in scope wherever they're referenced.
 include: "rules/common.smk"
-
 # rules/read_module_processing.smk: Contains rules for processing raw aDNA/hDNA reads.
 include: "rules/read_module_processing.smk"
-
 # rules/reference_module_processing.smk: Contains rules for mapping reads to reference.
 include: "rules/reference_module_processing.smk"
-
 # rules/reveal_module_processing.smk: Contains rules for REVEAL-based TE dynamics analysis steps that depend on the results of previous steps.
 include: "rules/reveal_module_processing.smk"
-
 # create_multiqc_species_individual.smk
 # Contains rules for generating MultiQC reports for each species and individual.
 include: "rules/summary_module_processing.smk"
-
 
 
 # Define the all rule to specify the final targets of the workflow
@@ -53,12 +48,14 @@ rule all:
     input:
         # this python function from expected_output_manager.py gives us all requested outputs.
         # thus, the pipeline is triggered.
-        get_expected_outputs_from_pipeline
+        get_expected_outputs_from_pipeline,
+
 
 # Add logging for workflow completion
 onsuccess:
     logger.info("Workflow finished, no error")
     release_pastforward_locks()
+
 
 # Add logging for workflow errors
 onerror:

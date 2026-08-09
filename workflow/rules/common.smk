@@ -50,7 +50,12 @@ def determine_reads_trimmed_final_input(wildcards):
     species = wildcards.species
     sample = wildcards.sample
 
-    adapter_removal_active = config.get('pipeline', {}).get('read_module', {}).get('adapter_removal', {}).get('execute', True)
+    adapter_removal_active = (
+        config.get("pipeline", {})
+        .get("read_module", {})
+        .get("adapter_removal", {})
+        .get("execute", True)
+    )
     reads = get_raw_reads_for_sample(species, sample)
     if adapter_removal_active:
         if len(reads) == 2:
@@ -73,8 +78,12 @@ def merge_reads_by_individual_input(wildcards):
 
     if len(samples_of_individual) == 0:
         logger.info(f"Requested individual: {individual}")
-        logger.error(f"No raw read files found for individual {individual}. Check that the individual ID is correct and that raw read files are present.")
-        raise Exception(f"No raw read files found for individual {individual}. Check that the individual ID is correct and that raw read files are present.")
+        logger.error(
+            f"No raw read files found for individual {individual}. Check that the individual ID is correct and that raw read files are present."
+        )
+        raise Exception(
+            f"No raw read files found for individual {individual}. Check that the individual ID is correct and that raw read files are present."
+        )
 
     # for each raw R1 file, generate the corresponding quality-filtered filename
     quality_filtered_files = []
@@ -93,45 +102,140 @@ def create_multiqc_bam_individual_input(wildcards):
 
     file_list = []
 
-    #for individual in individuals:
+    # for individual in individuals:
     # get samples for individual
     samples_of_individual = get_samples_for_species_individual(species, individual)
 
     if config.get("pipeline", {}).get("read_module", {}).get("execute", True) == True:
 
-        if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("execute", True) == True :
+        if (
+            config.get("pipeline", {})
+            .get("read_module", {})
+            .get("contamination", {})
+            .get("execute", True)
+            == True
+        ):
 
-            if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("execute", True) == True:
+            if (
+                config.get("pipeline", {})
+                .get("read_module", {})
+                .get("contamination", {})
+                .get("tools", {})
+                .get("centrifuge", {})
+                .get("execute", True)
+                == True
+            ):
 
                 for sample in samples_of_individual:
                     raw_reads = get_raw_reads_for_sample(species, sample)
-                    file_list.append(f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv")
+                    file_list.append(
+                        f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+                    )
 
-            if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("ecmsd", {}).get("execute", True) == True:
-                file_list.append(f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv")
+            if (
+                config.get("pipeline", {})
+                .get("read_module", {})
+                .get("contamination", {})
+                .get("tools", {})
+                .get("ecmsd", {})
+                .get("execute", True)
+                == True
+            ):
+                file_list.append(
+                    f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+                )
 
         # merged reads fastqc
-        if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("execute", True) == True and config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_merged_reads", True) == True:
-            file_list.append(f"{species}/results/read_module/reads_merged/fastqc/{individual}_merged_fastqc.zip")
+        if (
+            config.get("pipeline", {})
+            .get("read_module", {})
+            .get("analysis", {})
+            .get("execute", True)
+            == True
+            and config.get("pipeline", {})
+            .get("read_module", {})
+            .get("analysis", {})
+            .get("settings", {})
+            .get("multiqc_merged_reads", True)
+            == True
+        ):
+            file_list.append(
+                f"{species}/results/read_module/reads_merged/fastqc/{individual}_merged_fastqc.zip"
+            )
 
-    if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("execute", True) == True:
-        #file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.lc_extrap")
-        if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("preseq_complexitiy_curve", True) == True:
-            file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt")
-        if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("qualimap", True) == True:
-            file_list.append(directory(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/qualimap"))
-        if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("samtools_stats", True) == True:
-            file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats")
-        file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv")
-        file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv")
+    if (
+        config.get("pipeline", {})
+        .get("reference_module", {})
+        .get("analysis", {})
+        .get("execute", True)
+        == True
+    ):
+        # file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.lc_extrap")
+        if (
+            config.get("pipeline", {})
+            .get("reference_module", {})
+            .get("analysis", {})
+            .get("settings", {})
+            .get("preseq_complexitiy_curve", True)
+            == True
+        ):
+            file_list.append(
+                f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt"
+            )
+        if (
+            config.get("pipeline", {})
+            .get("reference_module", {})
+            .get("analysis", {})
+            .get("settings", {})
+            .get("qualimap", True)
+            == True
+        ):
+            file_list.append(
+                directory(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/qualimap"
+                )
+            )
+        if (
+            config.get("pipeline", {})
+            .get("reference_module", {})
+            .get("analysis", {})
+            .get("settings", {})
+            .get("samtools_stats", True)
+            == True
+        ):
+            file_list.append(
+                f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats"
+            )
+        file_list.append(
+            f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv"
+        )
+        file_list.append(
+            f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv"
+        )
         # file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_analysis.tsv")
-        file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_depth_coverage_avg.csv")
-        file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.tsv")
+        file_list.append(
+            f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_depth_coverage_avg.csv"
+        )
+        file_list.append(
+            f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.tsv"
+        )
 
-    if config.get("pipeline", {}).get("reference_module", {}).get("damage_rescaling", {}).get("execute", True) == True:
-        file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt")
-        file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt")
-        file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt")
+    if (
+        config.get("pipeline", {})
+        .get("reference_module", {})
+        .get("damage_rescaling", {})
+        .get("execute", True)
+        == True
+    ):
+        file_list.append(
+            f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt"
+        )
+        file_list.append(
+            f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt"
+        )
+        file_list.append(
+            f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt"
+        )
 
     # if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
     #     file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json")
@@ -152,44 +256,145 @@ def create_multiqc_reference_input(wildcards):
 
         samples_of_individual = get_samples_for_species_individual(species, individual)
 
-        if config.get("pipeline", {}).get("read_module", {}).get("execute", True) == True:
+        if (
+            config.get("pipeline", {}).get("read_module", {}).get("execute", True)
+            == True
+        ):
 
-            if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("execute", True) == True:
+            if (
+                config.get("pipeline", {})
+                .get("read_module", {})
+                .get("contamination", {})
+                .get("execute", True)
+                == True
+            ):
 
-                if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("execute", True) == True:
+                if (
+                    config.get("pipeline", {})
+                    .get("read_module", {})
+                    .get("contamination", {})
+                    .get("tools", {})
+                    .get("centrifuge", {})
+                    .get("execute", True)
+                    == True
+                ):
 
                     for sample in samples_of_individual:
                         raw_reads = get_raw_reads_for_sample(species, sample)
-                        file_list.append(f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv")
+                        file_list.append(
+                            f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+                        )
 
-                if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("ecmsd", {}).get("execute", True) == True:
-                    file_list.append(f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv")
+                if (
+                    config.get("pipeline", {})
+                    .get("read_module", {})
+                    .get("contamination", {})
+                    .get("tools", {})
+                    .get("ecmsd", {})
+                    .get("execute", True)
+                    == True
+                ):
+                    file_list.append(
+                        f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+                    )
 
             # merged reads fastqc
-            if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("execute", True) == True and config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_merged_reads", True) == True:
-                file_list.append(f"{species}/results/read_module/reads_merged/fastqc/{individual}_merged_fastqc.zip")
+            if (
+                config.get("pipeline", {})
+                .get("read_module", {})
+                .get("analysis", {})
+                .get("execute", True)
+                == True
+                and config.get("pipeline", {})
+                .get("read_module", {})
+                .get("analysis", {})
+                .get("settings", {})
+                .get("multiqc_merged_reads", True)
+                == True
+            ):
+                file_list.append(
+                    f"{species}/results/read_module/reads_merged/fastqc/{individual}_merged_fastqc.zip"
+                )
 
         # bam analytics for the single reference
-        if config.get("pipeline", {}).get("reference_module", {}).get("execute", False) == True:
+        if (
+            config.get("pipeline", {}).get("reference_module", {}).get("execute", False)
+            == True
+        ):
 
-            if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("execute", True) == True:
-                if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("preseq_complexitiy_curve", True) == True:
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt")
-                if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("qualimap", True) == True:
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}")
-                if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("samtools_stats", True) == True:
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats")
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv")
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv")
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_analysis.tsv")
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.tsv")
+            if (
+                config.get("pipeline", {})
+                .get("reference_module", {})
+                .get("analysis", {})
+                .get("execute", True)
+                == True
+            ):
+                if (
+                    config.get("pipeline", {})
+                    .get("reference_module", {})
+                    .get("analysis", {})
+                    .get("settings", {})
+                    .get("preseq_complexitiy_curve", True)
+                    == True
+                ):
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt"
+                    )
+                if (
+                    config.get("pipeline", {})
+                    .get("reference_module", {})
+                    .get("analysis", {})
+                    .get("settings", {})
+                    .get("qualimap", True)
+                    == True
+                ):
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}"
+                    )
+                if (
+                    config.get("pipeline", {})
+                    .get("reference_module", {})
+                    .get("analysis", {})
+                    .get("settings", {})
+                    .get("samtools_stats", True)
+                    == True
+                ):
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats"
+                    )
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv"
+                )
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv"
+                )
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_analysis.tsv"
+                )
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.tsv"
+                )
 
-            if config.get("pipeline", {}).get("reference_module", {}).get("damage_rescaling", {}).get("execute", True) == True:
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt")
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt")
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt")
+            if (
+                config.get("pipeline", {})
+                .get("reference_module", {})
+                .get("damage_rescaling", {})
+                .get("execute", True)
+                == True
+            ):
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt"
+                )
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt"
+                )
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt"
+                )
 
-    logger.debug(f"MultiQC reference input files for species {species}, reference {reference}: {file_list}")
+    logger.debug(
+        f"MultiQC reference input files for species {species}, reference {reference}: {file_list}"
+    )
 
     return file_list
 
@@ -240,14 +445,11 @@ def dedup_merge_split_jsons_input(wildcards):
     """
     # Resolve checkpoint output folder (forces execution before globbing)
     checkpoint_output = checkpoints.dedup_create_all_contig_clusters.get(
-        species=wildcards.species,
-        reference=wildcards.reference
+        species=wildcards.species, reference=wildcards.reference
     ).output.cluster_folder
 
     # Find all contig group files
-    group_files = sorted(
-        glob.glob(os.path.join(checkpoint_output, "cluster_*_*.bed"))
-    )
+    group_files = sorted(glob.glob(os.path.join(checkpoint_output, "cluster_*_*.bed")))
 
     logger.info(f"Found {len(group_files)} contig group files.")
     logger.debug(f"Group files: {group_files}")
@@ -280,7 +482,9 @@ def _standardize_reference_extension_to_fa_ref_path(wildcards):
     reference_tuples = get_reference_file_list_for_species(wildcards.species)
 
     # Find the path corresponding to the sanitized reference name
-    ref_path = next((path for name, path in reference_tuples if name == wildcards.reference), None)
+    ref_path = next(
+        (path for name, path in reference_tuples if name == wildcards.reference), None
+    )
 
     if ref_path is None:
         raise ValueError(
@@ -315,7 +519,9 @@ def clean_scg_library_name_input(wildcards):
 
     # Try user-provided SCG library first
     try:
-        scg_library_path = get_scg_library_file_for_species_and_library(species, scg_library)
+        scg_library_path = get_scg_library_file_for_species_and_library(
+            species, scg_library
+        )
         return scg_library_path
     except Exception:
         pass
@@ -325,7 +531,9 @@ def clean_scg_library_name_input(wildcards):
     if scg_library == auto_id:
         return f"{species}/processed/reveal_module/scg/{species}_relevant_scg.fasta"
 
-    raise ValueError(f"No SCG library file could be determined for species {species} and library {scg_library}.")
+    raise ValueError(
+        f"No SCG library file could be determined for species {species} and library {scg_library}."
+    )
 
 
 def clean_feature_library_name_input(wildcards):
@@ -335,10 +543,14 @@ def clean_feature_library_name_input(wildcards):
     species = wildcards.species
     feature_library = wildcards.feature_library
 
-    feature_library_path = get_feature_library_file_for_species_and_library(species, feature_library)
+    feature_library_path = get_feature_library_file_for_species_and_library(
+        species, feature_library
+    )
 
     if not feature_library_path:
-        raise ValueError(f"No feature library file could be determined for species {species} and library {feature_library}.")
+        raise ValueError(
+            f"No feature library file could be determined for species {species} and library {feature_library}."
+        )
 
     return feature_library_path
 
@@ -347,10 +559,10 @@ def _scg_setting(wildcards, key, default):
     """Return pipeline-level reveal_module.scg_selector.settings.{key}, falling back to default."""
     return (
         config.get("pipeline", {})
-              .get("reveal_module", {})
-              .get("scg_selector", {})
-              .get("settings", {})
-              .get(key, default)
+        .get("reveal_module", {})
+        .get("scg_selector", {})
+        .get("settings", {})
+        .get(key, default)
     )
 
 
@@ -380,52 +592,147 @@ def create_multiqc_species_individual_input(wildcards):
 
     file_list = []
 
-    #for individual in individuals:
+    # for individual in individuals:
     # get samples for individual
     samples_of_individual = get_samples_for_species_individual(species, individual)
 
     if config.get("pipeline", {}).get("read_module", {}).get("execute", True) == True:
 
-        if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("execute", True) == True:
+        if (
+            config.get("pipeline", {})
+            .get("read_module", {})
+            .get("contamination", {})
+            .get("execute", True)
+            == True
+        ):
 
-            if  config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("execute", True) == True:
+            if (
+                config.get("pipeline", {})
+                .get("read_module", {})
+                .get("contamination", {})
+                .get("tools", {})
+                .get("centrifuge", {})
+                .get("execute", True)
+                == True
+            ):
 
                 for sample in samples_of_individual:
                     raw_reads = get_raw_reads_for_sample(species, sample)
-                    file_list.append(f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv")
+                    file_list.append(
+                        f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+                    )
 
+            if (
+                config.get("pipeline", {})
+                .get("read_module", {})
+                .get("contamination", {})
+                .get("tools", {})
+                .get("ecmsd", {})
+                .get("execute", True)
+                == True
+            ):
 
-            if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("ecmsd", {}).get("execute", True) == True:
-
-                file_list.append(f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv")
+                file_list.append(
+                    f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+                )
 
         # merged reads fastqc
-        if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("execute", True) == True and config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_merged_reads", True) == True:
-            file_list.append(f"{species}/results/read_module/reads_merged/fastqc/{individual}_merged_fastqc.zip")
+        if (
+            config.get("pipeline", {})
+            .get("read_module", {})
+            .get("analysis", {})
+            .get("execute", True)
+            == True
+            and config.get("pipeline", {})
+            .get("read_module", {})
+            .get("analysis", {})
+            .get("settings", {})
+            .get("multiqc_merged_reads", True)
+            == True
+        ):
+            file_list.append(
+                f"{species}/results/read_module/reads_merged/fastqc/{individual}_merged_fastqc.zip"
+            )
 
     # bam analytics
-    if config.get("pipeline", {}).get("reference_module", {}).get("execute", True) == True:
+    if (
+        config.get("pipeline", {}).get("reference_module", {}).get("execute", True)
+        == True
+    ):
 
         for reference in references:
 
-            if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("execute", True) == True:
-                #file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.lc_extrap")
-                if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("preseq_complexitiy_curve", True) == True:
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt")
-                if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("qualimap", True) == True:
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}")
-                if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("samtools_stats", True) == True:
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats")
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv")
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv")
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_analysis.tsv")
+            if (
+                config.get("pipeline", {})
+                .get("reference_module", {})
+                .get("analysis", {})
+                .get("execute", True)
+                == True
+            ):
+                # file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.lc_extrap")
+                if (
+                    config.get("pipeline", {})
+                    .get("reference_module", {})
+                    .get("analysis", {})
+                    .get("settings", {})
+                    .get("preseq_complexitiy_curve", True)
+                    == True
+                ):
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt"
+                    )
+                if (
+                    config.get("pipeline", {})
+                    .get("reference_module", {})
+                    .get("analysis", {})
+                    .get("settings", {})
+                    .get("qualimap", True)
+                    == True
+                ):
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}"
+                    )
+                if (
+                    config.get("pipeline", {})
+                    .get("reference_module", {})
+                    .get("analysis", {})
+                    .get("settings", {})
+                    .get("samtools_stats", True)
+                    == True
+                ):
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats"
+                    )
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv"
+                )
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv"
+                )
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_analysis.tsv"
+                )
                 # file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_depth_coverage_avg.csv")
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.tsv")
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.tsv"
+                )
 
-            if config.get("pipeline", {}).get("reference_module", {}).get("damage_rescaling", {}).get("execute", True) == True:
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt")
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt")
-                file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt")
+            if (
+                config.get("pipeline", {})
+                .get("reference_module", {})
+                .get("damage_rescaling", {})
+                .get("execute", True)
+                == True
+            ):
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt"
+                )
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt"
+                )
+                file_list.append(
+                    f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt"
+                )
 
             # if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
             #     file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json")
@@ -453,49 +760,148 @@ def create_multiqc_species_input(wildcards):
 
     for individual in individuals:
 
-        #for individual in individuals:
+        # for individual in individuals:
         # get samples for individual
         samples_of_individual = get_samples_for_species_individual(species, individual)
 
-        if config.get("pipeline", {}).get("read_module", {}).get("execute", True) == True:
+        if (
+            config.get("pipeline", {}).get("read_module", {}).get("execute", True)
+            == True
+        ):
 
-            if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("execute", True) == True:
+            if (
+                config.get("pipeline", {})
+                .get("read_module", {})
+                .get("contamination", {})
+                .get("execute", True)
+                == True
+            ):
 
-                if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("execute", True) == True:
+                if (
+                    config.get("pipeline", {})
+                    .get("read_module", {})
+                    .get("contamination", {})
+                    .get("tools", {})
+                    .get("centrifuge", {})
+                    .get("execute", True)
+                    == True
+                ):
 
                     for sample in samples_of_individual:
                         raw_reads = get_raw_reads_for_sample(species, sample)
-                        file_list.append(f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv")
+                        file_list.append(
+                            f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+                        )
 
-                if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("ecmsd", {}).get("execute", True) == True:
-                    file_list.append(f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv")
+                if (
+                    config.get("pipeline", {})
+                    .get("read_module", {})
+                    .get("contamination", {})
+                    .get("tools", {})
+                    .get("ecmsd", {})
+                    .get("execute", True)
+                    == True
+                ):
+                    file_list.append(
+                        f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+                    )
 
             # merged reads fastqc
-            if config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("execute", True) == True and config.get("pipeline", {}).get("read_module", {}).get("analysis", {}).get("settings", {}).get("multiqc_merged_reads", True) == True:
-                file_list.append(f"{species}/results/read_module/reads_merged/fastqc/{individual}_merged_fastqc.zip")
+            if (
+                config.get("pipeline", {})
+                .get("read_module", {})
+                .get("analysis", {})
+                .get("execute", True)
+                == True
+                and config.get("pipeline", {})
+                .get("read_module", {})
+                .get("analysis", {})
+                .get("settings", {})
+                .get("multiqc_merged_reads", True)
+                == True
+            ):
+                file_list.append(
+                    f"{species}/results/read_module/reads_merged/fastqc/{individual}_merged_fastqc.zip"
+                )
 
         # bam analytics
-        if config.get("pipeline", {}).get("reference_module", {}).get("execute", False) == True:
+        if (
+            config.get("pipeline", {}).get("reference_module", {}).get("execute", False)
+            == True
+        ):
             for reference in references:
 
-                if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("execute", True) == True:
-                    #file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.lc_extrap")
-                    if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("preseq_complexitiy_curve", True) == True:
-                        file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt")
-                    if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("qualimap", True) == True:
-                        file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}")
-                    if config.get("pipeline", {}).get("reference_module", {}).get("analysis", {}).get("settings", {}).get("samtools_stats", True) == True:
-                        file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats")
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv")
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv")
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_analysis.tsv")
+                if (
+                    config.get("pipeline", {})
+                    .get("reference_module", {})
+                    .get("analysis", {})
+                    .get("execute", True)
+                    == True
+                ):
+                    # file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.lc_extrap")
+                    if (
+                        config.get("pipeline", {})
+                        .get("reference_module", {})
+                        .get("analysis", {})
+                        .get("settings", {})
+                        .get("preseq_complexitiy_curve", True)
+                        == True
+                    ):
+                        file_list.append(
+                            f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/preseq/{individual}_{reference}.c_curve.txt"
+                        )
+                    if (
+                        config.get("pipeline", {})
+                        .get("reference_module", {})
+                        .get("analysis", {})
+                        .get("settings", {})
+                        .get("qualimap", True)
+                        == True
+                    ):
+                        file_list.append(
+                            f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/qualimap/{individual}_{reference}"
+                        )
+                    if (
+                        config.get("pipeline", {})
+                        .get("reference_module", {})
+                        .get("analysis", {})
+                        .get("settings", {})
+                        .get("samtools_stats", True)
+                        == True
+                    ):
+                        file_list.append(
+                            f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/samtools_stats/{individual}_{reference}_final.bam.stats"
+                        )
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary.tsv"
+                    )
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_reads_processing_summary_stacked.tsv"
+                    )
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_analysis.tsv"
+                    )
                     # file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_depth_coverage_avg.csv")
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.tsv")
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/{individual}_{reference}_coverage_summary.tsv"
+                    )
 
-                if config.get("pipeline", {}).get("reference_module", {}).get("damage_rescaling", {}).get("execute", True) == True:
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt")
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt")
-                    file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt")
+                if (
+                    config.get("pipeline", {})
+                    .get("reference_module", {})
+                    .get("damage_rescaling", {})
+                    .get("execute", True)
+                    == True
+                ):
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/3pGtoA_freq.txt"
+                    )
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/5pCtoT_freq.txt"
+                    )
+                    file_list.append(
+                        f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt"
+                    )
 
                 # if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
                 #     file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json")

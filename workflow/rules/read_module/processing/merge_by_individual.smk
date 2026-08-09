@@ -2,27 +2,28 @@
 # Snakemake rules
 ####################################################
 
+
 # Rule: Merge quality-filtered reads by individual
 rule merge_reads_by_individual:
     input:
-        merge_reads_by_individual_input
+        merge_reads_by_individual_input,
     output:
-        "{species}/results/read_module/reads_merged/{individual}.fastq.gz"
+        "{species}/results/read_module/reads_merged/{individual}.fastq.gz",
+    log:
+        "{species}/processed/read_module/reads_merged/{individual}_merge_reads.log",
     conda:
         "../../../envs/python_and_r.yaml"
-    log:
-        "{species}/processed/read_module/reads_merged/{individual}_merge_reads.log"
     message:
         "Merging individual {wildcards.individual} of species {wildcards.species}."
     shell:
         """
-        echo "Merging quality-filtered reads for individual {wildcards.individual} of species {wildcards.species}..." > "{log}"
-        echo "Input files:" >> "{log}"
+        echo "Merging quality-filtered reads for individual {wildcards.individual} of species {wildcards.species}..." >"{log}"
+        echo "Input files:" >>"{log}"
         for f in {input}; do
-            echo "  $f" >> "{log}"
+            echo "  $f" >>"{log}"
         done
-        echo "Output file: {output}" >> "{log}"
+        echo "Output file: {output}" >>"{log}"
 
-        cat {input} > "{output}"
-        echo "Merging completed for individual {wildcards.individual} of species {wildcards.species}." >> "{log}"
+        cat {input} >"{output}"
+        echo "Merging completed for individual {wildcards.individual} of species {wildcards.species}." >>"{log}"
         """

@@ -4,49 +4,79 @@
 # Determine index path: use config if provided, otherwise use downloaded
 # We use the index from https://benlangmead.github.io/aws-indexes/centrifuge
 # Refseq: bacteria, archaea, viral, human
-_configured_index = config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("index")
+_configured_index = (
+    config.get("pipeline", {})
+    .get("read_module", {})
+    .get("contamination", {})
+    .get("tools", {})
+    .get("centrifuge", {})
+    .get("settings", {})
+    .get("index")
+)
+
 
 rule download_centrifuge_index:
     output:
-        expand("resources/centrifuge_index/p+h+v.{ext}.cf", ext=["1", "2", "3"])
-    params:
-        url = "https://genome-idx.s3.amazonaws.com/centrifuge/p%2Bh%2Bv.tar.gz",
-        outdir = lambda wildcards, output: os.path.dirname(output[0])
+        expand("resources/centrifuge_index/p+h+v.{ext}.cf", ext=["1", "2", "3"]),
+    log:
+        "resources/centrifuge_index/download_centrifuge_index.log",
     conda:
         "../../../envs/wget.yaml"
-    message: "Downloading Centrifuge index"
-    log:
-        "resources/centrifuge_index/download_centrifuge_index.log"
+    params:
+        url="https://genome-idx.s3.amazonaws.com/centrifuge/p%2Bh%2Bv.tar.gz",
+        outdir=lambda wildcards, output: os.path.dirname(output[0]),
+    message:
+        "Downloading Centrifuge index"
     shell:
         """
-        echo "Downloading Centrifuge index from {params.url} to {params.outdir}" > "{log}" 2>&1
-        echo "This may take a while depending on your internet connection..." >> "{log}" 2>&1
+        echo "Downloading Centrifuge index from {params.url} to {params.outdir}" >"{log}" 2>&1
+        echo "This may take a while depending on your internet connection..." >>"{log}" 2>&1
 
         mkdir -p "{params.outdir}"
-        wget -O "{params.outdir}/p+h+v.tar.gz" "{params.url}" >> "{log}" 2>&1
+        wget -O "{params.outdir}/p+h+v.tar.gz" "{params.url}" >>"{log}" 2>&1
 
-        echo "Extracting Centrifuge index..." >> "{log}" 2>&1
-        tar -xzf "{params.outdir}/p+h+v.tar.gz" -C "{params.outdir}" >> "{log}" 2>&1
+        echo "Extracting Centrifuge index..." >>"{log}" 2>&1
+        tar -xzf "{params.outdir}/p+h+v.tar.gz" -C "{params.outdir}" >>"{log}" 2>&1
 
-        echo "Cleaning up downloaded archive..." >> "{log}" 2>&1
+        echo "Cleaning up downloaded archive..." >>"{log}" 2>&1
         rm "{params.outdir}/p+h+v.tar.gz"
         """
 
+
 rule analyze_contamination_with_centrifuge:
     input:
-        fastq = "{species}/processed/read_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
-        index = lambda wildcards: [] if _configured_index else expand("resources/centrifuge_index/p+h+v.{ext}.cf", ext=["1", "2", "3"])
+        fastq="{species}/processed/read_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
+        index=lambda wildcards: (
+            []
+            if _configured_index
+            else expand(
+                "resources/centrifuge_index/p+h+v.{ext}.cf", ext=["1", "2", "3"]
+            )
+        ),
     output:
-        output = temp("{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv"),
-        report = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv"
+        output=temp(
+            "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv"
+        ),
+        report="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
+    log:
+        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge.log",
+    conda:
+        config.get("pipeline", {})
+        .get("read_module", {})
+        .get("contamination", {})
+        .get("tools", {})
+        .get("centrifuge", {})
+        .get("settings", {})
+        .get("conda_env", "../../../envs/centrifuge.yaml")
     threads: 15
     params:
-        index = lambda wildcards: _configured_index if _configured_index else "resources/centrifuge_index/p+h+v",
-    conda:
-        config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("conda_env", "../../../envs/centrifuge.yaml")
-    message: "Running Centrifuge contamination analysis for {input.fastq}"
-    log:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge.log"
+        index=lambda wildcards: (
+            _configured_index
+            if _configured_index
+            else "resources/centrifuge_index/p+h+v"
+        ),
+    message:
+        "Running Centrifuge contamination analysis for {input.fastq}"
     shell:
         """
         centrifuge \
@@ -54,69 +84,81 @@ rule analyze_contamination_with_centrifuge:
             -U "{input.fastq}" \
             -S "{output.output}" \
             --report-file "{output.report}" \
-            --threads {threads} > "{log}" 2>&1
+            --threads {threads} >"{log}" 2>&1
         """
+
 
 rule analyze_centrifuge_report_taxon_counts:
     input:
-        centrifuge_out = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv"
+        centrifuge_out="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv",
     output:
-        taxon_counts = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_taxon_counts.tsv"
+        taxon_counts="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_taxon_counts.tsv",
+    log:
+        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_taxon_counts.log",
     conda:
         "../../../envs/python_and_r.yaml"
-    message: "Counting taxon occurrences in {input.centrifuge_out}"
-    log:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_taxon_counts.log"
+    message:
+        "Counting taxon occurrences in {input.centrifuge_out}"
     shell:
         r"""
         awk '$3 != 0 {{print $3}}' "{input.centrifuge_out}" \
             | sort \
             | uniq -c \
             | sort -nr \
-            > "{output.taxon_counts}" 2> "{log}"
+                >"{output.taxon_counts}" 2>"{log}"
         """
+
 
 rule analyze_centrifuge_report_proportions:
     input:
-        report = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
-        count_reads = "{species}/processed/read_module/statistics/{sample}_quality_filtered.count"
+        report="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
+        count_reads="{species}/processed/read_module/statistics/{sample}_quality_filtered.count",
     output:
         "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_proportions.tsv",
-    params:
-        sample = "{sample}"
+    log:
+        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_proportions.log",
     conda:
         "../../../envs/python_and_r.yaml"
-    log:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_proportions.log"
+    params:
+        sample="{sample}",
     script:
         "../../../scripts/read_module/contamination/check_contamination_ecmsd_script_analyze_centrifuge_report_proportions.py"
 
+
 rule analyze_centrifuge_report_top_taxa:
     input:
-        report = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
+        report="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
     output:
-        top10_unique = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_unique_taxa.tsv",
-        top10_total = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
-    params:
-        sample = "{sample}",
-        include_human = config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("settings", {}).get("include_human_taxid", False)
+        top10_unique="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_unique_taxa.tsv",
+        top10_total="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv",
+    log:
+        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top_taxa.log",
     conda:
         "../../../envs/python_and_r.yaml"
-    log:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top_taxa.log"
+    params:
+        sample="{sample}",
+        include_human=config.get("pipeline", {})
+        .get("read_module", {})
+        .get("contamination", {})
+        .get("tools", {})
+        .get("centrifuge", {})
+        .get("settings", {})
+        .get("include_human_taxid", False),
     script:
         "../../../scripts/read_module/contamination/check_contamination_ecmsd_script_analyze_centrifuge_report_top_taxa.py"
 
+
 rule compress_centrifuge_output:
     input:
-        tsv = "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv",
+        tsv="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv",
     output:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv.gz"
-    threads: 4
+        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv.gz",
+    log:
+        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output_compress.log",
     conda:
         "../../../envs/pigz.yaml"
-    message: "Compressing Centrifuge output for {wildcards.sample}"
-    log:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output_compress.log"
+    threads: 4
+    message:
+        "Compressing Centrifuge output for {wildcards.sample}"
     shell:
-        "pigz -p {threads} -c \"{input.tsv}\" > \"{output}\" 2> \"{log}\""
+        'pigz -p {threads} -c "{input.tsv}" > "{output}" 2> "{log}"'
