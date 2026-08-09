@@ -147,7 +147,7 @@ rule dedup_deduplicate_bam_cluster:
     shell:
         """
         mkdir -p "{output.dedup_folder}"
-        dedup -Xms{params.mem_mb}m -Xmx{params.mem_mb}m --input "{input.bam}" --merged --output "{output.dedup_folder}"
+        dedup -Xms{params.mem_mb}m -Xmx{params.mem_mb}m --input "{input.bam}" --merged --output "{output.dedup_folder}" >"{log}" 2>&1
         """
 
 
