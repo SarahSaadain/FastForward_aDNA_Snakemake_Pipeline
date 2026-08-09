@@ -8,6 +8,10 @@
 # information for the pipeline.
 include: "rules/initialize.smk"
 
+# species_paths.py: release_pastforward_locks is called from the onsuccess:/onerror: hooks below
+# to release any cross-project locks this run acquired (see rules/initialize.smk).
+from scripts.species_paths import release_pastforward_locks
+
 # file_manager.py: Manages file paths and directories.
 include: "scripts/file_manager.py"
 
@@ -49,7 +53,9 @@ rule all:
 # Add logging for workflow completion
 onsuccess:
     logger.info("Workflow finished, no error")
+    release_pastforward_locks()
 
 # Add logging for workflow errors
 onerror:
     logger.error("An error occurred")
+    release_pastforward_locks()

@@ -65,6 +65,51 @@ When adding a new species, make sure to
 - the species folder should be placed in the project root, alongside `workflow/` and `config/`
 - add the folder name should match the species key which is defined in `config.yaml` below `species:` 
 
+#### Storing Species Data Elsewhere
+
+By default, a species' data must live inside the project directory as shown above. If you'd
+rather keep some or all of it elsewhere (a different disk, a shared mount, a location outside the
+project entirely), set one or more of the following **optional** settings under `species.<key>`
+in `config.yaml`. **If none of these are set, behavior is exactly as described above** — nothing
+on disk is touched beyond what pastForward already does today.
+
+| Setting | Overrides |
+|---|---|
+| `species_dir` | The whole species root. Must contain the same `input/{read_module,reference_module,reveal_module/{scg,feature_library,competition}}`, `processed/`, `results/` layout as a normal species folder. Used as the default target for every setting below. |
+| `reads_dir` | `<species>/input/read_module/` |
+| `reference_dir` | `<species>/input/reference_module/` |
+| `scg_dir` | `<species>/input/reveal_module/scg/` |
+| `feature_library_dir` | `<species>/input/reveal_module/feature_library/` |
+| `competition_dir` | `<species>/input/reveal_module/competition/` |
+| `processed_dir` | `<species>/processed/` |
+| `results_dir` | `<species>/results/` |
+
+Resolution order per setting: an explicit setting (e.g. `reads_dir`) wins over a path derived from
+`species_dir`, which wins over today's in-project default.
+
+```yaml
+species:
+  Dmel:
+    name: "Drosophila melanogaster"
+    # Everything for Dmel lives on a different disk...
+    species_dir: "/mnt/big_disk/pastforward_data/Dmel"
+    # ...except processed/, which should go to fast local scratch instead.
+    processed_dir: "/scratch/pastforward_processed/Dmel"
+```
+
+At startup, pastForward creates a symlink at the conventional in-project location (e.g.
+`Dmel/input/read_module`) pointing at the configured target, so every rule and script keeps
+working with the paths documented throughout this repo without any changes. This is set up once
+per run, before any input files are discovered:
+- It's idempotent — re-running pastForward with the same config is a no-op.
+- If something already exists at the conventional location (a real folder, or a symlink to
+  somewhere else) pastForward refuses to touch it and raises an error instead of overwriting it —
+  fix the config or move/remove the conflicting folder.
+- `processed_dir`/`results_dir` targets (explicit or `species_dir`-derived) are additionally
+  protected by a cross-project lock, since two separate pastForward projects could otherwise be
+  pointed at the same output location at the same time. See [FAQ.md](../docs/FAQ.md) for details
+  and how to recover from a stale lock.
+
 #### Folder Structure
 
 All other folders will be created and populated automatically

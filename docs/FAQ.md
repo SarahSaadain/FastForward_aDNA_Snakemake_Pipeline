@@ -15,7 +15,9 @@ No. pastForward manages all tool dependencies through conda environments automat
 Not reliably. Each pastForward rule is tied to a specific conda environment that ensures reproducible software versions. Running without `--use-conda` will fail unless you have all required tools installed and on your PATH with compatible versions.
 
 **Q: Where does pastForward live relative to my input/output data, and do I need a separate copy for each project?**
-A pastForward **project** is a directory that contains the `workflow/` and `config/` folders (i.e. a copy/clone of the pastForward repository) plus one `<species>/` folder for each species you want to process — pipeline code and data currently live side by side in the same directory, they are not separated. To start a new project, copy pastForward into a new folder and add your species folders there.
+A pastForward **project** is a directory that contains the `workflow/` and `config/` folders (i.e. a copy/clone of the pastForward repository) plus one `<species>/` folder for each species you want to process — pipeline code and data live side by side in the same directory by default. To start a new project, copy pastForward into a new folder and add your species folders there.
+
+If you'd rather keep some or all of a species' data outside the project directory (a different disk, a shared mount, ...), you can — see "Can I store a species' data outside the project directory?" in the Configuration section below. Without that configuration, behavior is exactly as described above.
 
 One project can process 1–n species. Whether to combine several species in one project folder or give each its own project folder depends on how you want to run them: combining them shares one `snakemake` invocation and config, which is handy for a quick look across a batch (e.g. checking data quality for several species from a low-depth trial-sequencing run); separating them lets each species be started, re-run, and configured independently, which is preferable for deep-sequencing/production runs. See [Project Structure](../config/README.md#project-structure) for a folder diagram.
 
@@ -55,7 +57,11 @@ Place it in `<species>/input/reference_module/`. pastForward accepts `.fa`, `.fa
 The recommended approach is to place files directly in the species folder. pastForward will detect and move them to the correct subfolders automatically on the first run.
 
 **Q: I have a lot of data. Can I symlink to it instead of copying?**
-Yes. pastForward will detect if files are symlinks and will use them directly without copying. Just place the symlinks in the expected locations under `<species>/input/` and pastForward will handle them seamlessly. Only the symlink's own name needs to follow pastForward's naming convention — the file it points to keeps its original name and can live anywhere on disk, including outside the project folder entirely.
+Yes, at two levels:
+- **Per file** — place a symlink in the expected location under `<species>/input/`, named according to pastForward's naming convention. The file it points to keeps its own name and can live anywhere on disk, including outside the project folder entirely. pastForward detects and uses symlinked files directly without copying.
+- **Per folder** — point an entire category (or the whole species) at a location outside the project via `species.<key>.reads_dir`, `reference_dir`, `species_dir`, etc. in `config.yaml`. See "Can I store a species' data outside the project directory?" below.
+
+Use per-file symlinks for a handful of files; use the folder-level config options when you want a whole category (or the whole species) to live elsewhere without hand-placing a symlink for every file.
 
 **Q: Can I have multiple species in the same project?**
 Yes. Each species is processed independently, so you can have as many species as needed within the same project. Just add additional entries under the `species` section in the config.yaml and place their respective data in separate subfolders under `<species>/input/`.
@@ -201,6 +207,21 @@ For example, if you initially ran pastForward with contamination analysis disabl
 >
 > Example: If you enable contamination analysis after the first run (e.g. reads + ref + summary), pastForward will need to re-run adapter removal and quality filtering for all samples to generate the necessary inputs for contamination analysis. Since these outputs are temporary, they are not stored between runs. To allow contamination analysis, pastForward must re-generate these outputs. In this case Snakemake will determine that there has been a change and conclude that all downstream steps that depend on these outputs need to be re-run to ensure consistency. Using `skip_existing_files: true` can help avoid unnecessary re-processing, but it is better to check the pastForward log to ensure that the re-processing is indeed suppressed. If Snakemake still triggers a re-run (e.g. reference processing, mapping, ...), the downstream steps can be temporarily disabled in the config.
 
+**Q: Can I store a species' data outside the project directory?**
+Yes. By default a species' data must live at `<species>/input`, `<species>/processed`, and `<species>/results` inside the project directory. To point some or all of it elsewhere, set one or more of the following optional keys under `species.<key>` in `config.yaml`: `species_dir` (whole species root; sets the default for everything below), `reads_dir`, `reference_dir`, `scg_dir`, `feature_library_dir`, `competition_dir`, `processed_dir`, `results_dir`. An explicit key always wins over a path derived from `species_dir`.
+
+```yaml
+species:
+  Dmel:
+    name: "Drosophila melanogaster"
+    species_dir: "/mnt/big_disk/pastforward_data/Dmel"
+    processed_dir: "/scratch/pastforward_processed/Dmel"
+```
+
+If none of these are set for a species, behavior is exactly as it was before this feature existed — nothing on disk is touched beyond what pastForward already does today. When one is set, pastForward creates a symlink at the conventional in-project location (e.g. `Dmel/input/read_module`) pointing at the configured path, once at startup; this is idempotent (safe to re-run) and pastForward refuses to overwrite anything that already exists there (a real folder, or a symlink pointing elsewhere) rather than risk clobbering existing data. See [Project Structure](../config/README.md#storing-species-data-elsewhere) for the full list of keys.
+
+`processed_dir` and `results_dir` are additionally protected by a **cross-project lock**: a `.pastforward.lock` file written inside the resolved target directory itself, recording the owning project's working directory, PID, hostname, and start time. This is separate from Snakemake's own lock (see "pastForward says it is locked" below) — it exists because two *different* project directories/configs could otherwise resolve to the same `processed_dir`/`results_dir` and run concurrently without Snakemake's own per-project lock ever seeing the conflict. It's released automatically when a run finishes (success or error). If a run is killed hard enough that it can't release its own lock (e.g. `kill -9`, a crashed machine), the next run on the *same* host detects that the recorded PID is no longer running and takes over automatically, logging a warning. If the lock was written on a *different* host, pastForward can't verify whether that PID is still alive and fails with an error instead of guessing — if you're sure that run is no longer active, delete the `.pastforward.lock` file inside the target directory manually. Unlike Snakemake's lock, `snakemake --unlock` does **not** clear this one.
+
 ---
 
 ## Running pastForward
@@ -243,6 +264,8 @@ Non theless, it is recommended to monitor disk usage during the first run to ens
 
 **Q: Can I run multiple instances of pastForward simultaneously?**
 Yes, you can run multiple instances of pastForward simultaneously, provided that each instance has its own independent working directory and configuration. This allows you to process different datasets or run the same dataset with different parameters in parallel.
+
+The one exception: if you've configured `processed_dir`/`results_dir` (or `species_dir`) to point outside the project directory (see "Can I store a species' data outside the project directory?" above), and two independent projects' configs happen to resolve to the *same* target directory, the second one to start will fail fast with a cross-project lock error instead of racing the first. Instances that keep all data in-project (the default), or whose overrides resolve to different targets, are unaffected.
 
 **Q: Does pastForward support running on an HPC cluster (e.g. via Slurm or PBS)?**
 pastForward is a plain Snakemake workflow, so it should in principle work with Snakemake's [cluster/HPC execution support](https://snakemake.readthedocs.io/en/stable/executing/cluster.html) (e.g. via the Slurm or PBS [executor plugins](https://snakemake.github.io/snakemake-plugin-catalog/)), without any changes to the pipeline itself. This has not yet been specifically tested with pastForward — testing on a Slurm-based HPC cluster is planned.
@@ -356,6 +379,8 @@ Yes. Each report only requests inputs from enabled steps. Disabled steps are sil
 
 **Q: pastForward says it is locked. What do I do?**
 A lock file is left behind when a previous run was forcefully terminated. Run `snakemake --unlock` to remove it, then re-run normally. Do not delete the lock file manually.
+
+This is Snakemake's own lock, scoped to this project's working directory (its `.snakemake/` folder). It's unrelated to the separate cross-project `.pastforward.lock` file described in "Can I store a species' data outside the project directory?" above — `snakemake --unlock` does not touch that one. If pastForward instead reports a `.pastforward.lock` conflict, see that Q&A for how to resolve it.
 
 **Q: I accidentally deleted some intermediate files. Can I regenerate them?**
 Yes. Delete the corresponding output files (or use `--forcerun`) and re-run pastForward. Snakemake will re-execute only the rules needed to regenerate the missing files.

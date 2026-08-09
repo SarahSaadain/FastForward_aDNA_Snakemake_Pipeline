@@ -32,6 +32,10 @@ species:
     #feature_libraries:
     #  - my_lib
 
+    # Optional: store this species' data outside the project directory instead of
+    # {species}/input, {species}/processed, {species}/results (see config/README.md)
+    #species_dir: "/path/to/Dmel_data"
+
 # To add more species, duplicate the block above:
 # species:
 #   Dmel:

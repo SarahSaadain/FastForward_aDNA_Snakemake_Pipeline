@@ -356,6 +356,29 @@ species:
     # and an info message is written to the log.
     #scg_reference: "/path/to/reference.fasta"
 
+    # Optional: store this species' data outside the project directory (see
+    # config/README.md#storing-species-data-elsewhere). If none of the settings below
+    # are set, data must live in-project exactly as documented in config/README.md.
+    #
+    # Whole-species root; must mirror the input/{read_module,reference_module,
+    # reveal_module/{scg,feature_library,competition}}, processed/, results/ layout.
+    # Sets the default target for every override below.
+    #species_dir: "/mnt/big_disk/pastforward_data/demo"
+    # Optional: override just {species}/input/read_module/
+    #reads_dir: "/mnt/big_disk/pastforward_data/demo/input/read_module"
+    # Optional: override just {species}/input/reference_module/
+    #reference_dir: "/mnt/big_disk/pastforward_data/demo/input/reference_module"
+    # Optional: override just {species}/input/reveal_module/scg/
+    #scg_dir: "/mnt/big_disk/pastforward_data/demo/input/reveal_module/scg"
+    # Optional: override just {species}/input/reveal_module/feature_library/
+    #feature_library_dir: "/mnt/big_disk/pastforward_data/demo/input/reveal_module/feature_library"
+    # Optional: override just {species}/input/reveal_module/competition/
+    #competition_dir: "/mnt/big_disk/pastforward_data/demo/input/reveal_module/competition"
+    # Optional: override just {species}/processed/ (protected by a cross-project lock; see FAQ.md)
+    #processed_dir: "/scratch/pastforward_processed/demo"
+    # Optional: override just {species}/results/ (protected by a cross-project lock; see FAQ.md)
+    #results_dir: "/scratch/pastforward_results/demo"
+
     # Optional: restrict which individuals to process for this species.
     # If omitted, all individuals discovered in {species}/input/read_module/ are used.
     # Each entry must match the individual ID extracted from read filenames

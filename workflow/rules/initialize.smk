@@ -17,6 +17,9 @@ import json
 # import version from workflow/scripts/version.py
 from scripts.version import __version__
 
+# import species data-location symlink/lock setup from workflow/scripts/species_paths.py
+from scripts.species_paths import setup_species_data_locations
+
 # Import Snakemake plugin settings for executor modes
 from snakemake_interface_executor_plugins.settings import ExecMode
 
@@ -55,19 +58,33 @@ configfile: "config/config.yaml"
 # (spawned by a parent Snakemake process — the parent already printed this)
 if workflow.exec_mode != ExecMode.SUBPROCESS:
 
+    # Resolve optional per-species data-location overrides (species_dir, reads_dir, ...) into
+    # symlinks at the conventional locations, and acquire the cross-project collision lock for
+    # any processed_dir/results_dir override, before anything else (including file_manager.py's
+    # folder discovery) touches a species path. A subprocess spawned by a parent Snakemake
+    # process shares the parent's already-set-up filesystem state and lock, so it must not redo
+    # this - re-acquiring here would see the parent's own live lock and fail.
+    # dry_run is passed through so the lock (but not the symlinks) is skipped on --dryrun - see
+    # setup_species_data_locations's docstring in species_paths.py for why.
+    _pastforward_dryrun = getattr(getattr(workflow, "output_settings", None), "dryrun", False)
+    setup_species_data_locations(config, dry_run=_pastforward_dryrun)
+
     pastForward_version = __version__
 
     try:
+        # --dirty appends "-dirty" if the working tree has uncommitted changes,
+        # so local edits ahead of the last CI-stamped version.py are still visible
         process = subprocess.Popen(
-            ["git", "rev-parse", "--short", "HEAD"], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            ["git", "describe", "--always", "--dirty"], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             cwd=workflow.basedir
         )
         out, err = process.communicate()
         out = out.decode("ascii")
-        pastForward_git_hash = out.strip()
-        if pastForward_git_hash and pastForward_git_hash not in pastForward_version:
-            pastForward_version += " (git: " + pastForward_git_hash + ")"
-        del process, out, err, pastForward_git_hash
+        pastForward_git_state = out.strip()
+        pastForward_git_hash = pastForward_git_state[:-len("-dirty")] if pastForward_git_state.endswith("-dirty") else pastForward_git_state
+        if pastForward_git_state and (pastForward_git_hash not in pastForward_version or pastForward_git_state.endswith("-dirty")):
+            pastForward_version += " (git: " + pastForward_git_state + ")"
+        del process, out, err, pastForward_git_state, pastForward_git_hash
     except Exception:
         pass
 

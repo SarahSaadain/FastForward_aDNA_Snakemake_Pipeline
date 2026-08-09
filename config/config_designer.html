@@ -288,8 +288,11 @@
     .sp-scg .sp-scg-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
     .sp-filters { display: none; gap: 6px; align-items: center; margin-top: 4px; padding-left: 2px; flex-wrap: wrap; }
     .sp-filters .sp-scg-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+    .sp-paths { display: none; gap: 6px; align-items: center; margin-top: 4px; padding-left: 2px; flex-wrap: wrap; }
+    .sp-paths .sp-scg-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
     .species-row-advanced .sp-scg { display: flex; }
     .species-row-advanced .sp-filters { display: flex; }
+    .species-row-advanced .sp-paths { display: flex; }
     .sp-adv-btn {
       background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 4px;
       cursor: pointer; padding: 4px 8px; color: var(--primary);
@@ -397,7 +400,7 @@
         <p class="hint" style="margin-top:8px">
           <strong>Key</strong> = folder name and YAML map key (alphanumeric / underscore, no spaces). Must match the directory under the pipeline root.<br>
           <strong>Display Name</strong> = human-readable species name used in reports.<br>
-          Click <strong>&#9654;</strong> on a row to configure BUSCO lineage, reference path, and individual/reference/feature-library filters for that species.
+          Click <strong>&#9654;</strong> on a row to configure BUSCO lineage, reference path, individual/reference/feature-library filters, and optional data locations outside the project folder for that species.
         </p>
       </div>
     </div>
@@ -1458,9 +1461,11 @@ function mapperInfo(selId, infoId) {
 /* ─── Species rows ─── */
 let speciesSeq = 0;
 
-function addSpecies(key='', name='', lineage='', ref='', individuals='', references='', featureLibs='', exec=true) {
+function addSpecies(key='', name='', lineage='', ref='', individuals='', references='', featureLibs='', exec=true,
+                     speciesDir='', readsDir='', referenceDir='', scgDir='', featureLibraryDir='', competitionDir='', processedDir='', resultsDir='') {
   const id = speciesSeq++;
-  const hasAdv = !!(lineage || ref || individuals || references || featureLibs);
+  const hasPaths = !!(speciesDir || readsDir || referenceDir || scgDir || featureLibraryDir || competitionDir || processedDir || resultsDir);
+  const hasAdv = !!(lineage || ref || individuals || references || featureLibs || hasPaths);
   const row = document.createElement('div');
   row.className = 'species-row' + (hasAdv ? ' species-row-advanced' : '');
   row.dataset.id = id;
@@ -1490,6 +1495,25 @@ function addSpecies(key='', name='', lineage='', ref='', individuals='', referen
       <input type="text" class="sp-lineage" placeholder="e.g. drosophilidae_odb12" value="${esc(lineage)}" oninput="render()" style="flex:1;min-width:160px">
       <span class="sp-scg-label" style="margin-left:8px">Reference</span>
       <input type="text" class="sp-ref" placeholder="optional: /path/to/ref.fasta" value="${esc(ref)}" oninput="render()" style="flex:2;min-width:160px">
+    </div>
+    <div class="sp-paths">
+      <span class="sp-group-tag">Data Locations (optional &mdash; leave blank to keep data in the project folder)</span>
+      <span class="sp-scg-label">Species Root</span>
+      <input type="text" class="sp-species-dir" placeholder="optional: /mnt/disk/${esc(key)||'species'}" value="${esc(speciesDir)}" oninput="render()" style="flex:2;min-width:160px">
+      <span class="sp-scg-label" style="margin-left:8px">Reads</span>
+      <input type="text" class="sp-reads-dir" placeholder="optional: overrides input/read_module" value="${esc(readsDir)}" oninput="render()" style="flex:2;min-width:160px">
+      <span class="sp-scg-label" style="margin-left:8px">Reference</span>
+      <input type="text" class="sp-reference-dir" placeholder="optional: overrides input/reference_module" value="${esc(referenceDir)}" oninput="render()" style="flex:2;min-width:160px">
+      <span class="sp-scg-label">SCG Library</span>
+      <input type="text" class="sp-scg-dir" placeholder="optional: overrides input/reveal_module/scg" value="${esc(scgDir)}" oninput="render()" style="flex:2;min-width:160px">
+      <span class="sp-scg-label" style="margin-left:8px">Feature Library</span>
+      <input type="text" class="sp-feature-library-dir" placeholder="optional: overrides input/reveal_module/feature_library" value="${esc(featureLibraryDir)}" oninput="render()" style="flex:2;min-width:160px">
+      <span class="sp-scg-label" style="margin-left:8px">Competition</span>
+      <input type="text" class="sp-competition-dir" placeholder="optional: overrides input/reveal_module/competition" value="${esc(competitionDir)}" oninput="render()" style="flex:2;min-width:160px">
+      <span class="sp-scg-label">Processed</span>
+      <input type="text" class="sp-processed-dir" placeholder="optional: overrides processed/" value="${esc(processedDir)}" oninput="render()" style="flex:2;min-width:160px">
+      <span class="sp-scg-label" style="margin-left:8px">Results</span>
+      <input type="text" class="sp-results-dir" placeholder="optional: overrides results/" value="${esc(resultsDir)}" oninput="render()" style="flex:2;min-width:160px">
     </div>
   `;
   document.getElementById('species-list').appendChild(row);
@@ -1694,6 +1718,14 @@ function buildYAML() {
     const individuals  = row.querySelector('.sp-individuals').value.trim();
     const references   = row.querySelector('.sp-references').value.trim();
     const featureLibs  = row.querySelector('.sp-feature-libs').value.trim();
+    const speciesDir        = row.querySelector('.sp-species-dir').value.trim();
+    const readsDir           = row.querySelector('.sp-reads-dir').value.trim();
+    const referenceDir       = row.querySelector('.sp-reference-dir').value.trim();
+    const scgDir             = row.querySelector('.sp-scg-dir').value.trim();
+    const featureLibraryDir  = row.querySelector('.sp-feature-library-dir').value.trim();
+    const competitionDir     = row.querySelector('.sp-competition-dir').value.trim();
+    const processedDir       = row.querySelector('.sp-processed-dir').value.trim();
+    const resultsDir         = row.querySelector('.sp-results-dir').value.trim();
     if (!k) return;
     p(2, `${k}:`);
     kv(4, 'execute', exec);
@@ -1703,6 +1735,14 @@ function buildYAML() {
     pList(4, 'individuals', individuals);
     pList(4, 'references', references);
     pList(4, 'feature_libraries', featureLibs);
+    if (speciesDir)       kv(4, 'species_dir', speciesDir);
+    if (readsDir)          kv(4, 'reads_dir', readsDir);
+    if (referenceDir)      kv(4, 'reference_dir', referenceDir);
+    if (scgDir)             kv(4, 'scg_dir', scgDir);
+    if (featureLibraryDir) kv(4, 'feature_library_dir', featureLibraryDir);
+    if (competitionDir)    kv(4, 'competition_dir', competitionDir);
+    if (processedDir)      kv(4, 'processed_dir', processedDir);
+    if (resultsDir)        kv(4, 'results_dir', resultsDir);
   });
   return L.join('\n');
 }
@@ -1971,7 +2011,9 @@ function populateForm(c) {
     const individuals = (sv2.individuals || []).join(', ');
     const references  = (sv2.references  || []).join(', ');
     const featureLibs = (sv2.feature_libraries || []).join(', ');
-    addSpecies(k, sv2.name||'', sv2.lineage||'', sv2.scg_reference||'', individuals, references, featureLibs, sv2.execute !== false);
+    addSpecies(k, sv2.name||'', sv2.lineage||'', sv2.scg_reference||'', individuals, references, featureLibs, sv2.execute !== false,
+               sv2.species_dir||'', sv2.reads_dir||'', sv2.reference_dir||'', sv2.scg_dir||'',
+               sv2.feature_library_dir||'', sv2.competition_dir||'', sv2.processed_dir||'', sv2.results_dir||'');
   });
   if (!Object.keys(species).length) addSpecies('demo','Dmel Demo');
   render();
