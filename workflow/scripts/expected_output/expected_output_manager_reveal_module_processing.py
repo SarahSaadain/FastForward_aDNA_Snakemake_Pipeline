@@ -11,7 +11,7 @@ def get_expected_output_reveal_module_processing(species):
 
     reveal_cfg = config.get("pipeline", {}).get("reveal_module", {})
     scg_sel_cfg = reveal_cfg.get("scg_selector", {})
-    scg_sel_active = scg_sel_cfg.get("execute", False)
+    scg_sel_active = scg_sel_cfg.get("execute", True)
 
     # ── SCG selector outputs ──────────────────────────────────────────────────
     # Requested whenever scg_selector.execute is true AND no user-provided SCG

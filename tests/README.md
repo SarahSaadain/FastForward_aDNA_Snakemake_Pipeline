@@ -1,20 +1,81 @@
 # Tests
 
+All Python unit tests run with either:
+
+```bash
+python3 tests/test_<name>.py                   # a single module
+python3 -m unittest discover tests -v           # everything, from the repo root
+```
+
+None of them need Snakemake or conda — that's what makes them fast enough to run before
+every commit to catch obviously-broken new development. `dryrun_scenarios.sh` (below) is the
+one exception, and is a slower, separate integration check.
+
+## `test_file_manager.py` / `test_expected_output_manager.py` / `test_endogenous_reads_stats.py`
+
+These are the ones to reach for when changing discovery logic, config-driven DAG targets, or
+adding a new pipeline step/config toggle — the fastest way to tell whether the change did what
+you meant before running a real (or even a dry) Snakemake pipeline.
+
+Both `test_file_manager.py` and `test_expected_output_manager.py` build a small synthetic
+species library on disk for each test — raw reads (paired/single-end, both R1/R2 and standalone
+1/2 naming, plus a file with no recognizable marker and an uncompressed `.fastq`, both of which
+must be discovered-but-ignored), two reference genomes (one with a dotted filename, to check ID
+sanitization), a feature library, and (where relevant) an SCG library and competition FASTA —
+via the shared builder in `pf_test_library.py`, then exercise the real pipeline code against it
+in a throwaway temp directory. No mocking of file discovery: these are real files on real disk,
+matching the conventions in CLAUDE.md's "Species/file discovery" and "Raw read filenames"
+sections.
+
+- **`test_file_manager.py`** — `workflow/scripts/file_manager.py`'s discovery functions
+  directly: read pairing/individual/sample extraction, reference/feature-library/SCG discovery
+  and config filtering (including the `ConfigValidationError` path for a requested-but-missing
+  individual/reference/library), competition FASTA resolution, and SCG auto-determination
+  eligibility (`should_auto_determine_scg`).
+
+- **`test_expected_output_manager.py`** — the DAG-target computation chain
+  (`expected_output_manager.py` + its four `expected_output_manager_<module>_processing.py`
+  submodules): which output paths `rule all` requests for a given `config.yaml`. Covers the
+  `species`/module-level/sub-step `execute: false` gates, `skip_existing_files`, and the
+  SCG-selector default (see below). Since these `.py` files are actually Snakemake `include:`
+  targets that rely on sharing the Snakefile's globals (`config`, and each other's top-level
+  functions) rather than importing anything, `pipeline_namespace.py` loads them into a shared
+  namespace dict the same way, so they can run standalone.
+
+- **`test_endogenous_reads_stats.py`** — the two endogenous-reads statistics helpers that are
+  plain functions with no `snakemake` object dependency at import time
+  (`parse_endogenous_from_stats.py`, `combine_endogenous_reads.py`): stats parsing, malformed
+  values, division-by-zero, and multi-file combination.
+
+While fixing a bug found during test-writing, `scg_selector.execute`'s default in
+`expected_output_manager_reveal_module_processing.py` had drifted to `False`, while
+`file_manager.should_auto_determine_scg()`, `preview.py`, and the docs all default it to `True`
+— so a config that (per the docs) correctly omits `scg_selector.execute` entirely would silently
+skip SCG auto-determination and, with it, all of REVEAL. Fixed to default `True`;
+`TestScgSelectorDefaults` in `test_expected_output_manager.py` locks in the documented behavior.
+
+## `build_test_library.py` — materializing a library to poke at by hand
+
+```bash
+python3 tests/build_test_library.py
+cd tests/fixtures/pf_test_library && snakemake --cores 2 --use-conda --dryrun
+```
+
+Builds the same synthetic species library (via `pf_test_library.py`) as a persistent project
+directory under `tests/fixtures/` (gitignored, rebuilt from scratch every time) — a `config.yaml`
+and a `workflow/` symlink into this repo alongside the species data, so it's immediately usable
+for a manual dry-run sanity check. It's also rebuilt once as a side effect of running
+`test_expected_output_manager.py` (see that file's `setUpModule`), so simply running the test
+suite refreshes it.
+
+## `test_species_paths.py`
+
 Covers the configurable species data locations feature (`species_dir`, `reads_dir`,
 `reference_dir`, `scg_dir`, `feature_library_dir`, `competition_dir`, `processed_dir`,
 `results_dir` — see [config/README.md](../config/README.md#storing-species-data-elsewhere)) and
-its cross-project lock.
-
-## `test_species_paths.py` — unit tests
-
-Pure Python, no Snakemake or conda required. Exercises
-`workflow/scripts/species_paths.py` directly against throwaway directories: symlink creation,
-idempotency, both conflict cases, `execute: false` skipping, the cross-project lock (fresh
-acquire, stale takeover, foreign-host refusal, scoped release), and the dry-run lock skip.
-
-```bash
-python3 tests/test_species_paths.py            # or: python3 -m unittest discover tests -v
-```
+its cross-project lock: symlink creation, idempotency, both conflict cases, `execute: false`
+skipping, the cross-project lock (fresh acquire, stale takeover, foreign-host refusal, scoped
+release), and the dry-run lock skip.
 
 ## `dryrun_scenarios.sh` — Snakemake integration checks
 
