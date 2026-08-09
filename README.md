@@ -2,6 +2,10 @@
 
 # pastForward - A pipeline for ancient and historical DNA based on Snakemake
 
+[![Snakemake](https://img.shields.io/badge/snakemake-≥9.9.0-brightgreen.svg)](https://snakemake.github.io)
+[![GitHub release](https://img.shields.io/github/v/release/SarahSaadain/aDNA_Pipeline_Snakemake)](https://github.com/SarahSaadain/aDNA_Pipeline_Snakemake/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 pastForward analyzes raw ancient and historical DNA from a sequencing facility. It checks read quality and screens for contamination, using checks suited to the short, damaged reads typical of ancient and historical DNA, so you can tell whether an extraction worked and the sample is free of major contamination. It then maps reads to a reference genome and corrects them for DNA damage, so they're ready for downstream analysis. Optionally, it can also compare key genomic features across time points, such as transposon insertions, gene copy number changes, or endosymbiont strain replacements.
 
 It's built on [Snakemake](https://snakemake.github.io), a workflow tool that automatically installs the right software versions and only re-runs the steps that actually need it.
