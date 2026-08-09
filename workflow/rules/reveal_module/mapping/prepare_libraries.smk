@@ -58,9 +58,15 @@ rule clean_scg_library_name:
     input:
         clean_scg_library_name_input,
     output:
-        temp("{species}/processed/reveal_module/scg/library/{scg_library}.clean.fasta"),
+        # Deliberately not "{species}/processed/reveal_module/{scg_library}/library/...": that shape
+        # is what rule clean_feature_library_name matches, and a user-provided SCG FASTA literally
+        # named "scg.fasta" (a very natural choice) makes scg_library == "scg" too, which used to
+        # make both rules produce the exact same output path (AmbiguousRuleException). The flattened
+        # "scg_library/" folder here has one path segment fewer than that pattern, so the two can
+        # never collide regardless of what the library file is named.
+        temp("{species}/processed/reveal_module/scg_library/{scg_library}.clean.fasta"),
     log:
-        "{species}/processed/reveal_module/scg/library/{scg_library}.clean.log",
+        "{species}/processed/reveal_module/scg_library/{scg_library}.clean.log",
     conda:
         "../../../envs/python_and_r.yaml"
     message:
@@ -73,13 +79,13 @@ rule clean_scg_library_name:
 
 rule prepare_scg_library:
     input:
-        "{species}/processed/reveal_module/scg/library/{scg_library}.clean.fasta",
+        "{species}/processed/reveal_module/scg_library/{scg_library}.clean.fasta",
     output:
         temp(
-            "{species}/processed/reveal_module/scg/library/{scg_library}.suffixed.fasta"
+            "{species}/processed/reveal_module/scg_library/{scg_library}.suffixed.fasta"
         ),
     log:
-        "{species}/processed/reveal_module/scg/library/{scg_library}.suffixed.log",
+        "{species}/processed/reveal_module/scg_library/{scg_library}.suffixed.log",
     conda:
         "../../../envs/python_and_r.yaml"
     message:
@@ -124,7 +130,7 @@ if _comp_execute:
 
 rule combine_scg_and_ref_library:
     input:
-        scg=lambda wildcards: f"{wildcards.species}/processed/reveal_module/scg/library/{get_effective_scg_library_id_for_species(wildcards.species)}.suffixed.fasta",
+        scg=lambda wildcards: f"{wildcards.species}/processed/reveal_module/scg_library/{get_effective_scg_library_id_for_species(wildcards.species)}.suffixed.fasta",
         fl="{species}/processed/reveal_module/{feature_library}/library/{feature_library}.suffixed.fasta",
         comp=lambda wildcards: (
             f"{wildcards.species}/processed/reveal_module/competition/competition.suffixed.fasta"
