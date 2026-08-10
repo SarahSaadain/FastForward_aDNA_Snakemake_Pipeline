@@ -6,9 +6,10 @@
 [![GitHub release](https://img.shields.io/github/v/release/SarahSaadain/aDNA_Pipeline_Snakemake)](https://github.com/SarahSaadain/aDNA_Pipeline_Snakemake/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-pastForward analyzes raw ancient and historical DNA from a sequencing facility. It checks read quality and screens for contamination, using checks suited to the short, damaged reads typical of ancient and historical DNA, so you can tell whether an extraction worked and the sample is free of major contamination. It maps reads to a reference genome and corrects them for DNA damage, so they're ready for downstream analysis. Optionally, it can also compare key genomic features across time points, such as transposon insertions, gene copy number changes, or endosymbiont strain replacements.
+pastForward analyzes raw ancient and historical DNA from a sequencing facility. It checks read quality and screens for contamination, using checks suited to the short, damaged reads typically seen in ancient and historical DNA. It maps reads to a reference genome and corrects them for DNA damage, so they're ready for downstream analysis. Optionally, it can also compare key genomic features (e.g. across time points or between specimen), such as transposon insertions, gene copy number changes, or endosymbiont strain replacements.
 
-It's built on [Snakemake](https://snakemake.github.io), a workflow tool that automatically installs the right software versions and only re-runs the steps that actually need it.
+pastForward is built on [Snakemake](https://snakemake.github.io). For more information on Snakemake itself, see the [Snakemake website](https://snakemake.github.io).
+
 
 > **Note:** pastForward integrates two purpose-built tools for its core analyses: [REVEAL](https://github.com/SarahSaadain/REVEAL) for transposable element and genomic feature dynamics, and [ECMSD](https://github.com/capoony/ECMSD) for contamination screening against a curated mitochondrial database. See their READMEs for details on each tool.
 
@@ -25,22 +26,20 @@ For detailed information about the processing steps, see the [Process Overview](
 New to pastForward? Here's the whole path, start to finish. Each step links to more detail if you need it.
 
 1. **Install Conda and Snakemake, and download pastForward.** The [Setup Guide](config/README.md) walks through this step by step.
-2. **Add your species and sequencing data.** Also covered in the [Setup Guide](config/README.md#step-4-add-your-species-and-data), including how the read files need to be named.
-3. **Create a `config.yaml` file.** Every pipeline stage is turned on by default, so a minimal config just needs a project name and species list. If you'd rather not edit a text file by hand, open [config/config_designer.html](config/config_designer.html) in your browser and fill in a form instead.
+2. **Add your species and sequencing data.** Also covered in the [Setup Guide](config/README.md#step-4-add-your-species-and-data), including how your read files need to be named.
+3. **Create a `config.yaml` file.** Every pipeline stage is turned on by default, but can be adjusted if required. To run with default settings,only a minimal config with a project name and species list is required. If you want to adjust the config, but rather not edit a text file by hand, open [config/config_designer.html](config/config_designer.html) in your browser to create your config.
 4. **Run the pipeline.** See [Running the Pipeline](#running-the-pipeline) below for the exact command.
-
-For more information on Snakemake itself, see the [Snakemake website](https://snakemake.github.io).
 
 ## Running the Pipeline
 
-Run `snakemake` from your **project folder**, the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. This is *not* the `workflow/` folder itself. See [Project Structure](config/README.md#project-structure) for what that folder should look like.
+Run `snakemake` from your **project folder**, the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. See [Project Structure](config/README.md#project-structure) for what that folder should look like.
 
 ```bash
 # minimum command to run the pipeline
 #snakemake --cores <number_of_threads> --use-conda
 
 # suggested command to run the pipeline
-snakemake --cores <number_of_threads> --use-conda --keep-going --rerun-trigger mtime
+snakemake --cores <number_of_threads> --use-conda --rerun-trigger mtime
 ```
 
 Replace `<number_of_threads>` with the number of CPU threads you want to give the pipeline.
@@ -48,16 +47,15 @@ Replace `<number_of_threads>` with the number of CPU threads you want to give th
 **What the suggested flags do:**
 
 * `--use-conda` lets Snakemake install and use the software each step needs automatically.
-* `--keep-going` lets the pipeline carry on if one step fails, instead of stopping everything. This matters because the contamination-screening tool ECMSD sometimes fails on individual samples with low-quality or low-coverage data. With this flag, the rest of the pipeline still runs.
 * `--rerun-trigger mtime` re-runs a step only when its input files have changed since the last run, instead of pastForward's more thorough (and slower) default checks.
 
 **A few other flags you might want:**
 
-* `--dryrun` (or `-n`): show what the pipeline *would* do, without actually running anything.
+* `--dryrun` (or `-n`): show what the pipeline *would* do, without actually running anything. Use it to check if pastForward picks up all your data correctly.
 * `--configfile <path_to_config.yaml>`: use a config file other than the default.
 * `--rerun-incomplete`: pick back up rules that failed or were cancelled in a previous run.
+* `--keep-going` lets the pipeline carry on if one step fails, instead of stopping everything. This matters because the contamination-screening tool ECMSD sometimes fails on individual samples with low-quality or low-coverage data. With this flag, the rest of the pipeline still runs.
 * `--rerun-trigger <code|input|mtime|params|software-env>`: choose what counts as "changed" when deciding whether to re-run a step. By default, all of these are checked, which is the safest option. `mtime` (used above) checks only file modification times, which is faster but less thorough.
-* `--touch`: mark output files as up to date without actually running the commands that create them. Use this only as a last resort (for example, to convince pastForward that files created another way don't need to be regenerated), since it throws away the record of how those files were really made. Combine with `--force`, `--forceall`, or `--forcerun` to make it apply.
 
 For the full list of Snakemake's command-line options, see the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/executing/cli.html).
 
@@ -69,11 +67,11 @@ Large datasets can take a while to process, so it's often best to run pastForwar
 nohup snakemake --cores 40 --use-conda --keep-going --rerun-trigger mtime > pipeline.log 2>&1 &
 ```
 
-This starts the pipeline, sends all its output to a file called `pipeline.log`, and immediately gives you your terminal back. Check progress any time with `tail -f pipeline.log`.
+This starts the pipeline and sends all its output to a file called `pipeline.log`. Check progress any time with `tail -f pipeline.log`.
 
 ### Restarting the Pipeline
 
-Snakemake keeps track of what's already been done and only re-runs steps that are missing or out of date. To start completely over, delete the relevant output files and run the pipeline again.
+Snakemake keeps track of what's already been done and only re-runs steps that are missing or out of date. To start completely over, delete the relevant `result` and `processed` folders and run the pipeline again.
 
 If the pipeline crashed or was stopped partway through, add `--rerun-incomplete` when you restart it. This re-runs any step that was left unfinished, even if its files look unchanged since the last run.
 
@@ -86,10 +84,8 @@ pastForward is a standard Snakemake workflow, so it should work with Snakemake's
 pastForward generates a MultiQC report for:
 
 * **Each species** (all samples from that species together, so you can compare results across them)
-  * Location: `{species}/results/summary/species_level/{species}_multiqc.overall.html`
+  * Location: `{species}/results/summary_module/species_level/{species}_multiqc.overall.html`
 * **Each individual sample**
-  * Location: `{species}/results/summary/individual_level/{individual}_multiqc.html`
+  * Location: `{species}/results/summary_module/individual_level/{individual}_multiqc.html`
 
 These reports summarize reads before and after trimming, contamination analysis, coverage, deduplication, and damage rescaling. Use them to judge the quality of your sequenced reads and decide whether a sample needs additional library preparation.
-
-You can also feed a report into an AI assistant and ask it to help interpret the results, using the AI features built into MultiQC reports.

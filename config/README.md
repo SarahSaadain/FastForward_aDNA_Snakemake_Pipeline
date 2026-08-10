@@ -6,8 +6,8 @@ This guide walks through everything you need to set up and configure pastForward
 
 pastForward runs on two free tools:
 
-* **Conda** installs and manages all the other software the pipeline needs. You don't install anything else by hand.
-* **Snakemake** runs the pipeline itself. Version **9.9.0** or newer is required. pastForward checks this automatically at startup and stops with a clear message if your version is too old.
+* **Conda** installs and manages all the other software the pipeline needs.
+* **Snakemake** runs the pipeline itself and can be installed using conda. Version **9.9.0** or newer is required.
 
 
 ## Step 1: Install Conda
@@ -26,15 +26,21 @@ snakemake --help
 
 What each line does:
 
-1. Creates a separate, self-contained space called `snakemake` and installs Snakemake into it. You only need to do this once.
-2. Switches your terminal into that space. Run this line every time you open a new terminal window, before using pastForward.
+1. Creates a separate, self-contained conda environment called `snakemake` and installs Snakemake into it. You only need to do this once.
+2. Switches your terminal into that environment. Run this line every time you open a new terminal window, before using pastForward.
 3. Checks that the install worked. You should see the helppage print out.
 
 For more installation options, see the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
 
 ## Step 3: Get pastForward
 
-Download or `git clone` this repository into a folder on your computer. That folder becomes your **project folder**. Your pipeline code, your data, and your results will all live inside it. See [Project Structure](#project-structure) below for what this folder should contain.
+[Download](https://github.com/SarahSaadain/pastForward/releases) or clone this repository into a folder on your computer using:
+
+```bash
+git clone https://github.com/SarahSaadain/pastForward.git
+```
+
+That folder becomes your **project folder**. pastForward, your data, and your results will all live inside it. See [Project Structure](#project-structure) below for what this folder should contain.
 
 ## Step 4: Add Your Species and Data
 
@@ -56,7 +62,7 @@ my_project/                  <- project folder — run `snakemake` from here
     └── results/
 ```
 
-The pipeline code and your data live side by side in this one folder. There's no separate install location. To start a new project, copy (or `git clone`) pastForward into a new folder and add your species folders next to `workflow/` and `config/`.
+The pipeline code and your data live side by side in this one folder. There's no separate install location.
 
 One project can handle one species or many. Which you choose depends on how you want to work:
 
@@ -67,17 +73,17 @@ One project can handle one species or many. Which you choose depends on how you 
 
 To add a new species:
 
-1. Create a folder for it in the project root (next to `workflow/` and `config/`). The folder name must exactly match the species key you'll use under `species:` in `config.yaml` (see [Configuration](#configuration-configyaml) below).
+1. Create a folder for it in the project root (next to `workflow/` and `config/`). The folder name must exactly (case sensitive) match the species key you'll use under `species:` in `config.yaml` (see [Configuration](#configuration-configyaml) below).
 2. Put your raw read files and reference genome inside that folder (see below).
 
 #### Providing Your Data
 
-The simplest option: drop your raw read files and reference genome inside the `<species>` folder. The first time you run pastForward, it automatically finds them there. This shortcut only works for reads and the reference genome — REVEAL input files (feature library, and optionally SCG) must go in their specific folders below, not just anywhere in `<species>`.
+The simplest option: drop your raw read files and reference genome inside the `<species>` folder. The first time you run pastForward, it automatically finds them and moves them to its destination. This shortcut only works for reads and the reference genome. REVEAL input files (feature library, and optionally SCG) must go in their specific folders, not just anywhere in `<species>`.
 
-Put your files here:
+IF you want to place the files directly in their final place, put your files here:
 
 * raw reads in `<species>/input/read_module/`
-* the reference genome in `<species>/input/reference_module/`
+* the reference genome(s) in `<species>/input/reference_module/`
 * (optional) a feature library — a FASTA of TE or other genomic feature sequences to compare across samples — in `<species>/input/reveal_module/feature_library/`, needed only if you're using the REVEAL comparison stage
 * (optional) a pre-built SCG (single-copy gene) FASTA in `<species>/input/reveal_module/scg/`. If you skip this, pastForward determines SCGs automatically via BUSCO, as long as `pipeline.reveal_module.scg_selector.execute` is `true` (the default) and `species.<key>.lineage` is set to a BUSCO lineage name (e.g. `drosophilidae_odb12`, see [busco.ezlab.org](https://busco.ezlab.org/)). No lineage configured and no FASTA provided means SCG determination is skipped.
 
@@ -145,7 +151,7 @@ The pattern, piece by piece:
 
 * **`<Individual>`** is a unique ID for the sample, e.g. `Dmel01`. It's everything before the first underscore, and pastForward uses it to group files that belong together.
 * **`<FreeText>`** (optional, can appear before or after the read number) is any extra label you want, e.g. a protocol name. Useful when the same individual was extracted twice with different methods.
-* **`<ReadNumber>`** marks which read of the pair this file is: `R1`/`R2`, or a plain `1`/`2`. Use read 1 only for single-end data. A plain `1` or `2` must stand on its own between underscores or right before the file extension. It won't be picked up inside a longer number like `_10_` or `_21`.
+* **`<ReadNumber>`** marks which read of the pair this file is: `R1`/`R2`, or a plain `1`/`2`. A plain `1` or `2` must stand on its own between underscores or right before the file extension. It won't be picked up inside a longer number like `_10_` or `_21`. In case you provide single end data, use `1` or `R1` as well.
 * The file must end in **`.fastq.gz`** or **`.fq.gz`** (compressed FASTQ). Uncompressed `.fastq`/`.fq` files are not supported.
 
 ## Configuration (`config.yaml`)
