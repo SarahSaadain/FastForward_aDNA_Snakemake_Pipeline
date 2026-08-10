@@ -15,7 +15,25 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check for release-worthy commits
+        id: check
+        run: |
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.event.after }}"
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            RANGE="$AFTER"
+          else
+            RANGE="$BEFORE..$AFTER"
+          fi
+          MESSAGES=$(git log "$RANGE" --format=%B)
+          if echo "$MESSAGES" | grep -qiE '^(feat|fix)(\([^)]*\))?!?:' || echo "$MESSAGES" | grep -q 'BREAKING CHANGE'; then
+            echo "should_stamp=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_stamp=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Compute dev version
+        if: steps.check.outputs.should_stamp == 'true'
         id: version
         run: |
           BASE_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo v0.0.0)
@@ -26,10 +44,12 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Update version.py
+        if: steps.check.outputs.should_stamp == 'true'
         run: |
           sed -i "s/__version__ = .*/__version__ = \"${{ steps.version.outputs.version }}\"/" workflow/scripts/version.py
 
       - name: Commit version.py back to develop
+        if: steps.check.outputs.should_stamp == 'true'
         run: |
           git config user.name "${{ github.event.head_commit.author.name }}"
           git config user.email "${{ github.event.head_commit.author.email }}"

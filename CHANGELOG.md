@@ -9,6 +9,20 @@ All notable changes to this project will be documented in this file.
 
 - **Configurable species data locations**: New optional per-species `config.yaml` settings (`species_dir`, `reads_dir`, `reference_dir`, `scg_dir`, `feature_library_dir`, `competition_dir`, `processed_dir`, `results_dir`) let a species' data live outside the project directory instead of the fixed `<species>/{input,processed,results}` layout. pastForward resolves these into symlinks at the conventional locations at startup, so all existing rules/scripts keep working unchanged; when none are set, behavior is identical to before. `processed_dir`/`results_dir` overrides are additionally protected by a new cross-project lock (`.pastforward.lock`, written inside the resolved target) that detects two independent projects resolving to the same output location — separate from, and not cleared by, Snakemake's own `--unlock`. See [config/README.md](config/README.md#storing-species-data-elsewhere) and [docs/FAQ.md](docs/FAQ.md).
 
+### Bug Fixes
+
+- **SCG/feature-library rule collision**: An SCG FASTA legitimately named `scg.fasta` produced the same processed-output path as the generic feature-library rules, raising `AmbiguousRuleException` while building the DAG; the SCG rules' processed path now has one fewer directory segment so the two patterns can never collide, regardless of what a library file is named
+- **`scg_selector.execute` default**: Expected-output calculation defaulted this setting to `False`, out of sync with discovery, preview logging, and the docs (all default `True`) — a config that correctly omitted the key would silently skip SCG auto-determination and all of `reveal_module`. Now defaults to `True` as documented
+- **DeDup logging**: `dedup_deduplicate_bam_cluster` declared a `log:` file but the shell command never wrote to it; dedup's output is now redirected there
+
+### CI / Maintenance
+
+- `snakemake --lint` backlog fully resolved (zero findings): added missing `log:` directives to 79 rules, missing `conda:` environments to 25 rules, migrated 9 long `run:` blocks into `script:` files, fixed absolute-path false positives, and split mixed rules/functions across 21 files into a new `workflow/rules/common.smk`; a (currently disabled, pending re-enable) `lint.yml` CI workflow was added to keep this clean going forward
+- Applied `snakefmt` formatting across all `.smk` files
+- Added a fast pure-Python regression test suite (`tests/test_file_manager.py`, `tests/test_expected_output_manager.py`, `tests/test_endogenous_reads_stats.py`) covering discovery and DAG-target logic without needing Snakemake or conda
+- New CI workflow stamps a `<base-version>-dev.<timestamp>+<sha>` version on every push to `develop`, so unreleased test runs can be traced to a commit
+- Setup docs (`README.md`, `config/README.md`, `docs/FAQ.md`) rewritten as a step-by-step guide for non-technical users, with REVEAL and ECMSD linked as the tools behind core analyses and REVEAL input file placement (feature library, SCG) documented
+
 ## [2.0.0]
 
 > ⚠️ NOTE: This release restructures the pipeline's configuration and output layout, renames all four pipeline stages for naming consistency, and replaces the vendored `teplotter` scripts with the standalone [REVEAL](https://github.com/SarahSaadain/REVEAL) toolkit. Existing configs and output directories will need to be updated/reorganized to match.
