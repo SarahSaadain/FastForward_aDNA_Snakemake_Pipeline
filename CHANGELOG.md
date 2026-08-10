@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-08-10
+
 ### New Features
 
 - **Configurable species data locations**: New optional per-species `config.yaml` settings (`species_dir`, `reads_dir`, `reference_dir`, `scg_dir`, `feature_library_dir`, `competition_dir`, `processed_dir`, `results_dir`) let a species' data live outside the project directory instead of the fixed `<species>/{input,processed,results}` layout. pastForward resolves these into symlinks at the conventional locations at startup, so all existing rules/scripts keep working unchanged; when none are set, behavior is identical to before. `processed_dir`/`results_dir` overrides are additionally protected by a new cross-project lock (`.pastforward.lock`, written inside the resolved target) that detects two independent projects resolving to the same output location — separate from, and not cleared by, Snakemake's own `--unlock`. See [config/README.md](config/README.md#storing-species-data-elsewhere) and [docs/FAQ.md](docs/FAQ.md).
