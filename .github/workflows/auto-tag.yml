@@ -30,14 +30,33 @@ jobs:
           VERSION=${TAG#v}
           sed -i "s/__version__ = .*/__version__ = \"$VERSION\"/" workflow/scripts/version.py
 
-      - name: Commit version.py back to main
+      - name: Update CHANGELOG.md
+        if: steps.tag.outputs.new_tag != ''
+        run: |
+          VERSION=${{ steps.tag.outputs.new_version }}
+          DATE=$(date -u +%Y-%m-%d)
+          if grep -q "^## \[Unreleased\]" CHANGELOG.md; then
+            awk -v version="$VERSION" -v date="$DATE" '
+              /^## \[Unreleased\]/ && !done {
+                print "## [Unreleased]"
+                print ""
+                print "## [" version "] - " date
+                done = 1
+                next
+              }
+              { print }
+            ' CHANGELOG.md > CHANGELOG.md.tmp
+            mv CHANGELOG.md.tmp CHANGELOG.md
+          fi
+
+      - name: Commit version.py and CHANGELOG.md back to main
         if: steps.tag.outputs.new_tag != ''
         run: |
           git config user.name "${{ github.event.head_commit.author.name }}"
           git config user.email "${{ github.event.head_commit.author.email }}"
-          
-          git add workflow/scripts/version.py
-          git commit -m "chore: sync version.py to ${{ steps.tag.outputs.new_tag }} [skip ci]" || true
+
+          git add workflow/scripts/version.py CHANGELOG.md
+          git commit -m "chore: sync version.py and CHANGELOG.md to ${{ steps.tag.outputs.new_tag }} [skip ci]" || true
           git push origin HEAD:main
 
       - name: Create GitHub Release

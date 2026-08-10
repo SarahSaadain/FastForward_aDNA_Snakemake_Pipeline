@@ -2,7 +2,16 @@
 
 # pastForward - A pipeline for ancient and historical DNA based on Snakemake
 
-A pipeline for analyzing raw ancient and historical DNA obtained from a sequencing facility. Using Snakemake, it ensures efficient resource management and automated handling of software dependencies. It processes and generates reports on sequence quality and contamination, with checks specifically suited for ancient and historical DNA short reads, to assess whether an extraction was successful and the sample is free of major contamination. Additionally, reads are mapped and rescaled according to their damage profiles, ready for downstream analyses. It also optionally enables comparisons of key genomic features across time points, such as transposon insertions, gene copy number changes, or endosymbiont strain replacements.
+[![Snakemake](https://img.shields.io/badge/snakemake-≥9.9.0-brightgreen.svg)](https://snakemake.github.io)
+[![GitHub release](https://img.shields.io/github/v/release/SarahSaadain/aDNA_Pipeline_Snakemake)](https://github.com/SarahSaadain/aDNA_Pipeline_Snakemake/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+pastForward analyzes raw ancient and historical DNA from a sequencing facility. It checks read quality and screens for contamination, using checks suited to the short, damaged reads typically seen in ancient and historical DNA. It maps reads to a reference genome and corrects them for DNA damage, so they're ready for downstream analysis. Optionally, it can also compare key genomic features (e.g. across time points or between specimen), such as transposon insertions, gene copy number changes, or endosymbiont strain replacements.
+
+pastForward is built on [Snakemake](https://snakemake.github.io). For more information on Snakemake itself, see the [Snakemake website](https://snakemake.github.io).
+
+
+> **Note:** pastForward integrates two purpose-built tools for its core analyses: [REVEAL](https://github.com/SarahSaadain/REVEAL) for transposable element and genomic feature dynamics, and [ECMSD](https://github.com/capoony/ECMSD) for contamination screening against a curated mitochondrial database. See their READMEs for details on each tool.
 
 ## Workflow Overview
 
@@ -12,76 +21,71 @@ Below is an overview of the steps of the pipeline:
 
 For detailed information about the processing steps, see the [Process Overview](docs/process_overview.md) page. For common questions and troubleshooting, see the [FAQ](docs/FAQ.md).
 
-## Setup Overview
+## Quick Start
 
-The pastForward pipeline is implemented using Snakemake. Information about the setup as well as configuration options can be found in the [Setup Instructions](config/README.md).
+New to pastForward? Here's the whole path, start to finish. Each step links to more detail if you need it.
 
-All pipeline stages are enabled by default, so a minimal `config.yaml` with just the project name and species list is sufficient to get started. If you want to adjust any settings, open [config/config_designer.html](config/config_designer.html) in a browser — the interactive Config Designer lets you configure pipeline stages and species settings through a graphical interface and exports a ready-to-use `config.yaml`.
-
-For more information on Snakemake, see the [Snakemake website](https://snakemake.github.io).
+1. **Install Conda and Snakemake, and download pastForward.** The [Setup Guide](config/README.md) walks through this step by step.
+2. **Add your species and sequencing data.** Also covered in the [Setup Guide](config/README.md#step-4-add-your-species-and-data), including how your read files need to be named.
+3. **Create a `config.yaml` file.** Every pipeline stage is turned on by default, but can be adjusted if required. To run with default settings,only a minimal config with a project name and species list is required. If you want to adjust the config, but rather not edit a text file by hand, open [config/config_designer.html](config/config_designer.html) in your browser to create your config.
+4. **Run the pipeline.** See [Running the Pipeline](#running-the-pipeline) below for the exact command.
 
 ## Running the Pipeline
 
-The pastForward pipeline is implemented using Snakemake, a workflow management system. Snakemake ensures reproducibility and efficient execution of the pipeline.
-
-### Running the Pipeline
-
-Run `snakemake` from the **project root directory** — the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. This is *not* the `workflow/` folder itself. See [Project Structure](config/README.md#project-structure) for how a project is laid out.
+Run `snakemake` from your **project folder**, the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. See [Project Structure](config/README.md#project-structure) for what that folder should look like.
 
 ```bash
 # minimum command to run the pipeline
 #snakemake --cores <number_of_threads> --use-conda
 
 # suggested command to run the pipeline
-snakemake --cores <number_of_threads> --use-conda --keep-going --rerun-trigger mtime
+snakemake --cores <number_of_threads> --use-conda --rerun-trigger mtime
 ```
 
-Replace `<number_of_threads>` with the number of CPU threads you want to allocate for the pipeline.
+Replace `<number_of_threads>` with the number of CPU threads you want to give the pipeline.
 
-**Note:** 
-* The `--use-conda` flag enables the use of conda environments specified in the `Snakefile`.
-* The `--keep-going` flag allows the pipeline to continue even if a rule fails. Somtimes the analysis of ECMSD fails due to issues with the input data (e.g. low quality reads or low coverage). In this case, the rest of the pipeline can still be executed.
-* The number of threads can be adjusted using the `--cores` option when running Snakemake.
-* The `–rerun-trigger mtime` flag ensures that the pipeline only re-runs rules if the input files have been modified since the last run.
+**What the suggested flags do:**
 
-Other useful flags:
-* `--dryrun` or `-n` to simulate the execution of the pipeline without actually running it
-* `--configfile <path_to_config.yaml>` to specify a custom config file
-* `--rerun-incomplete` to re-run rules that failed or were cancelled in the previous run
-* `--rerun-trigger` to specify which triggers to use for rerunning rules
-  * Possible choices: code, input, mtime, params, software-env
-  * Define what triggers the rerunning of a job. By default, all triggers are used, which guarantees that results are consistent with the workflow code and configuration. If you rather prefer the traditional way of just considering file modification dates, use `–rerun-trigger mtime`.
-* `--touch` to touch output files (mark them up to date without really changing them) instead of running their commands. This is used to pretend that the rules were executed, in order to fool future invocations of snakemake. Note that this will only touch files that would otherwise be recreated by Snakemake (e.g. because their input files are newer). For enforcing a touch, combine this with –force, –forceall, or –forcerun. Note however that you lose the provenance information when the files have been created in reality. Hence, this should be used only as a last resort.
+* `--use-conda` lets Snakemake install and use the software each step needs automatically.
+* `--rerun-trigger mtime` re-runs a step only when its input files have changed since the last run, instead of pastForward's more thorough (and slower) default checks.
 
-For more information on Snakemake command-line options, see the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/executing/cli.html).
+**A few other flags you might want:**
+
+* `--dryrun` (or `-n`): show what the pipeline *would* do, without actually running anything. Use it to check if pastForward picks up all your data correctly.
+* `--configfile <path_to_config.yaml>`: use a config file other than the default.
+* `--rerun-incomplete`: pick back up rules that failed or were cancelled in a previous run.
+* `--keep-going` lets the pipeline carry on if one step fails, instead of stopping everything. This matters because the contamination-screening tool ECMSD sometimes fails on individual samples with low-quality or low-coverage data. With this flag, the rest of the pipeline still runs.
+* `--rerun-trigger <code|input|mtime|params|software-env>`: choose what counts as "changed" when deciding whether to re-run a step. By default, all of these are checked, which is the safest option. `mtime` (used above) checks only file modification times, which is faster but less thorough.
+
+For the full list of Snakemake's command-line options, see the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/executing/cli.html).
 
 ### Running the Pipeline in the Background
 
-Depending on the size of the data, it may take some time to complete the pipeline. Thus it is recommended to run the pipeline in the background. You can do this by running the following command:
+Large datasets can take a while to process, so it's often best to run pastForward in the background. That way it keeps running even if you close your terminal window:
 
 ```bash
 nohup snakemake --cores 40 --use-conda --keep-going --rerun-trigger mtime > pipeline.log 2>&1 &
 ```
 
+This starts the pipeline and sends all its output to a file called `pipeline.log`. Check progress any time with `tail -f pipeline.log`.
+
 ### Restarting the Pipeline
 
-Snakemake automatically tracks the state of the pipeline and will only re-run steps that are incomplete or outdated. If you want to restart the pipeline from the beginning, you can delete the relevant output files and re-run the pipeline.
+Snakemake keeps track of what's already been done and only re-runs steps that are missing or out of date. To start completely over, delete the relevant `result` and `processed` folders and run the pipeline again.
 
-If you want to restart the pipeline, because it has crashed or was terminated, you might need to use the `--rerun-incomplete` flag. This will re-run all incomplete steps, even if they have not been modified since the last run.
+If the pipeline crashed or was stopped partway through, add `--rerun-incomplete` when you restart it. This re-runs any step that was left unfinished, even if its files look unchanged since the last run.
 
 ### Running on an HPC Cluster
 
-pastForward is a plain Snakemake workflow, so it should in principle work with Snakemake's [cluster/HPC execution support](https://snakemake.readthedocs.io/en/stable/executing/cluster.html) (e.g. Slurm, PBS) via the corresponding [executor plugins](https://snakemake.github.io/snakemake-plugin-catalog/), without any changes to the pipeline itself. This has not yet been specifically tested with pastForward — testing on a Slurm-based HPC cluster is planned. If you try it yourself, feedback is very welcome.
+pastForward is a standard Snakemake workflow, so it should work with Snakemake's [cluster/HPC execution support](https://snakemake.readthedocs.io/en/stable/executing/cluster.html) (for example, Slurm or PBS) via the matching [executor plugin](https://snakemake.github.io/snakemake-plugin-catalog/), with no changes to the pipeline itself. This hasn't been specifically tested yet on a Slurm-based cluster, though that's planned. If you try it, feedback is very welcome.
 
 ## Reports
 
 pastForward generates a MultiQC report for:
-- each species (including all samples from this species, to compare the results across all samples)
-   - **Location**: `{species}/results/summary/species_level/{species}_multiqc.overall.html`
 
-- each individual sample
-   - **Location**: `{species}/results/summary/individual_level/{individual}_multiqc.html`
+* **Each species** (all samples from that species together, so you can compare results across them)
+  * Location: `{species}/results/summary_module/species_level/{species}_multiqc.overall.html`
+* **Each individual sample**
+  * Location: `{species}/results/summary_module/individual_level/{individual}_multiqc.html`
 
-The reports include a comprehensive summary of reads before and after trimming, contamination analysis, coverage analysis, deduplication and damage rescaling. The reports are essential for assessing the quality of the sequenced reads and for making decisions about the need of additional library preparation.
-
-By leveraging the AI functionality in the MultiQC reports, you can also use AI to interpret the results of the pipeline.
+These reports summarize reads before and after trimming, contamination analysis, coverage, deduplication, and damage rescaling. Use them to judge the quality of your sequenced reads and decide whether a sample needs additional library preparation.

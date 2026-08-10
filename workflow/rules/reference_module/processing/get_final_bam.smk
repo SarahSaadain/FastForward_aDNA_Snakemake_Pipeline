@@ -6,9 +6,19 @@
 # (filter_unmapped_reads.smk, analytics rules, etc.).
 ####################################################
 
-if config.get("pipeline", {}).get("reference_module", {}).get("damage_rescaling", {}).get("execute", True):
+if (
+    config.get("pipeline", {})
+    .get("reference_module", {})
+    .get("damage_rescaling", {})
+    .get("execute", True)
+):
     _pre_filter_bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped_rescaled.bam"
-elif config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True):
+elif (
+    config.get("pipeline", {})
+    .get("reference_module", {})
+    .get("deduplication", {})
+    .get("execute", True)
+):
     _pre_filter_bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted_dedupped.bam"
 else:
     _pre_filter_bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_sorted.bam"
@@ -18,42 +28,61 @@ else:
 ####################################################
 
 _filter_remove = (
-    config.get("pipeline", {}).get("reference_module", {}).get("filter_unmapped_reads", {}).get("execute", False)
-    and config.get("pipeline", {}).get("reference_module", {}).get("filter_unmapped_reads", {}).get("settings", {}).get("action", "remove") == "remove"
+    config.get("pipeline", {})
+    .get("reference_module", {})
+    .get("filter_unmapped_reads", {})
+    .get("execute", False)
+    and config.get("pipeline", {})
+    .get("reference_module", {})
+    .get("filter_unmapped_reads", {})
+    .get("settings", {})
+    .get("action", "remove")
+    == "remove"
 )
 
 if _filter_remove:
+
     # When unmapped reads are removed, get_final_bam copies from the mapped-only
     # intermediate produced by filter_mapped_only_bam + index_mapped_only_bam.
     rule get_final_bam:
         input:
-            bam = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam",
-            bai = "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam.bai"
+            bam="{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam",
+            bai="{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_mapped_only.bam.bai",
         output:
-            bam = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
-            bai = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai"
+            bam="{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
+            bai="{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai",
+        log:
+            "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.log",
+        conda:
+            "../../../envs/python_and_r.yaml"
         message:
             "Getting final (mapped-only) BAM for {wildcards.individual} of {wildcards.species}."
         shell:
             # Use copy so the mapped-only intermediate is still available for any
             # other rule that depends on it; temp() handles deletion afterwards.
             """
-            echo "Copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}..."
-            echo "Input bam: {input.bam}"
-            echo "Output bam: {output.bam}"
-            cp "{input.bam}" "{output.bam}"
-            cp "{input.bai}" "{output.bai}"
-            echo "Done copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}."
+            echo "Copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}..." >"{log}" 2>&1
+            echo "Input bam: {input.bam}" >>"{log}" 2>&1
+            echo "Output bam: {output.bam}" >>"{log}" 2>&1
+            cp "{input.bam}" "{output.bam}" >>"{log}" 2>&1
+            cp "{input.bai}" "{output.bai}" >>"{log}" 2>&1
+            echo "Done copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}." >>"{log}" 2>&1
             """
+
 else:
+
     # Default: copy directly from the last processing-step BAM (_pre_filter_bam).
     rule get_final_bam:
         input:
-            bam = _pre_filter_bam,
-            bai = _pre_filter_bam + ".bai"
+            bam=_pre_filter_bam,
+            bai=f"{_pre_filter_bam}.bai",
         output:
-            bam = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
-            bai = "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai"
+            bam="{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam",
+            bai="{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.bam.bai",
+        log:
+            "{species}/results/reference_module/{reference}/mapped/{individual}_{reference}_final.log",
+        conda:
+            "../../../envs/python_and_r.yaml"
         message:
             "Getting final bam for {wildcards.individual} of {wildcards.species}."
         shell:
@@ -64,10 +93,10 @@ else:
             # By using copy, we ensure that the input bam is still available for other rules that need it.
             # The input bam will be deleted at the end of the pipeline when the intermediate files are cleaned up.
             """
-            echo "Copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}..."
-            echo "Input bam: {input.bam}"
-            echo "Output bam: {output.bam}"
-            cp "{input.bam}" "{output.bam}"
-            cp "{input.bai}" "{output.bai}"
-            echo "Done copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}."
+            echo "Copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}..." >"{log}" 2>&1
+            echo "Input bam: {input.bam}" >>"{log}" 2>&1
+            echo "Output bam: {output.bam}" >>"{log}" 2>&1
+            cp "{input.bam}" "{output.bam}" >>"{log}" 2>&1
+            cp "{input.bai}" "{output.bai}" >>"{log}" 2>&1
+            echo "Done copying final bam and bai for {wildcards.individual} mapped to {wildcards.reference}." >>"{log}" 2>&1
             """

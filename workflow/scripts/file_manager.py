@@ -115,7 +115,7 @@ def _discover_uncompressed_fastq_files_for_species(species: str) -> list[str]:
 
 # -----------------------------------------------------------------------------------------------
 # Regex matching the "read number" marker in a raw read filename: either the conventional
-# "R1"/"R2" token, or a bare "1"/"2" that stands alone as its own segment - bounded by
+# R1/R2 token, or a bare 1/2 that stands alone as its own segment - bounded by
 # underscores (e.g. "..._1_001.fastq.gz") or immediately preceding the extension
 # (e.g. "..._1.fastq.gz" or "..._1.fq.gz"). The lookahead boundary keeps a bare digit from
 # matching inside a longer number, e.g. "_10_" or "_21.fastq.gz" are correctly ignored.
@@ -393,7 +393,7 @@ def get_samples_for_species_individual(species, individual):
     samples = _discover_all_sample_ids_for_species(species)
 
     # Currently, a sample is everything before the first read-number marker (see READ_MARKER_RE)
-    # in the filename, e.g. "_R1"/"_R2" or a standalone "_1"/"_2".
+    # in the filename, e.g. _R1/_R2 or a standalone _1/_2.
     # The first part of the sample name (before the first "_") is considered the individual ID.
     # The sample might contain additional information after the individual ID, 
     # but we only want to match the samples with the individual ID at the start of the sample name.

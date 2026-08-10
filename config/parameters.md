@@ -235,5 +235,15 @@ Each entry under `species:` in the config corresponds to a species folder in the
 | `feature_libraries` | *(all discovered)* | Optional list of feature library IDs to use for the REVEAL stage. Same ID format as `references`. If omitted, all libraries in `{species}/input/reveal_module/feature_library/` are used. An error is raised if any listed ID is not found on disk. |
 | `lineage` | — | Required for SCG auto-determination. BUSCO lineage name (e.g. `drosophilidae_odb12`). Browse available lineages at [busco.ezlab.org](https://busco.ezlab.org/). |
 | `scg_reference` | auto-detect | Explicit path to the reference FASTA used by BUSCO. Required when multiple FASTAs exist in `{species}/input/reference_module/`; auto-detected and logged when exactly one is present. |
+| `species_dir` | *(none — data stays in-project)* | Optional: point the whole species root at a location outside the project. Must contain the same `input/{read_module,reference_module,reveal_module/{scg,feature_library,competition}}`, `processed/`, `results/` layout as a normal species folder. Sets the default target for every setting below; each can still be overridden individually. See [README.md](README.md#storing-species-data-elsewhere). |
+| `reads_dir` | *(none)* | Optional: override the location of `{species}/input/read_module/`. |
+| `reference_dir` | *(none)* | Optional: override the location of `{species}/input/reference_module/`. |
+| `scg_dir` | *(none)* | Optional: override the location of `{species}/input/reveal_module/scg/`. |
+| `feature_library_dir` | *(none)* | Optional: override the location of `{species}/input/reveal_module/feature_library/`. |
+| `competition_dir` | *(none)* | Optional: override the location of `{species}/input/reveal_module/competition/`. |
+| `processed_dir` | *(none)* | Optional: override the location of `{species}/processed/`. Protected by a cross-project lock — see [FAQ.md](../docs/FAQ.md). |
+| `results_dir` | *(none)* | Optional: override the location of `{species}/results/`. Protected by a cross-project lock — see [FAQ.md](../docs/FAQ.md). |
 
 When `individuals`, `references`, or `feature_libraries` are specified, the startup preview logs which items were found but not selected under **"ignored"** entries. This makes it easy to verify your selection before a full run.
+
+For `species_dir`/`reads_dir`/`reference_dir`/`scg_dir`/`feature_library_dir`/`competition_dir`/`processed_dir`/`results_dir`, resolution order per setting is: an explicit setting > a path derived from `species_dir` > today's in-project default. If none of these are set for a species, behavior is unchanged from before this feature existed.
