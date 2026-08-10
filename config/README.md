@@ -1,6 +1,6 @@
 # Setup Guide
 
-This guide walks through everything you need to set up and configure pastForward. It assumes no prior experience with the command line or bioinformatics tools.
+This guide walks through everything you need to set up and configure pastForward.
 
 ## What You'll Need
 
@@ -9,15 +9,10 @@ pastForward runs on two free tools:
 * **Conda** installs and manages all the other software the pipeline needs. You don't install anything else by hand.
 * **Snakemake** runs the pipeline itself. Version **9.9.0** or newer is required. pastForward checks this automatically at startup and stops with a clear message if your version is too old.
 
-You'll also need a **terminal** (also called a "command line" or "shell"). This is a text window where you type commands instead of clicking buttons. Every computer has one:
-
-* **macOS**: open the "Terminal" app. You can find it by pressing Cmd+Space and typing "Terminal".
-* **Windows**: after installing conda (Step 1 below), use the "Anaconda Prompt" that comes with it.
-* **Linux**: open your distribution's terminal app.
 
 ## Step 1: Install Conda
 
-If you don't already have conda, download and install [Miniforge](https://github.com/conda-forge/miniforge). It's a small, free installer for conda. Follow the instructions on that page for your operating system.
+If you don't already have conda, download and install it [Miniforge](https://github.com/conda-forge/miniforge). Follow the instructions for your operating system.
 
 ## Step 2: Install Snakemake
 
@@ -33,7 +28,7 @@ What each line does:
 
 1. Creates a separate, self-contained space called `snakemake` and installs Snakemake into it. You only need to do this once.
 2. Switches your terminal into that space. Run this line every time you open a new terminal window, before using pastForward.
-3. Checks that the install worked. You should see a page of help text print out.
+3. Checks that the install worked. You should see the helppage print out.
 
 For more installation options, see the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
 
@@ -77,7 +72,7 @@ To add a new species:
 
 #### Providing Your Data
 
-The simplest option: drop your raw read files and reference genome anywhere inside the `<species>` folder. The first time you run pastForward, it automatically finds them there. This shortcut only works for reads and the reference genome — REVEAL input files (feature library, and optionally SCG) must go in their specific folders below, not just anywhere in `<species>`.
+The simplest option: drop your raw read files and reference genome inside the `<species>` folder. The first time you run pastForward, it automatically finds them there. This shortcut only works for reads and the reference genome — REVEAL input files (feature library, and optionally SCG) must go in their specific folders below, not just anywhere in `<species>`.
 
 Put your files here:
 
@@ -120,27 +115,26 @@ species:
 At startup, pastForward creates a shortcut (symlink) at the usual in-project location (e.g. `Dmel/input/read_module`) pointing at your configured target, so every part of the pipeline keeps working normally. A few things to know:
 
 * This happens automatically, once per run, before pastForward looks for any input files.
-* It's safe to run more than once. Nothing bad happens if you run pastForward again with the same config.
 * If something already exists at the usual location (a real folder, or a shortcut to somewhere else), pastForward will stop and show an error instead of overwriting it. Fix the config, or move/remove the conflicting folder, then try again.
 * `processed_dir` and `results_dir` are additionally protected against two different projects accidentally writing to the same place at the same time. See [FAQ.md](../docs/FAQ.md) if you run into a lock error.
 
 #### What Gets Created Automatically
 
-You don't need to create any folders beyond your species folder. Everything else is created for you as the pipeline runs:
+You don't need to create any folders beyond your species folder. Everything else is created as the pipeline runs:
 
-* `<species>/processed/` holds files created while the pipeline is working. Most are deleted automatically once they're no longer needed. Some are kept so the pipeline can pick up from a failed step without starting over.
+* `<species>/processed/` holds files created while the pipeline is working. Most are temporary files and are deleted automatically once they're no longer needed. Some are kept so the pipeline can pick up from a failed step without starting over.
 * `<species>/results/` holds your final results and reports. This is what you'll actually look at.
 
-Everything related to one reference genome is grouped under a `<reference>` folder inside `processed/` or `results/`. For most purposes, only `results/` matters. If you need more detail, the `processed/` folder usually has it. A couple of large intermediate file types (`.sam` and unsorted `.bam` files) are always deleted to save disk space. If you ever need to redo a step, just delete its output files and re-run pastForward.
+Everything related to a reference is grouped under a `<reference>` folder inside `processed/` or `results/`. For most purposes, only `results/` matters. If you need more detail, the `processed/` folder usually has it. A couple of large intermediate file types (`.sam` and unsorted `.bam` files) are always deleted to save disk space. If you ever need to redo a step, just delete its output files and re-run pastForward.
 
 #### Naming Your Read Files
 
 pastForward needs your raw read filenames to follow one consistent pattern, so it can tell which files belong to which sample and which read pair they are. A few correct examples:
 
 ```text
-Dmel01_DabneyProtocol_R1_001.fastq.gz
-Dmel01_DabneyProtocol_1_001.fastq.gz
-Dmel01_DabneyProtocol_R1_001.fq.gz
+Dmel01_DabneyProtocol_R1_006.fastq.gz
+Dmel01_DabneyProtocol_1.fastq.gz
+Dmel01_DabneyProtocol_R1.fq.gz
 ```
 
 The pattern, piece by piece:
@@ -158,7 +152,7 @@ The pattern, piece by piece:
 
 `config.yaml` tells pastForward which species to process and which pipeline options to use.
 
-**If you're not comfortable editing text files by hand**, open [config_designer.html](config_designer.html) in your web browser. This interactive tool walks you through every option with a graphical interface and generates a ready-to-use `config.yaml` for you. No code required.
+**If you don't want to change the config in the terminal*, open [config_designer.html](config_designer.html) in your web browser. This interactive tool walks you through every option with a graphical interface and generates a ready-to-use `config.yaml` for you. No code required.
 
 If you'd rather write it yourself, every pipeline stage is turned on by default, so a minimal config only needs a project name and species list:
 

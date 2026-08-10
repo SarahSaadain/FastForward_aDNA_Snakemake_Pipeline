@@ -6,7 +6,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/SarahSaadain/aDNA_Pipeline_Snakemake)](https://github.com/SarahSaadain/aDNA_Pipeline_Snakemake/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-pastForward analyzes raw ancient and historical DNA from a sequencing facility. It checks read quality and screens for contamination, using checks suited to the short, damaged reads typical of ancient and historical DNA, so you can tell whether an extraction worked and the sample is free of major contamination. It then maps reads to a reference genome and corrects them for DNA damage, so they're ready for downstream analysis. Optionally, it can also compare key genomic features across time points, such as transposon insertions, gene copy number changes, or endosymbiont strain replacements.
+pastForward analyzes raw ancient and historical DNA from a sequencing facility. It checks read quality and screens for contamination, using checks suited to the short, damaged reads typical of ancient and historical DNA, so you can tell whether an extraction worked and the sample is free of major contamination. It maps reads to a reference genome and corrects them for DNA damage, so they're ready for downstream analysis. Optionally, it can also compare key genomic features across time points, such as transposon insertions, gene copy number changes, or endosymbiont strain replacements.
 
 It's built on [Snakemake](https://snakemake.github.io), a workflow tool that automatically installs the right software versions and only re-runs the steps that actually need it.
 
@@ -24,8 +24,8 @@ For detailed information about the processing steps, see the [Process Overview](
 
 New to pastForward? Here's the whole path, start to finish. Each step links to more detail if you need it.
 
-1. **Install Conda and Snakemake, and download pastForward.** The [Setup Guide](config/README.md) walks through this step by step, even if you've never used a terminal before.
-2. **Add your species and sequencing data.** Also covered in the [Setup Guide](config/README.md#step-4-add-your-species-and-data), including exactly how your read files need to be named.
+1. **Install Conda and Snakemake, and download pastForward.** The [Setup Guide](config/README.md) walks through this step by step.
+2. **Add your species and sequencing data.** Also covered in the [Setup Guide](config/README.md#step-4-add-your-species-and-data), including how the read files need to be named.
 3. **Create a `config.yaml` file.** Every pipeline stage is turned on by default, so a minimal config just needs a project name and species list. If you'd rather not edit a text file by hand, open [config/config_designer.html](config/config_designer.html) in your browser and fill in a form instead.
 4. **Run the pipeline.** See [Running the Pipeline](#running-the-pipeline) below for the exact command.
 
