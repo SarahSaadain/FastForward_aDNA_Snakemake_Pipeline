@@ -389,3 +389,21 @@ Yes. Delete the corresponding output files (or use `--forcerun`) and re-run past
 
 **Q: How do I know what version of pastForward code was used for a run?**
 Each run logs a full provenance record to pastForward log, including the git commit hash, Snakemake and Python versions, platform details, and the full configuration that was loaded.
+
+**Q: Centrifuge fails to build its conda environment on my Mac. Why?**
+This is a known limitation of the Centrifuge bioconda package, not a config issue. Bioconda ships Centrifuge builds for `linux-64`, `linux-aarch64`, and `osx-64` (Intel), but not `osx-arm64`. On Apple Silicon Macs, conda defaults to `osx-arm64`, so it can never find the package.
+
+Workaround: force conda to resolve Intel (`osx-64`) packages and let macOS run them through Rosetta 2.
+
+1. Install Rosetta 2 if you haven't already:
+   ```bash
+   softwareupdate --install-rosetta --agree-to-license
+   ```
+2. Before running the pipeline, tell conda to use the Intel subdir:
+   ```bash
+   export CONDA_SUBDIR=osx-64
+   ```
+   This applies to every conda environment Snakemake creates in that shell session, not just Centrifuge's, so the whole pipeline runs under Rosetta emulation for that run.
+3. If a Centrifuge env was already partially created under `osx-arm64`, clear it out first by removing the `.snakemake` folder in the project directory, then re-run with `--use-conda` as usual.
+
+Alternatively, if Centrifuge isn't required for your analysis, disable it in the config instead (`pipeline.read_module.contamination.settings.centrifuge.execute: false` — see `config/parameters.md`).
