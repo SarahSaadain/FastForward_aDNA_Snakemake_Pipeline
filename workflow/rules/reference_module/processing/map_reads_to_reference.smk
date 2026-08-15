@@ -26,7 +26,7 @@ if _ref_mapper == "minimap2":
     rule map_reads_to_reference_minimap2:
         input:
             query=["{species}/results/read_module/reads_merged/{individual}.fastq.gz"],
-            target="{species}/input/reference_module/{reference}.mmi",
+            target="{species}/processed/reference_module/{reference}/reference/{reference}.mmi",
         output:
             temp(
                 "{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}_unsorted.bam"
@@ -47,7 +47,7 @@ elif _ref_mapper == "bwa-aln":
         input:
             fastq="{species}/results/read_module/reads_merged/{individual}.fastq.gz",
             idx=multiext(
-                "{species}/input/reference_module/{reference}.fa",
+                "{species}/processed/reference_module/{reference}/reference/{reference}.fa",
                 ".amb",
                 ".ann",
                 ".bwt",
@@ -71,7 +71,7 @@ elif _ref_mapper == "bwa-aln":
             fastq="{species}/results/read_module/reads_merged/{individual}.fastq.gz",
             sai="{species}/processed/reference_module/{reference}/mapped/{individual}_{reference}.sai",
             idx=multiext(
-                "{species}/input/reference_module/{reference}.fa",
+                "{species}/processed/reference_module/{reference}/reference/{reference}.fa",
                 ".amb",
                 ".ann",
                 ".bwt",
@@ -94,7 +94,7 @@ else:
         input:
             reads=["{species}/results/read_module/reads_merged/{individual}.fastq.gz"],
             idx=multiext(
-                "{species}/input/reference_module/{reference}.fa",
+                "{species}/processed/reference_module/{reference}/reference/{reference}.fa",
                 ".0123",
                 ".amb",
                 ".ann",

@@ -11,16 +11,16 @@ _ref_mapper = (
 
 
 rule standardize_reference_extension_to_fa:
+    input:
+        ref=_standardize_reference_extension_to_fa_ref_path,
     output:
-        fa="{species}/input/reference_module/{reference}.fa",
+        fa="{species}/processed/reference_module/{reference}/reference/{reference}.fa",
     log:
-        "{species}/input/reference_module/{reference}_standardize.log",
+        "{species}/processed/reference_module/{reference}/reference/{reference}_standardize.log",
     conda:
         "../../../envs/python_and_r.yaml"
-    params:
-        ref_path=_standardize_reference_extension_to_fa_ref_path,
     message:
-        "Ensuring reference {wildcards.reference} for {wildcards.species} is standardized to .fa"
+        "Linking reference {wildcards.reference} for {wildcards.species} into processed/ as .fa (input/ is never modified)"
     script:
         "../../../scripts/reference_module/processing/standardize_reference_extension_to_fa.py"
 
@@ -29,9 +29,9 @@ if _ref_mapper == "minimap2":
 
     rule index_reference_for_mapping_minimap2:
         input:
-            target="{species}/input/reference_module/{reference}.fa",
+            target="{species}/processed/reference_module/{reference}/reference/{reference}.fa",
         output:
-            "{species}/input/reference_module/{reference}.mmi",
+            "{species}/processed/reference_module/{reference}/reference/{reference}.mmi",
         log:
             "{species}/processed/reference_module/{reference}/index/{reference}_minimap2_index.log",
         cache: True
@@ -47,10 +47,10 @@ elif _ref_mapper == "bwa-aln":
     # bwa-aln
     rule index_reference_for_mapping_bwa_aln:
         input:
-            "{species}/input/reference_module/{reference}.fa",
+            "{species}/processed/reference_module/{reference}/reference/{reference}.fa",
         output:
             multiext(
-                "{species}/input/reference_module/{reference}.fa",
+                "{species}/processed/reference_module/{reference}/reference/{reference}.fa",
                 ".amb",
                 ".ann",
                 ".bwt",
@@ -71,10 +71,10 @@ else:
 
     rule index_reference_for_mapping_bwa_mem2:
         input:
-            "{species}/input/reference_module/{reference}.fa",
+            "{species}/processed/reference_module/{reference}/reference/{reference}.fa",
         output:
             multiext(
-                "{species}/input/reference_module/{reference}.fa",
+                "{species}/processed/reference_module/{reference}/reference/{reference}.fa",
                 ".0123",
                 ".amb",
                 ".ann",
@@ -94,11 +94,11 @@ else:
 
 rule index_reference_with_samtools:
     input:
-        "{species}/input/reference_module/{reference}.fa",
+        "{species}/processed/reference_module/{reference}/reference/{reference}.fa",
     output:
-        "{species}/input/reference_module/{reference}.fa.fai",
+        "{species}/processed/reference_module/{reference}/reference/{reference}.fa.fai",
     log:
-        "{species}/input/reference_module/{reference}.fa.fai.log",
+        "{species}/processed/reference_module/{reference}/reference/{reference}.fa.fai.log",
     params:
         extra="",
     wrapper:
