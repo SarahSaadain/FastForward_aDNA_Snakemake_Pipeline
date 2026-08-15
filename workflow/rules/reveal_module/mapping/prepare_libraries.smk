@@ -29,8 +29,12 @@ rule clean_feature_library_name:
     message:
         "Preparing TE library for {wildcards.species}"
     shell:
+        # -s/--no-symlinks keeps this lexical (only "." / ".." are resolved, no symlink is
+        # followed/flattened) so the link survives the whole pastForward project folder being
+        # moved or renamed - it only breaks if the actual target (e.g. a configured
+        # feature_library_dir) is itself moved.
         """
-        ln -sf "$(realpath "{input}")" "{output}" >"{log}" 2>&1
+        ln -sf "$(realpath -s --relative-to="$(dirname "{output}")" "{input}")" "{output}" >"{log}" 2>&1
         """
 
 
@@ -72,8 +76,9 @@ rule clean_scg_library_name:
     message:
         "Preparing SCG library for {wildcards.species}"
     shell:
+        # -s/--no-symlinks: see clean_feature_library_name above.
         """
-        ln -sf "$(realpath "{input}")" "{output}" >"{log}" 2>&1
+        ln -sf "$(realpath -s --relative-to="$(dirname "{output}")" "{input}")" "{output}" >"{log}" 2>&1
         """
 
 
