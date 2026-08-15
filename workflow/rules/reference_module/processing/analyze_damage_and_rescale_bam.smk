@@ -15,7 +15,7 @@ rule analyze_mapdamage_and_rescale_bam:
             == True
             else f"{wildcards.species}/processed/reference_module/{wildcards.reference}/mapped/{wildcards.individual}_{wildcards.reference}_sorted.bam"
         ),
-        ref="{species}/input/reference_module/{reference}.fa",
+        ref="{species}/processed/reference_module/{reference}/reference/{reference}.fa",
     output:
         directory=directory(
             "{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/mapdamage/"

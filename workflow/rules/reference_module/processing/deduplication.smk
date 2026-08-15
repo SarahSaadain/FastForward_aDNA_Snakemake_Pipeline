@@ -7,7 +7,7 @@
 # Rule: Extract contigs as BED (full-length intervals) from reference FAI
 rule dedup_extract_contigs_from_reference_fai:
     input:
-        fai="{species}/input/reference_module/{reference}.fa.fai",
+        fai="{species}/processed/reference_module/{reference}/reference/{reference}.fa.fai",
     output:
         bed=temp(
             "{species}/processed/reference_module/{reference}/dedup_cluster/contigs.bed"
