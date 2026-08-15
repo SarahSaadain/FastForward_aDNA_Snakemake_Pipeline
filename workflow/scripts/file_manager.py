@@ -2,7 +2,9 @@
 import os
 import glob
 import re
-from venv import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Raised when the config requests individuals or references that do not exist on disk.
 # Unlike generic discovery failures, these must not be silently caught.
@@ -30,6 +32,15 @@ def get_files_in_folder_matching_pattern(folder: str, pattern: str) -> list:
         raise Exception(f"Invalid folder: {folder}")
     # Read all files matching the pattern into a list
     files = glob.glob(os.path.join(folder, pattern))
+    return files
+
+# -----------------------------------------------------------------------------------------------
+# Get all FASTA-like files (.fna, .fasta, .fa) in a folder. Used wherever a reference/feature
+# library/SCG/competition folder is scanned for its sequence files.
+def _get_fasta_files_in_folder(folder: str) -> list:
+    files = []
+    for pattern in ("*.fna", "*.fasta", "*.fa"):
+        files += get_files_in_folder_matching_pattern(folder, pattern)
     return files
 
 # -----------------------------------------------------------------------------------------------
@@ -319,14 +330,10 @@ def _discover_all_reference_file_list_for_species(species: str) -> list[tuple[st
     reference_folder = f"{species}/input/reference_module"
     try:
         logger.debug(f"Looking for reference files in {reference_folder} for species {species}.")
-        reference_files = get_files_in_folder_matching_pattern(reference_folder, "*.fna")
-        reference_files += get_files_in_folder_matching_pattern(reference_folder, "*.fasta")
-        reference_files += get_files_in_folder_matching_pattern(reference_folder, "*.fa")
+        reference_files = _get_fasta_files_in_folder(reference_folder)
     except Exception:
         logger.debug(f"Reference folder not found for species {species}. Trying species folder directly.")
-        reference_files = get_files_in_folder_matching_pattern(species_folder, "*.fna")
-        reference_files += get_files_in_folder_matching_pattern(species_folder, "*.fasta")
-        reference_files += get_files_in_folder_matching_pattern(species_folder, "*.fa")
+        reference_files = _get_fasta_files_in_folder(species_folder)
 
     if len(reference_files) == 0:
         raise Exception(f"No reference found for species {species}.")
@@ -419,9 +426,7 @@ def _discover_all_feature_library_file_list_for_species(species: str) -> list[tu
     library_files = []
     try:
         logger.debug(f"Looking for feature library files in {feature_library_folder} for species {species}.")
-        library_files = get_files_in_folder_matching_pattern(feature_library_folder, "*.fna")
-        library_files += get_files_in_folder_matching_pattern(feature_library_folder, "*.fasta")
-        library_files += get_files_in_folder_matching_pattern(feature_library_folder, "*.fa")
+        library_files = _get_fasta_files_in_folder(feature_library_folder)
     except Exception as e:
         logger.warning(f"Failed to find feature library files in {feature_library_folder} for species {species}. Exception: {e}")
 
@@ -484,9 +489,7 @@ def get_scg_library_file_list_for_species(species: str) -> list[tuple[str, str]]
         # Collect all supported reference files
         logger.debug(f"Looking for SCG library files in {scg_library_folder} for species {species}.")
 
-        library_files = get_files_in_folder_matching_pattern(scg_library_folder, "*.fna")
-        library_files += get_files_in_folder_matching_pattern(scg_library_folder, "*.fasta")
-        library_files += get_files_in_folder_matching_pattern(scg_library_folder, "*.fa")
+        library_files = _get_fasta_files_in_folder(scg_library_folder)
     except Exception as e:
         logger.debug(f"Failed to find SCG library files in {scg_library_folder} for species {species}. Exception: {e}")
 
@@ -606,9 +609,7 @@ def get_competition_fasta_for_species(species):
     files = []
     try:
         logger.debug(f"Looking for competition FASTA in {competition_folder} for species {species}.")
-        files = get_files_in_folder_matching_pattern(competition_folder, "*.fna")
-        files += get_files_in_folder_matching_pattern(competition_folder, "*.fasta")
-        files += get_files_in_folder_matching_pattern(competition_folder, "*.fa")
+        files = _get_fasta_files_in_folder(competition_folder)
     except Exception as e:
         logger.debug(f"No competition folder found for species {species}: {e}")
         return None

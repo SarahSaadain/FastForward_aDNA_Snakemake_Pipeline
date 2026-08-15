@@ -1277,9 +1277,9 @@
               <div class="field">
                 <label>Individual plots</label>
                 <select id="viz_individual_plots" onchange="render()">
-                  <option value="plot" selected>plot &mdash; generate plotables and render plots</option>
+                  <option value="plot">plot &mdash; generate plotables and render plots</option>
                   <option value="plotable_only">plotable_only &mdash; generate plotables, skip rendering</option>
-                  <option value="skip">skip &mdash; skip plotables and plots</option>
+                  <option value="skip" selected>skip &mdash; skip plotables and plots</option>
                 </select>
               </div>
               <div class="field">
@@ -1986,7 +1986,7 @@ function populateForm(c) {
   const norms = (reveal.normalization||{}).settings||{};
   sb('viz_exec',  (reveal.visualization||{}).execute);                     dot('viz_exec','d_viz');
   const svs = (reveal.visualization||{}).settings||{};
-  sv('viz_individual_plots', svs.individual_plots || 'plot');
+  sv('viz_individual_plots', svs.individual_plots || 'skip');
   sv('viz_comparison_plots', svs.comparison_plots || 'plot');
   sv('viz_log_thresh_ind',  svs.y_axis_log_scale_threshold_individual != null ? svs.y_axis_log_scale_threshold_individual : 25);
   sv('viz_log_thresh_sp',   svs.y_axis_log_scale_threshold_species    != null ? svs.y_axis_log_scale_threshold_species    : 25);
@@ -2062,7 +2062,7 @@ function resetDefaults() {
         analysis: { execute: true, settings: { coverage_analysis: true, snp_analysis: false, indel_analysis: false } },
         sequence_overview: { settings: { mapping_quality_threshold: 5, minimum_count_snp: 5, minimum_frequency_snp: 0.1, minimum_count_indel: 3, minimum_frequency_indel: 0.01 } },
         normalization: { settings: { end_distance: 100, exclude_quantile: 25 } },
-        visualization: { execute: true, settings: { individual_plots: 'plot', comparison_plots: 'plot', y_axis_log_scale_threshold_individual: 25, y_axis_log_scale_threshold_species: 25, visualization_bin_size: 'target:5000' } }
+        visualization: { execute: true, settings: { individual_plots: 'skip', comparison_plots: 'plot', y_axis_log_scale_threshold_individual: 25, y_axis_log_scale_threshold_species: 25, visualization_bin_size: 'target:5000' } }
       },
       summary_module: { execute: true, settings: { individual_multiqc: true, species_multiqc: true } }
     },

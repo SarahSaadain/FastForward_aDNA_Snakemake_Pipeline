@@ -288,10 +288,10 @@ pipeline:
       settings:
         # Controls plotting for individual-level REVEAL visualization output.
         # Options:
-        #   "plot"          — generate plotables AND render plots (Default)
+        #   "plot"          — generate plotables AND render plots
         #   "plotable_only" — generate plotables only, skip rendering plots
-        #   "skip"          — skip both plotables and plots
-        individual_plots: "plot"
+        #   "skip"          — skip both plotables and plots (Default)
+        individual_plots: "skip"
         # Controls plotting for species-level (comparison) REVEAL visualization output.
         # Options:
         #   "plot"          — generate plotables AND render the facet comparison plot (Default)

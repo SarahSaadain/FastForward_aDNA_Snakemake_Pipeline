@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **`visualization.settings.individual_plots` default**: Now defaults to `skip` (was `plot`) — per-individual REVEAL plot rendering is off by default; set explicitly in `config.yaml` to re-enable
+
+### CI / Maintenance
+
+- **`file_manager.py` logger**: Was importing `logger` from the stdlib `venv` module (an internal implementation detail, not a public API) instead of creating its own; now uses `logging.getLogger(__name__)`. No behavior change today, but the old import was one Python version away from breaking
+- Removed dead commented-out code (copy-pasted across `common.smk` and one `expected_output` script) and unused imports
+- Consolidated duplicated FASTA-glob discovery logic in `file_manager.py` (reference/feature-library/SCG/competition lookups) into a shared helper
+- De-duplicated repeated nested config lookups in `get_expected_output_reference_module` and `get_expected_output_multiqc`
+
 ## [2.0.1] - 2026-08-10
 
 ### New Features

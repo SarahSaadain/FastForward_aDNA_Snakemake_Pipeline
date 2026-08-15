@@ -237,9 +237,6 @@ def create_multiqc_bam_individual_input(wildcards):
             f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt"
         )
 
-    # if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
-    #     file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json")
-
     return file_list
 
 
@@ -734,9 +731,6 @@ def create_multiqc_species_individual_input(wildcards):
                     f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt"
                 )
 
-            # if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
-            #     file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json")
-
     logger.debug(f"MultiQC input files for species {species}: {file_list}")
 
     return file_list
@@ -902,9 +896,6 @@ def create_multiqc_species_input(wildcards):
                     file_list.append(
                         f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt"
                     )
-
-                # if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
-                #     file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json")
 
     logger.debug(f"MultiQC input files for species {species}: {file_list}")
 

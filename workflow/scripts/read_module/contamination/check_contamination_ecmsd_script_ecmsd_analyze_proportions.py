@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import pandas as pd
-import os
 
 # Snakemake input/output/params
 proportions_file = snakemake.input[0]        # Proportions file

@@ -1,4 +1,3 @@
-import os
 import sys
 
 def combine_endogenous_files(individual_files, combined_file_path):
