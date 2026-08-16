@@ -68,15 +68,16 @@ rule filter_top_scgs:
         """
 
 
-# The filtered FASTA stays in processed/ — it feeds into the REVEAL prepare_libraries pipeline
+# The filtered FASTA is a primary output the user cares about, goes to results/ —
+# it also feeds into the REVEAL prepare_libraries pipeline
 rule filter_scg_fasta:
     input:
         fasta="{species}/processed/reveal_module/scg/{species}_scg_library.fasta",
         id_list="{species}/processed/reveal_module/scg/{species}_relevant_scg.txt",
     output:
-        filtered="{species}/processed/reveal_module/scg/{species}_relevant_scg.fasta",
+        filtered="{species}/results/reveal_module/scg/{species}_relevant_scg.fasta",
     log:
-        "{species}/processed/reveal_module/scg/{species}_relevant_scg_fasta.log",
+        "{species}/results/reveal_module/scg/{species}_relevant_scg_fasta.log",
     conda:
         "../../../envs/python_and_r.yaml"
     message:

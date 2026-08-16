@@ -138,6 +138,6 @@ score = score_breadth + score_depth_variation + score_depth_consistency
 |---|---|
 | `{species}/results/reveal_module/scg/{species}_scg_ranked.tsv` | Full ranked table with all scoring components; `mean_depth_ratio` column is the per-individual-normalised depth (1.0 = expected SCG level) |
 | `{species}/results/reveal_module/scg/{species}_scg_ranked.json` | Detailed JSON with per-individual raw stats, per-individual baselines, depth ratios, and scoring breakdown; `global_stats.individual_baselines` records each sample's normalisation baseline |
-| `{species}/processed/reveal_module/scg/{species}_relevant_scg.fasta` | Top-ranked SCG sequences passed to the REVEAL mapping step |
+| `{species}/results/reveal_module/scg/{species}_relevant_scg.fasta` | Top-ranked SCG sequences passed to the REVEAL mapping step |
 | `{species}/processed/reveal_module/scg/{species}_relevant_scg.txt` | Plain list of retained SCG IDs |
 | `{species}/processed/reveal_module/scg/{species}_relevant_scg.bed` | BED file of retained SCG regions |

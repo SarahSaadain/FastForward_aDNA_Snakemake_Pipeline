@@ -269,7 +269,7 @@ class TestScgDiscovery(FileManagerTestCase):
         self.assertEqual(fm.get_effective_scg_library_id_for_species("Dmel"), "Dmel_determined_scg")
         self.assertEqual(
             fm.get_effective_scg_library_path_for_species("Dmel"),
-            "Dmel/processed/reveal_module/scg/Dmel_relevant_scg.fasta",
+            "Dmel/results/reveal_module/scg/Dmel_relevant_scg.fasta",
         )
 
 

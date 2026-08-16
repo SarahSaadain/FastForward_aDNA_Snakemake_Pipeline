@@ -631,7 +631,7 @@ def get_effective_scg_library_path_for_species(species):
     user_scgs = get_scg_library_file_list_for_species(species)
     if user_scgs:
         return user_scgs[0][1]
-    return f"{species}/processed/reveal_module/scg/{species}_relevant_scg.fasta"
+    return f"{species}/results/reveal_module/scg/{species}_relevant_scg.fasta"
 
 # -----------------------------------------------------------------------------------------------
 # Get the competition FASTA file for a species from {species}/input/reveal_module/competition/.

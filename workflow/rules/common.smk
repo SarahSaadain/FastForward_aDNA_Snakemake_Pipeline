@@ -526,7 +526,16 @@ def clean_scg_library_name_input(wildcards):
     # Fall back to auto-determined SCG output
     auto_id = get_effective_scg_library_id_for_species(species)
     if scg_library == auto_id:
-        return f"{species}/processed/reveal_module/scg/{species}_relevant_scg.fasta"
+        auto_path = f"{species}/results/reveal_module/scg/{species}_relevant_scg.fasta"
+        if os.path.exists(auto_path):
+            logger.info(
+                f"Found SCG library from a previous run for {species} at {auto_path}, reusing it."
+            )
+        else:
+            logger.info(
+                f"No SCG library found for {species}, it will be auto-determined."
+            )
+        return auto_path
 
     raise ValueError(
         f"No SCG library file could be determined for species {species} and library {scg_library}."

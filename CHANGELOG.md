@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- **Auto-determined SCG library output path**: `{species}_relevant_scg.fasta` (the filtered FASTA used by the REVEAL mapping step) now lands in `{species}/results/reveal_module/scg/` instead of `processed/` — it's a primary output, not an intermediate. `{species}_relevant_scg.txt`/`.bed` stay in `processed/`. Existing SCG-selector logging also now states whether a previously-generated SCG library was found and reused, versus one being freshly auto-determined
 - **`visualization.settings.individual_plots` default**: Now defaults to `skip` (was `plot`) — per-individual REVEAL plot rendering is off by default; set explicitly in `config.yaml` to re-enable
 
 ### CI / Maintenance
