@@ -7,6 +7,79 @@
 
 project_name: "pastForward_Project"
 
+# Species-specific settings
+species:
+  # Settings for the demo species
+  demo:
+    # Whether to process this species (Default: true).
+    # Set to false to skip all pipeline stages for this species without removing it from the config.
+    execute: true
+
+    # Name of the species
+    name: "Dmel Demo"
+
+    # BUSCO lineage database name (required for SCG auto-determination, only
+    # relevant when pipeline.reveal_module.scg_selector.execute is true AND no
+    # user-provided SCG file exists in {species}/input/reveal_module/scg/).
+    # Find available lineages at https://busco.ezlab.org/
+    # Example: "drosophilidae_odb12", "diptera_odb10", "insecta_odb10"
+    lineage: "drosophilidae_odb12"
+    # Optional: exact path to the reference genome to use for SCG determination.
+    # Required when multiple FASTA files exist in {species}/input/reference_module/.
+    # If omitted and exactly one reference is present, it is used automatically
+    # and an info message is written to the log.
+    #scg_reference: "/path/to/reference.fasta"
+
+    # Optional: store this species' data outside the project directory (see
+    # config/README.md#storing-species-data-elsewhere). If none of the settings below
+    # are set, data must live in-project exactly as documented in config/README.md.
+    #
+    # Whole-species root; must mirror the input/{read_module,reference_module,
+    # reveal_module/{scg,feature_library,competition}}, processed/, results/ layout.
+    # Sets the default target for every override below.
+    #species_dir: "/mnt/big_disk/pastforward_data/demo"
+    # Optional: override just {species}/input/read_module/
+    #reads_dir: "/mnt/big_disk/pastforward_data/demo/input/read_module"
+    # Optional: override just {species}/input/reference_module/
+    #reference_dir: "/mnt/big_disk/pastforward_data/demo/input/reference_module"
+    # Optional: override just {species}/input/reveal_module/scg/
+    #scg_dir: "/mnt/big_disk/pastforward_data/demo/input/reveal_module/scg"
+    # Optional: override just {species}/input/reveal_module/feature_library/
+    #feature_library_dir: "/mnt/big_disk/pastforward_data/demo/input/reveal_module/feature_library"
+    # Optional: override just {species}/input/reveal_module/competition/
+    #competition_dir: "/mnt/big_disk/pastforward_data/demo/input/reveal_module/competition"
+    # Optional: override just {species}/processed/ (protected by a cross-project lock; see FAQ.md)
+    #processed_dir: "/scratch/pastforward_processed/demo"
+    # Optional: override just {species}/results/ (protected by a cross-project lock; see FAQ.md)
+    #results_dir: "/scratch/pastforward_results/demo"
+
+    # Optional: restrict which individuals to process for this species.
+    # If omitted, all individuals discovered in {species}/input/read_module/ are used.
+    # Each entry must match the individual ID extracted from read filenames
+    # (the part before the first "_", e.g. "IND001" from "IND001_L001_R1.fastq.gz").
+    # An error is raised if any listed ID is not found on disk.
+    #individuals:
+    #  - IND001
+    #  - IND002
+
+    # Optional: restrict which reference genomes to use for this species.
+    # If omitted, all references discovered in {species}/input/reference_module/ are used.
+    # Each entry must match the reference ID derived from the filename:
+    # basename without extension, dots replaced by underscores
+    # (e.g. "genome.fna" → "genome", "EquCab3.0.fna" → "EquCab3_0").
+    # An error is raised if any listed ID is not found on disk.
+    #references:
+    #  - genome
+
+    # Optional: restrict which feature libraries to use for this species.
+    # If omitted, all libraries discovered in {species}/input/reveal_module/feature_library/ are used.
+    # Each entry must match the library ID derived from the filename:
+    # basename without extension, dots replaced by underscores
+    # (e.g. "genes.fna" → "genes", "my.lib.fna" → "my_lib").
+    # An error is raised if any listed ID is not found on disk.
+    #feature_libraries:
+    #  - genes
+
 # Pipeline stages and their configurations
 pipeline:
 
@@ -332,76 +405,3 @@ pipeline:
       individual_multiqc: true
       # When true, generate a per-species MultiQC summary report (Default: true)
       species_multiqc: true
-
-# Species-specific settings
-species:
-  # Settings for the demo species
-  demo:
-    # Whether to process this species (Default: true).
-    # Set to false to skip all pipeline stages for this species without removing it from the config.
-    execute: true
-
-    # Name of the species
-    name: "Dmel Demo"
-
-    # BUSCO lineage database name (required for SCG auto-determination, only
-    # relevant when pipeline.reveal_module.scg_selector.execute is true AND no
-    # user-provided SCG file exists in {species}/input/reveal_module/scg/).
-    # Find available lineages at https://busco.ezlab.org/
-    # Example: "drosophilidae_odb12", "diptera_odb10", "insecta_odb10"
-    lineage: "drosophilidae_odb12"
-    # Optional: exact path to the reference genome to use for SCG determination.
-    # Required when multiple FASTA files exist in {species}/input/reference_module/.
-    # If omitted and exactly one reference is present, it is used automatically
-    # and an info message is written to the log.
-    #scg_reference: "/path/to/reference.fasta"
-
-    # Optional: store this species' data outside the project directory (see
-    # config/README.md#storing-species-data-elsewhere). If none of the settings below
-    # are set, data must live in-project exactly as documented in config/README.md.
-    #
-    # Whole-species root; must mirror the input/{read_module,reference_module,
-    # reveal_module/{scg,feature_library,competition}}, processed/, results/ layout.
-    # Sets the default target for every override below.
-    #species_dir: "/mnt/big_disk/pastforward_data/demo"
-    # Optional: override just {species}/input/read_module/
-    #reads_dir: "/mnt/big_disk/pastforward_data/demo/input/read_module"
-    # Optional: override just {species}/input/reference_module/
-    #reference_dir: "/mnt/big_disk/pastforward_data/demo/input/reference_module"
-    # Optional: override just {species}/input/reveal_module/scg/
-    #scg_dir: "/mnt/big_disk/pastforward_data/demo/input/reveal_module/scg"
-    # Optional: override just {species}/input/reveal_module/feature_library/
-    #feature_library_dir: "/mnt/big_disk/pastforward_data/demo/input/reveal_module/feature_library"
-    # Optional: override just {species}/input/reveal_module/competition/
-    #competition_dir: "/mnt/big_disk/pastforward_data/demo/input/reveal_module/competition"
-    # Optional: override just {species}/processed/ (protected by a cross-project lock; see FAQ.md)
-    #processed_dir: "/scratch/pastforward_processed/demo"
-    # Optional: override just {species}/results/ (protected by a cross-project lock; see FAQ.md)
-    #results_dir: "/scratch/pastforward_results/demo"
-
-    # Optional: restrict which individuals to process for this species.
-    # If omitted, all individuals discovered in {species}/input/read_module/ are used.
-    # Each entry must match the individual ID extracted from read filenames
-    # (the part before the first "_", e.g. "IND001" from "IND001_L001_R1.fastq.gz").
-    # An error is raised if any listed ID is not found on disk.
-    #individuals:
-    #  - IND001
-    #  - IND002
-
-    # Optional: restrict which reference genomes to use for this species.
-    # If omitted, all references discovered in {species}/input/reference_module/ are used.
-    # Each entry must match the reference ID derived from the filename:
-    # basename without extension, dots replaced by underscores
-    # (e.g. "genome.fna" → "genome", "EquCab3.0.fna" → "EquCab3_0").
-    # An error is raised if any listed ID is not found on disk.
-    #references:
-    #  - genome
-
-    # Optional: restrict which feature libraries to use for this species.
-    # If omitted, all libraries discovered in {species}/input/reveal_module/feature_library/ are used.
-    # Each entry must match the library ID derived from the filename:
-    # basename without extension, dots replaced by underscores
-    # (e.g. "genes.fna" → "genes", "my.lib.fna" → "my_lib").
-    # An error is raised if any listed ID is not found on disk.
-    #feature_libraries:
-    #  - genes
