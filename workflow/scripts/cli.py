@@ -39,6 +39,7 @@ JOB_START_RE = re.compile(r"^(?:local)?(?:rule|checkpoint) (\S+):$", re.MULTILIN
 JOBID_RE = re.compile(r"^\s*jobid:\s*(\d+)", re.MULTILINE)
 JOB_FINISHED_RE = re.compile(r"Finished jobid:\s*(\d+)")
 DETECTED_SPECIES_RE = re.compile(r"^\[.*?Detected species", re.MULTILINE)
+ABORTING_RE = re.compile(r"Will exit after finishing currently running jobs \(scheduler\)\.")
 
 
 RED, GREEN, YELLOW, CYAN, DIM = 31, 32, 33, 36, 90
@@ -48,6 +49,36 @@ def _color(code, text):
     if not sys.stdout.isatty() or os.environ.get("NO_COLOR"):
         return text
     return f"\033[{code}m{text}\033[0m"
+
+
+# Line-level highlighting for raw snakemake/check output. First matching pattern wins.
+# Applied to the terminal copy only - the log file on disk always stays plain text so the
+# regexes elsewhere in this file (PROGRESS_RE, JOB_START_RE, ...) keep working on it.
+SNAKEMAKE_LINE_RULES = [
+    (ABORTING_RE, YELLOW),
+    (re.compile(r"error", re.IGNORECASE), RED),
+    (re.compile(r"^WARNING"), YELLOW),
+    (re.compile(r"^Finished jobid:"), GREEN),
+    (re.compile(r"^\d+ of \d+ steps \([\d.]+%\) done$"), YELLOW),
+    (re.compile(r"^(?:local)?(?:rule|checkpoint) \S+:\s*$"), CYAN),
+    (re.compile(r"^Nothing to be done"), DIM),
+]
+
+CHECK_LINE_RULES = [
+    (re.compile(r"error|missing", re.IGNORECASE), RED),
+    (re.compile(r"warning", re.IGNORECASE), YELLOW),
+    (re.compile(r"\[SKIPPED|ignored \(\d+\)|\(none found\)|not found\)|\(none provided", re.IGNORECASE), DIM),
+    (re.compile(r"^- .+\[.+\]\s*$"), CYAN),
+    (re.compile(r"^    [A-Za-z].*:\s*$|^    [A-Za-z].*\(\d+\):$"), CYAN),
+]
+
+
+def _colorize(line, rules):
+    body = line.rstrip("\n")
+    for pattern, code in rules:
+        if pattern.search(body):
+            return _color(code, body) + ("\n" if line.endswith("\n") else "")
+    return line
 
 
 def _die(msg):
@@ -92,7 +123,7 @@ def _run_foreground(cmd, log_path):
     with open(log_path, "w") as logf:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
         for line in proc.stdout:
-            sys.stdout.write(line)
+            sys.stdout.write(_colorize(line, SNAKEMAKE_LINE_RULES))
             logf.write(line)
         return proc.wait()
 
@@ -210,6 +241,9 @@ def cmd_status(argv):
         return
     text = log_path.read_text(errors="replace")
 
+    if alive and ABORTING_RE.search(text):
+        print(_color(YELLOW, "Aborting:   will exit after finishing currently running jobs (scheduler)."))
+
     progress = None
     for progress in PROGRESS_RE.finditer(text):
         pass
@@ -273,7 +307,7 @@ def cmd_check(argv):
             block.append(line)
         else:
             break
-    print("\n".join(block).strip())
+    print("\n".join(_colorize(line, CHECK_LINE_RULES) for line in "\n".join(block).strip().splitlines()))
 
 
 def cmd_preview(argv):
@@ -312,7 +346,8 @@ def cmd_print_log(argv):
         _die("pastForward: no log files found in logs/.")
     latest = logs[-1]
     print(_color(DIM, f"$ cat {latest}"))
-    sys.stdout.write(latest.read_text(errors="replace"))
+    for line in latest.read_text(errors="replace").splitlines(keepends=True):
+        sys.stdout.write(_colorize(line, SNAKEMAKE_LINE_RULES))
 
 
 def cmd_version(argv):
