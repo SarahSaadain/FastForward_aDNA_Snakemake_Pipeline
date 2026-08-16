@@ -46,6 +46,19 @@ class BuildCmdTestCase(unittest.TestCase):
         self.assertEqual(cmd, ["snakemake", "--dryrun", "-j", "8"])
 
 
+class StatusHelpersTestCase(unittest.TestCase):
+    def test_format_duration(self):
+        self.assertEqual(cli._format_duration(5), "5s")
+        self.assertEqual(cli._format_duration(65), "1m 5s")
+        self.assertEqual(cli._format_duration(3661), "1h 1m 1s")
+        self.assertEqual(cli._format_duration(90000), "1d 1h 0m 0s")
+
+    def test_cores_from_cmd(self):
+        self.assertEqual(cli._cores_from_cmd(["snakemake", "--use-conda", "--cores", "8", "--forceall"]), "8")
+        self.assertEqual(cli._cores_from_cmd(["snakemake", "-j", "all"]), "all")
+        self.assertIsNone(cli._cores_from_cmd(["snakemake"]))
+
+
 class ArgvValidationTestCase(unittest.TestCase):
     """Argument checks that must fail fast, before any subprocess is spawned: `run` (unlike
     `dryrun`) never guesses a thread count, and `check`/`preview` never take snakemake

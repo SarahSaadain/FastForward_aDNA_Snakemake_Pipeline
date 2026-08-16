@@ -170,12 +170,37 @@ def _parse_last_steps(text, n=5):
     return steps[-n:]
 
 
+def _format_duration(seconds):
+    minutes, seconds = divmod(int(seconds), 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    parts = [f"{days}d"] if days else []
+    if days or hours:
+        parts.append(f"{hours}h")
+    if days or hours or minutes:
+        parts.append(f"{minutes}m")
+    parts.append(f"{seconds}s")
+    return " ".join(parts)
+
+
+def _cores_from_cmd(cmd):
+    for i, a in enumerate(cmd):
+        if a in CORES_FLAGS and i + 1 < len(cmd):
+            return cmd[i + 1]
+    return None
+
+
 def cmd_status(argv):
     state = _read_state()
     pid = state["pid"]
     alive = _is_alive(pid)
+    started = datetime.fromisoformat(state["started_at"])
+    runtime = _format_duration((datetime.now() - started).total_seconds())
+    cores = _cores_from_cmd(state["cmd"]) or "?"
     print(f"{_color(CYAN, 'PID:')}       {pid} ({_color(GREEN, 'running') if alive else _color(RED, 'not running')})")
     print(f"{_color(CYAN, 'Started:')}   {state['started_at']}")
+    print(f"{_color(CYAN, 'Runtime:')}   {runtime}")
+    print(f"{_color(CYAN, 'Cores:')}     {cores}")
     print(f"{_color(CYAN, 'Log:')}       {state['log_file']}")
 
     log_path = Path(state["log_file"])
