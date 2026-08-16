@@ -125,22 +125,40 @@ def _discover_uncompressed_fastq_files_for_species(species: str) -> list[str]:
     return files
 
 # -----------------------------------------------------------------------------------------------
-# Regex matching the "read number" marker in a raw read filename: either the conventional
-# R1/R2 token, or a bare 1/2 that stands alone as its own segment - bounded by
-# underscores (e.g. "..._1_001.fastq.gz") or immediately preceding the extension
-# (e.g. "..._1.fastq.gz" or "..._1.fq.gz"). The lookahead boundary keeps a bare digit from
-# matching inside a longer number, e.g. "_10_" or "_21.fastq.gz" are correctly ignored.
+# Regexes matching the "read number" marker in a raw read filename: the conventional R1/R2
+# token, or a bare 1/2 that stands alone as its own segment - bounded by underscores
+# (e.g. "..._1_001.fastq.gz") or immediately preceding the extension (e.g. "..._1.fastq.gz").
+# The lookahead boundary keeps a bare digit from matching inside a longer number, e.g.
+# "_10_" or "_21.fastq.gz" are correctly ignored. Kept as two separate regexes (R-form vs.
+# bare-form) rather than one combined pattern so the R-form can be preferred outright - sample
+# names here often carry a bare replicate/box number (e.g. "..._B_1_box-1-22_R1.fastq.gz"),
+# which must not be mistaken for the read marker when an explicit R1/R2 token exists.
 _EXT_ALTERNATION = "|".join(re.escape(ext) for ext in RAW_READ_EXTENSIONS)
-READ_MARKER_RE = {
-    "1": re.compile(rf"_(?:R1|1)(?=_|(?:{_EXT_ALTERNATION})$)"),
-    "2": re.compile(rf"_(?:R2|2)(?=_|(?:{_EXT_ALTERNATION})$)"),
+_READ_R_MARKER_RE = {
+    "1": re.compile(rf"_R1(?=_|(?:{_EXT_ALTERNATION})$)"),
+    "2": re.compile(rf"_R2(?=_|(?:{_EXT_ALTERNATION})$)"),
+}
+_READ_BARE_MARKER_RE = {
+    "1": re.compile(rf"_1(?=_|(?:{_EXT_ALTERNATION})$)"),
+    "2": re.compile(rf"_2(?=_|(?:{_EXT_ALTERNATION})$)"),
 }
 
 # -----------------------------------------------------------------------------------------------
-# Find the read-number marker (see READ_MARKER_RE) in a filename.
+# Find the read-number marker in a filename. Prefers an explicit R1/R2 token; only falls back
+# to a bare 1/2 segment if no R-token is present. Raises ValueError if either form occurs more
+# than once, since the marker position would then be ambiguous rather than just guessable.
 # Returns the match object, or None if the filename has no marker for that read number.
 def _find_read_marker(filename: str, read_num: str):
-    return READ_MARKER_RE[read_num].search(filename)
+    r_matches = list(_READ_R_MARKER_RE[read_num].finditer(filename))
+    if len(r_matches) > 1:
+        raise ValueError(f"File '{filename}' has multiple R{read_num} markers; cannot determine read number unambiguously.")
+    if r_matches:
+        return r_matches[0]
+
+    bare_matches = list(_READ_BARE_MARKER_RE[read_num].finditer(filename))
+    if len(bare_matches) > 1:
+        raise ValueError(f"File '{filename}' has multiple standalone '{read_num}' markers; cannot determine read number unambiguously.")
+    return bare_matches[0] if bare_matches else None
 
 # -----------------------------------------------------------------------------------------------
 # (internal) Discover all R1 raw read files from disk without applying any config filter
@@ -166,7 +184,7 @@ def _discover_all_r1_read_files_for_species(species: str) -> list[str]:
 
 # -----------------------------------------------------------------------------------------------
 # (internal) Discover raw read files on disk that don't match the naming convention (i.e. have
-# no recognizable R1/R2 or standalone 1/2 marker per READ_MARKER_RE) and are therefore ignored
+# no recognizable R1/R2 or standalone 1/2 marker per _READ_R_MARKER_RE/_READ_BARE_MARKER_RE) and are therefore ignored
 # by the pipeline instead of being paired into a sample's reads.
 def _discover_unmatched_read_files_for_species(species: str) -> list[str]:
     try:
@@ -234,7 +252,7 @@ def get_sample_ids_for_species(species):
 
 # -----------------------------------------------------------------------------------------------
 # (internal) Filter read_files down to those belonging to `sample` for the given read number,
-# i.e. files where the read marker (see READ_MARKER_RE) is immediately preceded by `sample`.
+# i.e. files where the read marker (see _READ_R_MARKER_RE/_READ_BARE_MARKER_RE) is immediately preceded by `sample`.
 def _read_files_for_sample(read_files, sample, read_num):
     matches = []
     for f in read_files:
@@ -258,17 +276,32 @@ def get_raw_reads_for_sample(species, sample):
     if not candidates_r1:
         logger.warning(f"No R1 found for {sample}. Expected pattern: {sample}_R1* or {sample}_1*, with extension {' or '.join(RAW_READ_EXTENSIONS)}, in {reads_dir}. Found files: {read_files}")
         raise FileNotFoundError(f"No R1 found for {sample}. Expected pattern: {sample}_R1* or {sample}_1*, with extension {' or '.join(RAW_READ_EXTENSIONS)}, in {reads_dir}. Found files: {read_files}")
+    if len(candidates_r1) > 1:
+        # Silently picking one (e.g. via sorted()[0]) would mean two different physical
+        # files - almost certainly two different specimens/libraries - get merged into one
+        # sample, with the other one silently dropped.
+        raise ValueError(
+            f"Sample {sample} has more than one R1 candidate, cannot pick unambiguously: {sorted(candidates_r1)}. "
+            f"Rename these files so each individual/library has a distinct sample prefix "
+            f"(e.g. append the box/replicate number to the individual ID) and re-run."
+        )
 
-    r1 = os.path.join(reads_dir, sorted(candidates_r1)[0])
+    r1 = os.path.join(reads_dir, candidates_r1[0])
 
     # R2
     candidates_r2 = _read_files_for_sample(read_files, sample, "2")
 
-    if candidates_r2:
-        r2 = os.path.join(reads_dir, sorted(candidates_r2)[0])
-        return [r1, r2]  # Paired-end
-    else:
+    if not candidates_r2:
         return [r1]      # Single-end
+    if len(candidates_r2) > 1:
+        raise ValueError(
+            f"Sample {sample} has more than one R2 candidate, cannot pick unambiguously: {sorted(candidates_r2)}. "
+            f"Rename these files so each individual/library has a distinct sample prefix "
+            f"(e.g. append the box/replicate number to the individual ID) and re-run."
+        )
+
+    r2 = os.path.join(reads_dir, candidates_r2[0])
+    return [r1, r2]  # Paired-end
 
 # -----------------------------------------------------------------------------------------------
 # Given the path to a read 1 file, return the path its read 2 counterpart would have
@@ -399,7 +432,7 @@ def get_samples_for_species_individual(species, individual):
     # (but unselected) individual into an error.
     samples = _discover_all_sample_ids_for_species(species)
 
-    # Currently, a sample is everything before the first read-number marker (see READ_MARKER_RE)
+    # Currently, a sample is everything before the first read-number marker (see _READ_R_MARKER_RE/_READ_BARE_MARKER_RE)
     # in the filename, e.g. _R1/_R2 or a standalone _1/_2.
     # The first part of the sample name (before the first "_") is considered the individual ID.
     # The sample might contain additional information after the individual ID, 
