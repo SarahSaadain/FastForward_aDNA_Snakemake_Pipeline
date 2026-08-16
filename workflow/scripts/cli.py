@@ -40,6 +40,7 @@ JOBID_RE = re.compile(r"^\s*jobid:\s*(\d+)", re.MULTILINE)
 JOB_FINISHED_RE = re.compile(r"Finished jobid:\s*(\d+)")
 DETECTED_SPECIES_RE = re.compile(r"^\[.*?Detected species", re.MULTILINE)
 ABORTING_RE = re.compile(r"Will exit after finishing currently running jobs \(scheduler\)\.")
+FAILED_RE = re.compile(r"At least one job did not complete successfully\.")
 
 
 RED, GREEN, YELLOW, CYAN, DIM = 31, 32, 33, 36, 90
@@ -243,6 +244,8 @@ def cmd_status(argv):
 
     if alive and ABORTING_RE.search(text):
         print(_color(YELLOW, "Aborting:   will exit after finishing currently running jobs (scheduler)."))
+    elif not alive and FAILED_RE.search(text):
+        print(_color(RED, "Failed:     at least one job did not complete successfully — see log for details."))
 
     progress = None
     for progress in PROGRESS_RE.finditer(text):
