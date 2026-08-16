@@ -135,23 +135,27 @@ class ArgvValidationTestCase(unittest.TestCase):
 
 
 class ParseLastStepsTestCase(unittest.TestCase):
-    # One finished job (id 3) and one still-running job (id 7), in start order.
+    # One finished job (id 3, a plain rule with no `message:`) and one still-running job
+    # (id 7, a wrapper rule with a `message:` directive - so it has no "rule X:"/"jobid:"
+    # block at all, only the "Rule: X, Jobid: N" line that initialize.smk's root
+    # logging.basicConfig duplicates for every job regardless of `message:`).
     LOG = """\
 [2026-08-16 10:00:00 (CEST)] [INFO] Building DAG of jobs...
+[2026-08-16 10:00:00 (CEST)] [INFO]  Rule: fastqc, Jobid: 3
 rule fastqc:
     input: reads.fastq.gz
     output: reads_fastqc.html
     jobid: 3
     reason: Missing output files
 
+[2026-08-16 10:00:05 (CEST)] [INFO] Finished jobid: 3 (Rule: fastqc)
 [2026-08-16 10:00:05 (CEST)]
 Finished jobid: 3 (Rule: fastqc)
 3 of 10 steps (30%) done
-localrule map_reads_to_reference_bwa_mem2:
-    input: reads.fastq.gz, ref.fasta
-    output: mapped.bam
-    jobid: 7
-    reason: Missing output files
+[2026-08-16 10:00:06 (CEST)] [INFO]  Rule: map_reads_to_reference_bwa_mem2, Jobid: 7
+[2026-08-16 10:00:06 (CEST)]
+Job 7: Mapping reads.fastq.gz to ref.fasta with BWA-MEM2
+Reason: Missing output files
 """
 
     def test_progress_takes_last_match(self):
@@ -161,12 +165,19 @@ localrule map_reads_to_reference_bwa_mem2:
         self.assertEqual(m.groups(), ("3", "10", "30"))
 
     def test_last_steps_status(self):
-        steps = cli._parse_last_steps(self.LOG)
-        self.assertEqual(steps, [("fastqc", "done"), ("map_reads_to_reference_bwa_mem2", "running")])
+        finished, running = cli._parse_last_steps(self.LOG)
+        self.assertEqual(finished, [("fastqc", "3")])
+        self.assertEqual(running, [("map_reads_to_reference_bwa_mem2", "7")])
 
     def test_last_steps_caps_at_n(self):
-        many = "\n".join(f"rule r{i}:\n    jobid: {i}\n" for i in range(8))
-        self.assertEqual(len(cli._parse_last_steps(many, n=5)), 5)
+        many = "\n".join(
+            f"[2026-08-16 10:00:00 (CEST)] [INFO]  Rule: r{i}, Jobid: {i}\n"
+            f"[2026-08-16 10:00:01 (CEST)] [INFO] Finished jobid: {i} (Rule: r{i})"
+            for i in range(8)
+        )
+        finished, running = cli._parse_last_steps(many, n=5)
+        self.assertEqual(len(finished), 5)
+        self.assertEqual(running, [])
 
 
 class CheckPreviewParsingTestCase(unittest.TestCase):

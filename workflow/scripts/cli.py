@@ -35,9 +35,12 @@ CORES_FLAGS = ("--cores", "-c", "-j", "--jobs")
 DEFAULT_RUN_FLAGS = [("--use-conda", None), ("--keep-going", None), ("--rerun-trigger", "mtime")]
 
 PROGRESS_RE = re.compile(r"(\d+) of (\d+) steps \(([\d.]+)%\) done")
-JOB_START_RE = re.compile(r"^(?:local)?(?:rule|checkpoint) (\S+):$", re.MULTILINE)
-JOBID_RE = re.compile(r"^\s*jobid:\s*(\d+)", re.MULTILINE)
-JOB_FINISHED_RE = re.compile(r"Finished jobid:\s*(\d+)")
+# Both lines below come from Snakemake's own per-job log records (jobs.py Job.log_info /
+# scheduling/job_scheduler.py), duplicated onto stdout by initialize.smk's root
+# logging.basicConfig - unlike the "rule X:" block Snakemake also prints, these two are
+# emitted for every job regardless of whether the rule has a `message:` directive.
+JOB_STARTED_RE = re.compile(r"^\[.*?\]\s*\[INFO\]\s+Rule:\s*(\S+),\s*Jobid:\s*(\d+)\s*$", re.MULTILINE)
+JOB_FINISHED_RE = re.compile(r"Finished jobid:\s*(\d+)\s*\(Rule:\s*(\S+)\)")
 DETECTED_SPECIES_RE = re.compile(r"^\[.*?Detected species", re.MULTILINE)
 ABORTING_RE = re.compile(r"Will exit after finishing currently running jobs \(scheduler\)\.")
 FAILED_RE = re.compile(r"At least one job did not complete successfully\.")
@@ -55,7 +58,7 @@ def _color(code, text):
 
 # Line-level highlighting for raw snakemake/check output. First matching pattern wins.
 # Applied to the terminal copy only - the log file on disk always stays plain text so the
-# regexes elsewhere in this file (PROGRESS_RE, JOB_START_RE, ...) keep working on it.
+# regexes elsewhere in this file (PROGRESS_RE, JOB_STARTED_RE, ...) keep working on it.
 SNAKEMAKE_LINE_RULES = [
     (ABORTING_RE, YELLOW),
     (re.compile(r"error", re.IGNORECASE), RED),
@@ -192,15 +195,19 @@ def _is_alive(pid):
 
 
 def _parse_last_steps(text, n=5):
-    finished_ids = set(JOB_FINISHED_RE.findall(text))
-    steps = []
-    for m in JOB_START_RE.finditer(text):
-        block = text[m.end() : m.end() + 400]
-        jm = JOBID_RE.search(block)
-        jobid = jm.group(1) if jm else None
-        status = "done" if jobid in finished_ids else "running"
-        steps.append((m.group(1), status))
-    return steps[-n:]
+    """Returns (finished, running): the last n jobs to finish (ordered by finish time) and
+    every job that has started but not finished (order irrelevant - typically several run
+    concurrently under --cores). Each entry is (rule_name, jobid)."""
+    started = {jobid: rule for rule, jobid in JOB_STARTED_RE.findall(text)}
+    # Every finish is logged twice (root-propagated line + Snakemake's own block-style line);
+    # setdefault keeps the first occurrence so ordering still reflects finish time.
+    finished_seen = {}
+    for jobid, rule in JOB_FINISHED_RE.findall(text):
+        finished_seen.setdefault(jobid, rule)
+    finished = [(rule, jobid) for jobid, rule in finished_seen.items()]
+    finished_ids = set(finished_seen)
+    running = [(rule, jobid) for jobid, rule in started.items() if jobid not in finished_ids]
+    return finished[-n:], running
 
 
 def _parse_job_errors(text, n=3):
@@ -275,11 +282,13 @@ def cmd_status(argv):
     progress_str = f"{progress.group(1)}/{progress.group(2)} steps ({progress.group(3)}%)" if progress else _color(DIM, "(not available yet)")
     print(f"{_color(CYAN, 'Progress:')}  {progress_str}")
 
-    steps = _parse_last_steps(text)
-    print(_color(CYAN, "Last steps:") if steps else _color(DIM, "Last steps: (none yet)"))
-    for rule_name, status in steps:
-        marker = _color(GREEN, "done") if status == "done" else _color(YELLOW, "running")
-        print(f"  - {rule_name} [{marker}]")
+    finished, running = _parse_last_steps(text)
+    print(_color(CYAN, "Last finished:") if finished else _color(DIM, "Last finished: (none yet)"))
+    for rule_name, jobid in finished:
+        print(f"  - {rule_name} (jobid {jobid}) [{_color(GREEN, 'done')}]")
+    print(_color(CYAN, f"Currently running ({len(running)}):") if running else _color(DIM, "Currently running: (none)"))
+    for rule_name, jobid in running:
+        print(f"  - {rule_name} (jobid {jobid})")
 
     if live:
         print(_color(DIM, f"\n$ tail -f {log_path}"))
