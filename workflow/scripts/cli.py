@@ -55,7 +55,7 @@ PROJECT_NAME_RE = re.compile(r'^project_name:\s*["\']?([^"\'\n]+?)["\']?\s*$', r
 JOB_ERROR_BLOCK_RE = re.compile(r"^Error in rule \S+:\n(?:[ \t]+.*\n?)*", re.MULTILINE)
 
 
-RED, GREEN, YELLOW, CYAN, DIM = 31, 32, 33, 36, 90
+RED, GREEN, YELLOW, CYAN, DIM, BOLD_GREEN = 31, 32, 33, 36, 90, "1;32"
 
 
 def _color(code, text):
@@ -529,34 +529,40 @@ Usage: pastForward <command> [args...]
 
 Commands:
   run --cores <N> [snakemake-args...]
-                                Run the pipeline. --cores (or -j/--jobs) is required. Backgrounded
-                                by default; add --fg/--foreground anywhere to run in the
-                                foreground instead. Refuses to start if a tracked run is still
-                                alive - `abort` it first.
+                                Run the pipeline. --cores (or -j/--jobs) is
+                                required. Backgrounded by default; add
+                                --fg/--foreground anywhere to run in the
+                                foreground instead. Refuses to start if a
+                                tracked run is still alive - `abort` it first.
   resume --cores <N> [snakemake-args...]
-                                Same as `run`, plus --rerun-incomplete - continue after a
-                                crash/kill.
-  dryrun [snakemake-args...]   Run `snakemake --dryrun` in the foreground.
-  status [--watch]              Show progress of the tracked background run: project name,
-                                 config file, PID, runtime, a progress bar, and the last/
-                                 currently running jobs. --watch reprints the formatted status
-                                 (with a short log tail) every 5s until the run ends (Ctrl-C to
-                                 stop early).
-  abort [--force]              Stop the tracked background run: SIGTERM by default (Snakemake
-                                shuts its own subprocesses down); --force kills the whole
-                                process group immediately.
-  unlock                        Run `snakemake --unlock` to clear a stale Snakemake lock left
-                                 by a crashed run.
-  check                         Show what pastForward discovers on disk for the current config
-                                 (species/individuals/references/...).
-  preview                       Show expected output files for the current config, including
-                                 skipped ones.
+                                Same as `run`, plus --rerun-incomplete -
+                                continue after a crash/kill.
+  dryrun [snakemake-args...]    Run `snakemake --dryrun` in the foreground.
+  status [--watch]              Show progress of the tracked background run:
+                                project name, config file, PID, runtime, a
+                                progress bar, and the last/currently running
+                                jobs. --watch reprints the formatted status
+                                (with a short log tail) every 5s until the run
+                                ends (Ctrl-C to stop early).
+  abort [--force]               Stop the tracked background run: SIGTERM by
+                                default (Snakemake shuts its own subprocesses
+                                down); --force kills the whole process group
+                                immediately.
+  unlock                        Run `snakemake --unlock` to clear a stale
+                                Snakemake lock left by a crashed run.
+  check                         Show what pastForward discovers on disk for
+                                the current config
+                                (species/individuals/references/...).
+  preview                       Show expected output files for the current
+                                config, including skipped ones.
   print-log [--live] [--tail [N]]
-                                Print the most recently written log from logs/. --tail shows
-                                only the last N lines (default 20) instead of the whole file.
-                                --live follows the log with `tail -f` (Ctrl-C to stop);
-                                combine with --tail to seed how many lines it starts from.
-  version                      Print the pastForward pipeline version.
+                                Print the most recently written log from
+                                logs/. --tail shows only the last N lines
+                                (default 20) instead of the whole file. --live
+                                follows the log with `tail -f` (Ctrl-C to
+                                stop); combine with --tail to seed how many
+                                lines it starts from.
+  version                       Print the pastForward pipeline version.
 
 Run from a project root: the folder containing workflow/ and config/.
 Logs for `run`/`dryrun` are written to logs/<command>_<timestamp>.log.
@@ -567,6 +573,11 @@ def _print_help():
     for line in HELP.splitlines():
         if line.startswith("pastForward") or line in ("Usage: pastForward <command> [args...]", "Commands:"):
             print(_color(CYAN, line))
+            continue
+        stripped = line[2:] if line.startswith("  ") else line
+        cmd = stripped.split(" ", 1)[0]
+        if line.startswith("  ") and cmd in COMMANDS:
+            print("  " + _color(BOLD_GREEN, cmd) + stripped[len(cmd):])
         else:
             print(line)
 
