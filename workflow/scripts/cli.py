@@ -31,6 +31,11 @@ LOG_DIR = Path("logs")
 STATE_FILE = STATE_DIR / "run_state.json"
 
 CORES_FLAGS = ("--cores", "-c", "-j", "--jobs")
+CONFIGFILE_FLAGS = ("--configfile", "--configfiles")
+DEFAULT_CONFIGFILE = "config/config.yaml"  # matches initialize.smk's `configfile:` directive
+
+DEFAULT_TAIL_LINES = 20
+WATCH_TAIL_LINES = 10
 
 # Matches CLAUDE.md's documented "real run" command.
 DEFAULT_RUN_FLAGS = [("--use-conda", None), ("--keep-going", None), ("--rerun-trigger", "mtime")]
@@ -46,6 +51,7 @@ DETECTED_SPECIES_RE = re.compile(r"^\[.*?Detected species", re.MULTILINE)
 ABORTING_RE = re.compile(r"Will exit after finishing currently running jobs \(scheduler\)\.")
 FAILED_RE = re.compile(r"At least one job did not complete successfully\.")
 LOCK_RE = re.compile(r"LockException")
+PROJECT_NAME_RE = re.compile(r'^project_name:\s*["\']?([^"\'\n]+?)["\']?\s*$', re.MULTILINE)
 JOB_ERROR_BLOCK_RE = re.compile(r"^Error in rule \S+:\n(?:[ \t]+.*\n?)*", re.MULTILINE)
 
 
@@ -259,29 +265,58 @@ def _cores_from_cmd(cmd):
     return None
 
 
+def _configfile_from_cmd(cmd):
+    for i, a in enumerate(cmd):
+        if a in CONFIGFILE_FLAGS and i + 1 < len(cmd):
+            return cmd[i + 1]
+    return DEFAULT_CONFIGFILE
+
+
+def _read_project_name(configfile):
+    try:
+        text = Path(configfile).read_text()
+    except OSError:
+        return None
+    m = PROJECT_NAME_RE.search(text)
+    return m.group(1) if m else None
+
+
+def _progress_bar(percent, width=30):
+    filled = round(width * percent / 100)
+    bar = "#" * filled + "-" * (width - filled)
+    return f"{_color(GREEN if percent >= 100 else CYAN, '[' + bar + ']')} {percent:.1f}%"
+
+
 def cmd_status(argv):
-    live = "--live" in argv
     watch = "--watch" in argv
+    rest = [a for a in argv if a != "--watch"]
+    if rest:
+        _die(
+            f"pastForward status: unknown argument(s): {' '.join(rest)}. "
+            "--live/--tail moved to `pastForward print-log`."
+        )
     if watch:
         try:
             while True:
                 os.system("clear")
-                alive = _print_status()
+                alive = _print_status(tail=WATCH_TAIL_LINES)
                 if not alive:
                     break
                 time.sleep(5)
         except KeyboardInterrupt:
             pass
         return
-    _print_status(live=live)
+    _print_status()
 
 
-def _print_status(live=False):
+def _print_status(tail=None):
     state = _read_state()
     pid = state["pid"]
     alive = _is_alive(pid)
     started = datetime.fromisoformat(state["started_at"])
     log_path = Path(state["log_file"])
+    configfile = _configfile_from_cmd(state["cmd"])
+    project_name = _read_project_name(configfile) or _color(DIM, "(unknown)")
     # Once the process has died, "now" no longer reflects its runtime - use the log file's
     # last write instead, so runtime freezes at whenever it actually stopped.
     end = datetime.now() if alive else (
@@ -289,6 +324,8 @@ def _print_status(live=False):
     )
     runtime = _format_duration((end - started).total_seconds())
     cores = _cores_from_cmd(state["cmd"]) or "?"
+    print(f"{_color(CYAN, 'Project:')}   {project_name}")
+    print(f"{_color(CYAN, 'Config:')}    {configfile}")
     print(f"{_color(CYAN, 'PID:')}       {pid} ({_color(GREEN, 'running') if alive else _color(RED, 'not running')})")
     print(f"{_color(CYAN, 'Started:')}   {state['started_at']}")
     print(f"{_color(CYAN, 'Runtime:')}   {runtime}")
@@ -304,6 +341,7 @@ def _print_status(live=False):
     for progress in PROGRESS_RE.finditer(text):
         pass
     progress_str = f"{progress.group(1)}/{progress.group(2)} steps ({progress.group(3)}%)" if progress else _color(DIM, "(not available yet)")
+    print(_progress_bar(float(progress.group(3))) if progress else _color(DIM, "[" + "-" * 30 + "] (no progress yet)"))
 
     if alive and ABORTING_RE.search(text):
         print(_color(YELLOW, "Aborting:   will exit after finishing currently running jobs (scheduler)."))
@@ -331,19 +369,17 @@ def _print_status(live=False):
     print(f"{_color(CYAN, 'Progress:')}  {progress_str}")
 
     finished, running = _parse_last_steps(text)
-    print(_color(CYAN, "Last finished:") if finished else _color(DIM, "Last finished: (none yet)"))
+    print(_color(CYAN, "Last finished jobs:") if finished else _color(DIM, "Last finished jobs: (none yet)"))
     for rule_name, jobid in finished:
         print(f"  - {rule_name} (jobid {jobid}) [{_color(GREEN, 'done')}]")
-    print(_color(CYAN, f"Currently running ({len(running)}):") if running else _color(DIM, "Currently running: (none)"))
+    print(_color(CYAN, f"Currently running jobs ({len(running)}):") if running else _color(DIM, "Currently running jobs: (none)"))
     for rule_name, jobid in running:
         print(f"  - {rule_name} (jobid {jobid})")
 
-    if live:
-        print(_color(DIM, f"\n$ tail -f {log_path}"))
-        try:
-            subprocess.run(["tail", "-f", str(log_path)])
-        except KeyboardInterrupt:
-            pass
+    if tail:
+        print(_color(DIM, f"\n--- tail -n {tail} {log_path} ---"))
+        for line in text.splitlines()[-tail:]:
+            sys.stdout.write(_colorize(line + "\n", SNAKEMAKE_LINE_RULES))
 
     return alive
 
@@ -430,16 +466,39 @@ def cmd_preview(argv):
 
 def cmd_print_log(argv):
     _ensure_project_root()
-    if argv:
-        _die("pastForward print-log: takes no arguments.")
+    live = "--live" in argv
+    rest = [a for a in argv if a != "--live"]
+    tail_n = None
+    if rest[:1] == ["--tail"]:
+        rest = rest[1:]
+        if rest[:1] and rest[0].isdigit():
+            tail_n = int(rest[0])
+            rest = rest[1:]
+        else:
+            tail_n = DEFAULT_TAIL_LINES
+    if rest:
+        _die(f"pastForward print-log: unknown argument(s): {' '.join(rest)}")
     if not LOG_DIR.is_dir():
         _die("pastForward: no logs/ directory found — run `pastForward run` or `dryrun` first.")
     logs = sorted(LOG_DIR.glob("*.log"), key=lambda p: p.stat().st_mtime)
     if not logs:
         _die("pastForward: no log files found in logs/.")
     latest = logs[-1]
+
+    if live:
+        cmd = ["tail", "-n", str(tail_n or DEFAULT_TAIL_LINES), "-f", str(latest)]
+        print(_color(DIM, f"$ {' '.join(cmd)}"))
+        try:
+            subprocess.run(cmd)
+        except KeyboardInterrupt:
+            pass
+        return
+
     print(_color(DIM, f"$ cat {latest}"))
-    for line in latest.read_text(errors="replace").splitlines(keepends=True):
+    lines = latest.read_text(errors="replace").splitlines(keepends=True)
+    if tail_n is not None:
+        lines = lines[-tail_n:]
+    for line in lines:
         sys.stdout.write(_colorize(line, SNAKEMAKE_LINE_RULES))
 
 
@@ -478,10 +537,11 @@ Commands:
                                 Same as `run`, plus --rerun-incomplete - continue after a
                                 crash/kill.
   dryrun [snakemake-args...]   Run `snakemake --dryrun` in the foreground.
-  status [--live|--watch]       Show progress of the tracked background run. --live tails the
-                                 log (Ctrl-C to stop) after printing the normal status. --watch
-                                 reprints the formatted status every 5s until the run ends
-                                 (Ctrl-C to stop early).
+  status [--watch]              Show progress of the tracked background run: project name,
+                                 config file, PID, runtime, a progress bar, and the last/
+                                 currently running jobs. --watch reprints the formatted status
+                                 (with a short log tail) every 5s until the run ends (Ctrl-C to
+                                 stop early).
   abort [--force]              Stop the tracked background run: SIGTERM by default (Snakemake
                                 shuts its own subprocesses down); --force kills the whole
                                 process group immediately.
@@ -491,7 +551,11 @@ Commands:
                                  (species/individuals/references/...).
   preview                       Show expected output files for the current config, including
                                  skipped ones.
-  print-log                    Print the most recently written log from logs/.
+  print-log [--live] [--tail [N]]
+                                Print the most recently written log from logs/. --tail shows
+                                only the last N lines (default 20) instead of the whole file.
+                                --live follows the log with `tail -f` (Ctrl-C to stop);
+                                combine with --tail to seed how many lines it starts from.
   version                      Print the pastForward pipeline version.
 
 Run from a project root: the folder containing workflow/ and config/.

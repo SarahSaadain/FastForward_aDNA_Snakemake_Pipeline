@@ -50,13 +50,14 @@ For a new project, run these in order:
 ./pastForward run --cores 40 --fg        # same, but in the foreground
 ./pastForward resume --cores 40          # like run, but also picks back up rules left incomplete by a crash/kill
 
-./pastForward status           # PID, progress %, and the last few pipeline steps of the tracked background run
-./pastForward status --live    # same, then tails the log (Ctrl-C to stop)
-./pastForward status --watch   # same, but reprints every 5s until the run ends (Ctrl-C to stop early)
+./pastForward status           # project, config, PID, progress bar, and the last few pipeline steps of the tracked background run
+./pastForward status --watch   # same, plus a log tail, reprinted every 5s until the run ends (Ctrl-C to stop early)
 ./pastForward abort            # stop it gracefully (SIGTERM; snakemake shuts down its own subprocesses)
 ./pastForward abort --force    # or kill it and everything it started, immediately
 ./pastForward unlock           # clear a stale lock left by a crashed run
 ./pastForward print-log        # print the most recently written log from logs/
+./pastForward print-log --tail 50  # only the last 50 lines (default 20)
+./pastForward print-log --live     # tail -f the log (Ctrl-C to stop)
 
 ./pastForward version          # print the pipeline version
 ```

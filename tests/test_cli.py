@@ -62,6 +62,27 @@ class StatusHelpersTestCase(unittest.TestCase):
         self.assertEqual(cli._cores_from_cmd(["snakemake", "-j", "all"]), "all")
         self.assertIsNone(cli._cores_from_cmd(["snakemake"]))
 
+    def test_configfile_from_cmd(self):
+        self.assertEqual(
+            cli._configfile_from_cmd(["snakemake", "--configfile", "other.yaml"]), "other.yaml"
+        )
+        self.assertEqual(cli._configfile_from_cmd(["snakemake", "--cores", "4"]), cli.DEFAULT_CONFIGFILE)
+
+    def test_read_project_name(self):
+        with tempfile.TemporaryDirectory() as d:
+            cfg = os.path.join(d, "config.yaml")
+            with open(cfg, "w") as f:
+                f.write('project_name: "Demo Project"\n')
+            self.assertEqual(cli._read_project_name(cfg), "Demo Project")
+            self.assertIsNone(cli._read_project_name(os.path.join(d, "missing.yaml")))
+
+    def test_progress_bar(self):
+        bar = cli._progress_bar(50.0, width=10)
+        self.assertIn("50.0%", bar)
+        self.assertIn("#####", bar)
+        full = cli._progress_bar(100.0, width=10)
+        self.assertIn("100.0%", full)
+
 
 class ArgvValidationTestCase(unittest.TestCase):
     """Argument checks that must fail fast, before any subprocess is spawned: `run` (unlike
@@ -133,9 +154,25 @@ class ArgvValidationTestCase(unittest.TestCase):
         with self.assertRaises(SystemExit):
             cli.cmd_preview(["some_target"])
 
-    def test_status_live_skips_tail_when_log_missing(self):
-        # No log file written yet: cmd_status returns before the --live tail, so no `tail -f`
-        # subprocess should be attempted.
+    def test_status_rejects_unknown_arguments(self):
+        # --live/--tail moved to `print-log` - status must reject them, not silently ignore.
+        cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
+        cli.STATE_FILE.write_text(
+            json.dumps(
+                {
+                    "pid": os.getpid(),
+                    "cmd": ["snakemake", "--cores", "4"],
+                    "log_file": str(cli.LOG_DIR / "run_missing.log"),
+                    "started_at": datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+        )
+        with self.assertRaises(SystemExit):
+            cli.cmd_status(["--live"])
+
+    def test_status_headline_shows_project_and_config(self):
+        with open(os.path.join("config", "config.yaml"), "w") as f:
+            f.write('project_name: "Demo Project"\n')
         cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
         cli.STATE_FILE.write_text(
             json.dumps(
@@ -148,8 +185,107 @@ class ArgvValidationTestCase(unittest.TestCase):
             )
         )
         with contextlib.redirect_stdout(io.StringIO()) as out:
-            cli.cmd_status(["--live"])
-        self.assertNotIn("tail -f", out.getvalue())
+            cli.cmd_status([])
+        output = out.getvalue()
+        self.assertIn("Demo Project", output)
+        self.assertIn("config/config.yaml", output)
+
+    def test_status_shows_progress_bar(self):
+        cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
+        os.makedirs(cli.LOG_DIR)
+        log_path = cli.LOG_DIR / "run_progress.log"
+        log_path.write_text("5 of 10 steps (50.0%) done\n")
+        cli.STATE_FILE.write_text(
+            json.dumps(
+                {
+                    "pid": os.getpid(),
+                    "cmd": ["snakemake", "--cores", "4"],
+                    "log_file": str(log_path),
+                    "started_at": datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+        )
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_status([])
+        output = out.getvalue()
+        self.assertIn("50.0%", output)
+        self.assertIn("[", output)
+
+    def test_status_last_finished_and_running_labels_say_jobs(self):
+        cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
+        os.makedirs(cli.LOG_DIR)
+        log_path = cli.LOG_DIR / "run_jobs.log"
+        log_path.write_text("")
+        cli.STATE_FILE.write_text(
+            json.dumps(
+                {
+                    "pid": os.getpid(),
+                    "cmd": ["snakemake", "--cores", "4"],
+                    "log_file": str(log_path),
+                    "started_at": datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+        )
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_status([])
+        output = out.getvalue()
+        self.assertIn("Last finished jobs", output)
+        self.assertIn("Currently running jobs", output)
+
+    def test_watch_passes_tail_lines_to_print_status(self):
+        # Stub both the terminal clear and _print_status: exercise cmd_status's watch wiring
+        # without actually clearing the real terminal or looping forever.
+        calls = []
+
+        def fake_print_status(tail=None):
+            calls.append(tail)
+            return False  # not alive -> loop exits after one iteration
+
+        orig_print_status = cli._print_status
+        orig_system = cli.os.system
+        cli._print_status = fake_print_status
+        cli.os.system = lambda *_: None
+        try:
+            cli.cmd_status(["--watch"])
+        finally:
+            cli._print_status = orig_print_status
+            cli.os.system = orig_system
+        self.assertEqual(calls, [cli.WATCH_TAIL_LINES])
+
+    def test_print_log_tail_shows_only_last_n_lines(self):
+        os.makedirs(cli.LOG_DIR)
+        log = cli.LOG_DIR / "run_tail.log"
+        log.write_text("\n".join(f"line{i}" for i in range(30)) + "\n")
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_print_log(["--tail", "3"])
+        output = out.getvalue()
+        self.assertIn("line29", output)
+        self.assertNotIn("line26", output)
+
+    def test_print_log_tail_without_number_defaults(self):
+        os.makedirs(cli.LOG_DIR)
+        log = cli.LOG_DIR / "run_tail_default.log"
+        log.write_text("\n".join(f"l{i}" for i in range(30)) + "\n")
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_print_log(["--tail"])
+        output = out.getvalue()
+        self.assertIn("l29", output)
+        self.assertNotIn("l9\n", output)
+
+    def test_print_log_live_uses_tail_dash_f(self):
+        os.makedirs(cli.LOG_DIR)
+        log = cli.LOG_DIR / "run_live.log"
+        log.write_text("hello\n")
+        captured = {}
+        orig = cli.subprocess.run
+        cli.subprocess.run = lambda cmd, **kw: captured.setdefault("cmd", cmd)
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                cli.cmd_print_log(["--live"])
+        finally:
+            cli.subprocess.run = orig
+        self.assertIn("-f", captured["cmd"])
+        self.assertIn(str(log), captured["cmd"])
 
     def test_status_flags_force_kill_when_dead_without_failure_or_completion(self):
         # Process not running, log has partial progress and no "did not complete successfully"
