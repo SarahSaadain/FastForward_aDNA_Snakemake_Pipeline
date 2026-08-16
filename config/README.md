@@ -49,9 +49,10 @@ That folder becomes your **project folder**. pastForward, your data, and your re
 A pastForward **project** is a single folder containing the `workflow/` and `config/` folders (the pipeline code you just downloaded) plus one folder per species you want to process:
 
 ```text
-my_project/                  <- project folder — run `snakemake` from here
+my_project/                  <- project folder — run `snakemake` (or bin/pastForward) from here
 ├── workflow/                <- pastForward pipeline code (do not edit)
 ├── config/                  <- config.yaml, config_designer.html
+├── bin/pastForward           <- optional CLI wrapper, see "Using the pastForward CLI" in README.md
 ├── Dmel/                    <- one folder per species; name must match the `species:` key in config.yaml
 │   ├── input/
 │   ├── processed/

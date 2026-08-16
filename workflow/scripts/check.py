@@ -1,5 +1,5 @@
 # =================================================================================================
-#     Species Preview
+#     Species Check (discovered species/individuals/references/... — see `pastForward check`)
 # =================================================================================================
 # Included after file_manager.py so all file_manager functions are in the Snakemake namespace
 # with config in scope — no imports required.

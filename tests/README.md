@@ -49,7 +49,7 @@ sections.
 
 While fixing a bug found during test-writing, `scg_selector.execute`'s default in
 `expected_output_manager_reveal_module_processing.py` had drifted to `False`, while
-`file_manager.should_auto_determine_scg()`, `preview.py`, and the docs all default it to `True`
+`file_manager.should_auto_determine_scg()`, `check.py`, and the docs all default it to `True`
 — so a config that (per the docs) correctly omits `scg_selector.execute` entirely would silently
 skip SCG auto-determination and, with it, all of REVEAL. Fixed to default `True`;
 `TestScgSelectorDefaults` in `test_expected_output_manager.py` locks in the documented behavior.

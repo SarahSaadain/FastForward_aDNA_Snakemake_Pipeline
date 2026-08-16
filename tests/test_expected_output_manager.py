@@ -163,7 +163,7 @@ class TestContaminationToolToggles(ExpectedOutputManagerTestCase):
 
 class TestScgSelectorDefaults(ExpectedOutputManagerTestCase):
     """Regression coverage for the scg_selector.execute default, which drifted out of sync
-    with file_manager.should_auto_determine_scg() (default True), preview.py (default True)
+    with file_manager.should_auto_determine_scg() (default True), check.py (default True)
     and the documented behavior (docs/FAQ.md, docs/process_overview.md: "true (the
     default)") - expected_output_manager_reveal_module_processing.py had defaulted it to
     False, which silently skipped SCG auto-determination for any config that (per the docs)

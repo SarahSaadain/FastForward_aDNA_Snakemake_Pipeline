@@ -9,7 +9,7 @@ namespace trick is also why expected_output_manager_summary_module_processing.py
 file having already done so (reproduced here by loading the files in the same order).
 
 This lets test_expected_output_manager.py unit test the real DAG-target-computation logic
-without needing Snakemake or conda. preview.py is intentionally skipped - it imports
+without needing Snakemake or conda. check.py is intentionally skipped - it imports
 snakemake_interface_executor_plugins and isn't needed by expected_output_manager.py.
 
 Not a test module itself - has no tests of its own.

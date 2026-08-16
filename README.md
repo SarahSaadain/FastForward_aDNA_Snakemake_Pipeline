@@ -32,7 +32,33 @@ New to pastForward? Here's the whole path, start to finish. Each step links to m
 
 ## Running the Pipeline
 
-Run `snakemake` from your **project folder**, the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. See [Project Structure](config/README.md#project-structure) for what that folder should look like.
+Run `snakemake` (or the `pastForward` CLI below) from your **project folder**, the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. See [Project Structure](config/README.md#project-structure) for what that folder should look like.
+
+### Using the `pastForward` CLI
+
+`bin/pastForward` is a small wrapper that saves you from re-typing the flags below and adds a few things plain `snakemake` doesn't: backgrounding, progress checks, and a clean stop. Add `bin/` to your `PATH` (or call it as `./bin/pastForward` from your project folder):
+
+```bash
+pastForward run --cores 40             # runs the pipeline, in the background, with the suggested flags
+pastForward run --cores 40 --fg        # same, but in the foreground
+pastForward run --cores 40 --forceall  # any extra arguments are passed straight through to snakemake
+
+pastForward dryrun           # snakemake --dryrun, in the foreground
+pastForward check            # what pastForward finds on disk for your config (species/individuals/references/...)
+pastForward preview          # the output files a run would produce, including ones it'll skip
+
+pastForward status           # PID, progress %, and the last few pipeline steps of the tracked background run
+pastForward abort            # stop it gracefully (SIGTERM; snakemake shuts down its own subprocesses)
+pastForward abort --force    # or kill it and everything it started, immediately
+
+pastForward version          # print the pipeline version
+```
+
+`run` requires `--cores <N>` (or `-j`/`--jobs`), same as plain `snakemake` — pastForward won't guess a thread count for you. `--use-conda`, `--keep-going`, and `--rerun-trigger mtime` are added automatically, but any of those you pass yourself are used instead of the default.
+
+Each `run`/`dryrun` writes a timestamped log to `logs/` in your project folder; `status` reads the most recent `run` back out of there.
+
+### Calling `snakemake` directly
 
 ```bash
 # minimum command to run the pipeline
@@ -61,7 +87,7 @@ For the full list of Snakemake's command-line options, see the [Snakemake docume
 
 ### Running the Pipeline in the Background
 
-Large datasets can take a while to process, so it's often best to run pastForward in the background. That way it keeps running even if you close your terminal window:
+Large datasets can take a while to process, so it's often best to run pastForward in the background. That way it keeps running even if you close your terminal window. `pastForward run` does this by default (see [above](#using-the-pastforward-cli)); the equivalent with plain `snakemake` is:
 
 ```bash
 nohup snakemake --cores 40 --use-conda --keep-going --rerun-trigger mtime > pipeline.log 2>&1 &
