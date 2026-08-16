@@ -10,11 +10,15 @@ snakemake/logging.py (_format_job_info, format_job_finished) and
 snakemake/scheduling/job_scheduler.py ("Finished jobid: ..."), plus a real --dryrun run of
 this repo's own initialize.smk/check.py/expected_output_manager.py.
 """
+import contextlib
+import io
+import json
 import os
 import shutil
 import sys
 import tempfile
 import unittest
+from datetime import datetime
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO_ROOT, "workflow"))
@@ -89,6 +93,45 @@ class ArgvValidationTestCase(unittest.TestCase):
     def test_preview_rejects_arguments(self):
         with self.assertRaises(SystemExit):
             cli.cmd_preview(["some_target"])
+
+    def test_status_live_skips_tail_when_log_missing(self):
+        # No log file written yet: cmd_status returns before the --live tail, so no `tail -f`
+        # subprocess should be attempted.
+        cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
+        cli.STATE_FILE.write_text(
+            json.dumps(
+                {
+                    "pid": os.getpid(),
+                    "cmd": ["snakemake", "--cores", "4"],
+                    "log_file": str(cli.LOG_DIR / "run_missing.log"),
+                    "started_at": datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+        )
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_status(["--live"])
+        self.assertNotIn("tail -f", out.getvalue())
+
+    def test_print_log_rejects_arguments(self):
+        with self.assertRaises(SystemExit):
+            cli.cmd_print_log(["--foo"])
+
+    def test_print_log_dies_without_logs_dir(self):
+        with self.assertRaises(SystemExit):
+            cli.cmd_print_log([])
+
+    def test_print_log_prints_most_recently_modified_file(self):
+        os.makedirs(cli.LOG_DIR)
+        old = cli.LOG_DIR / "dryrun_20260101_000000.log"
+        new = cli.LOG_DIR / "run_20260101_000001.log"
+        old.write_text("old log\n")
+        new.write_text("new log\n")
+        os.utime(old, (1, 1))
+        os.utime(new, (2, 2))
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_print_log([])
+        self.assertIn("new log", out.getvalue())
+        self.assertNotIn("old log", out.getvalue())
 
 
 class ParseLastStepsTestCase(unittest.TestCase):

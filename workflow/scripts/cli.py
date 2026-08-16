@@ -191,6 +191,7 @@ def _cores_from_cmd(cmd):
 
 
 def cmd_status(argv):
+    live = "--live" in argv
     state = _read_state()
     pid = state["pid"]
     alive = _is_alive(pid)
@@ -220,6 +221,13 @@ def cmd_status(argv):
     for rule_name, status in steps:
         marker = _color(GREEN, "done") if status == "done" else _color(YELLOW, "running")
         print(f"  - {rule_name} [{marker}]")
+
+    if live:
+        print(_color(DIM, f"\n$ tail -f {log_path}"))
+        try:
+            subprocess.run(["tail", "-f", str(log_path)])
+        except KeyboardInterrupt:
+            pass
 
 
 def cmd_abort(argv):
@@ -293,6 +301,20 @@ def cmd_preview(argv):
         print(_color(DIM, "  (none — check config.yaml, or run `pastForward check` to see what was discovered)"))
 
 
+def cmd_print_log(argv):
+    _ensure_project_root()
+    if argv:
+        _die("pastForward print-log: takes no arguments.")
+    if not LOG_DIR.is_dir():
+        _die("pastForward: no logs/ directory found — run `pastForward run` or `dryrun` first.")
+    logs = sorted(LOG_DIR.glob("*.log"), key=lambda p: p.stat().st_mtime)
+    if not logs:
+        _die("pastForward: no log files found in logs/.")
+    latest = logs[-1]
+    print(_color(DIM, f"$ cat {latest}"))
+    sys.stdout.write(latest.read_text(errors="replace"))
+
+
 def cmd_version(argv):
     _ensure_project_root()
     sys.path.insert(0, str(Path("workflow")))
@@ -308,6 +330,7 @@ COMMANDS = {
     "abort": cmd_abort,
     "check": cmd_check,
     "preview": cmd_preview,
+    "print-log": cmd_print_log,
     "version": cmd_version,
 }
 
@@ -321,7 +344,8 @@ Commands:
                                 by default; add --fg/--foreground anywhere to run in the
                                 foreground instead.
   dryrun [snakemake-args...]   Run `snakemake --dryrun` in the foreground.
-  status                       Show progress of the tracked background run.
+  status [--live]               Show progress of the tracked background run. --live tails the
+                                 log (Ctrl-C to stop) after printing the normal status.
   abort [--force]              Stop the tracked background run: SIGTERM by default (Snakemake
                                 shuts its own subprocesses down); --force kills the whole
                                 process group immediately.
@@ -329,6 +353,7 @@ Commands:
                                  (species/individuals/references/...).
   preview                       Show expected output files for the current config, including
                                  skipped ones.
+  print-log                    Print the most recently written log from logs/.
   version                      Print the pastForward pipeline version.
 
 Run from a project root: the folder containing workflow/ and config/.

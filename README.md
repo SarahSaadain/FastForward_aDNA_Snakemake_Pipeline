@@ -48,8 +48,10 @@ pastForward check            # what pastForward finds on disk for your config (s
 pastForward preview          # the output files a run would produce, including ones it'll skip
 
 pastForward status           # PID, progress %, and the last few pipeline steps of the tracked background run
+pastForward status --live    # same, then tails the log (Ctrl-C to stop)
 pastForward abort            # stop it gracefully (SIGTERM; snakemake shuts down its own subprocesses)
 pastForward abort --force    # or kill it and everything it started, immediately
+pastForward print-log        # print the most recently written log from logs/
 
 pastForward version          # print the pipeline version
 ```
