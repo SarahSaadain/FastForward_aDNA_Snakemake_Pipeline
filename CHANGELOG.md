@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- **`pastForward status`**: now flags a likely force-kill (SIGKILL, `abort --force`, OOM-killer) when the tracked process is not running and the log shows neither completion nor a recorded failure - previously that case printed no explanation at all
 - **`preview.py` renamed to `check.py`**: matches the new `pastForward check` command it backs; no behavior change (still the per-species discovery tree logged at startup)
 
 - **Auto-determined SCG library output path**: `{species}_relevant_scg.fasta` (the filtered FASTA used by the REVEAL mapping step) now lands in `{species}/results/reveal_module/scg/` instead of `processed/` — it's a primary output, not an intermediate. `{species}_relevant_scg.txt`/`.bed` stay in `processed/`. Existing SCG-selector logging also now states whether a previously-generated SCG library was found and reused, versus one being freshly auto-determined

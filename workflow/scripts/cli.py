@@ -263,6 +263,11 @@ def cmd_status(argv):
         return
     text = log_path.read_text(errors="replace")
 
+    progress = None
+    for progress in PROGRESS_RE.finditer(text):
+        pass
+    progress_str = f"{progress.group(1)}/{progress.group(2)} steps ({progress.group(3)}%)" if progress else _color(DIM, "(not available yet)")
+
     if alive and ABORTING_RE.search(text):
         print(_color(YELLOW, "Aborting:   will exit after finishing currently running jobs (scheduler)."))
     elif not alive and FAILED_RE.search(text):
@@ -275,11 +280,12 @@ def cmd_status(argv):
                 print(f"  {_color(RED, lines[0])}")
                 for line in lines[1:]:
                     print(f"  {_color(DIM, line)}")
+    elif not alive and (progress is None or progress.group(3) != "100.0"):
+        # Died before 100% with no "did not complete successfully" marker either - Snakemake
+        # never got the chance to log a reason, so this is most likely a force-kill (SIGKILL,
+        # `abort --force`, OOM-killer) rather than a graceful failure.
+        print(_color(YELLOW, "Interrupted: not running, and the log shows neither success nor a recorded failure - likely force-killed (SIGKILL/OOM) rather than a normal error exit."))
 
-    progress = None
-    for progress in PROGRESS_RE.finditer(text):
-        pass
-    progress_str = f"{progress.group(1)}/{progress.group(2)} steps ({progress.group(3)}%)" if progress else _color(DIM, "(not available yet)")
     print(f"{_color(CYAN, 'Progress:')}  {progress_str}")
 
     finished, running = _parse_last_steps(text)

@@ -112,6 +112,27 @@ class ArgvValidationTestCase(unittest.TestCase):
             cli.cmd_status(["--live"])
         self.assertNotIn("tail -f", out.getvalue())
 
+    def test_status_flags_force_kill_when_dead_without_failure_or_completion(self):
+        # Process not running, log has partial progress and no "did not complete successfully"
+        # marker (Snakemake never got to log a reason) - most likely a force-kill.
+        cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
+        log_path = cli.LOG_DIR / "run_forcekilled.log"
+        os.makedirs(cli.LOG_DIR)
+        log_path.write_text("31 of 210 steps (15%) done\n")
+        cli.STATE_FILE.write_text(
+            json.dumps(
+                {
+                    "pid": 999999,
+                    "cmd": ["snakemake", "--cores", "4"],
+                    "log_file": str(log_path),
+                    "started_at": datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+        )
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_status([])
+        self.assertIn("Interrupted", out.getvalue())
+
     def test_print_log_rejects_arguments(self):
         with self.assertRaises(SystemExit):
             cli.cmd_print_log(["--foo"])
