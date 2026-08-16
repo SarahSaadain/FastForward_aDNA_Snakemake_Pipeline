@@ -41,6 +41,7 @@ JOB_FINISHED_RE = re.compile(r"Finished jobid:\s*(\d+)")
 DETECTED_SPECIES_RE = re.compile(r"^\[.*?Detected species", re.MULTILINE)
 ABORTING_RE = re.compile(r"Will exit after finishing currently running jobs \(scheduler\)\.")
 FAILED_RE = re.compile(r"At least one job did not complete successfully\.")
+JOB_ERROR_BLOCK_RE = re.compile(r"^Error in rule \S+:\n(?:[ \t]+.*\n?)*", re.MULTILINE)
 
 
 RED, GREEN, YELLOW, CYAN, DIM = 31, 32, 33, 36, 90
@@ -202,6 +203,14 @@ def _parse_last_steps(text, n=5):
     return steps[-n:]
 
 
+def _parse_job_errors(text, n=3):
+    # Dedupe by rule name, keeping each rule's last (i.e. most recent) failure block.
+    by_rule = {}
+    for block in JOB_ERROR_BLOCK_RE.findall(text):
+        by_rule[block.splitlines()[0]] = block.rstrip("\n")
+    return list(by_rule.values())[-n:]
+
+
 def _format_duration(seconds):
     minutes, seconds = divmod(int(seconds), 60)
     hours, minutes = divmod(minutes, 60)
@@ -250,7 +259,15 @@ def cmd_status(argv):
     if alive and ABORTING_RE.search(text):
         print(_color(YELLOW, "Aborting:   will exit after finishing currently running jobs (scheduler)."))
     elif not alive and FAILED_RE.search(text):
-        print(_color(RED, "Failed:     at least one job did not complete successfully — see log for details."))
+        print(_color(RED, "Failed:     at least one job did not complete successfully."))
+        errors = _parse_job_errors(text)
+        if errors:
+            print(_color(RED, f"\nErrors ({len(errors)}):"))
+            for block in errors:
+                lines = block.splitlines()
+                print(f"  {_color(RED, lines[0])}")
+                for line in lines[1:]:
+                    print(f"  {_color(DIM, line)}")
 
     progress = None
     for progress in PROGRESS_RE.finditer(text):
