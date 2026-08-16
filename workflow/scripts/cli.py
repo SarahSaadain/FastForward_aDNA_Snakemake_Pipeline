@@ -22,6 +22,7 @@ import re
 import signal
 import subprocess
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -134,6 +135,16 @@ def _run_foreground(cmd, log_path):
 
 
 def _run_background(cmd, log_path):
+    if STATE_FILE.exists():
+        try:
+            old_pid = json.loads(STATE_FILE.read_text())["pid"]
+        except (json.JSONDecodeError, KeyError):
+            old_pid = None
+        if old_pid is not None and _is_alive(old_pid):
+            _die(
+                f"pastForward: a run is already tracked here (PID {old_pid}, still running). "
+                "Use `pastForward status` to check it or `pastForward abort` to stop it first."
+            )
     log_path.parent.mkdir(parents=True, exist_ok=True)
     logf = open(log_path, "w")
     proc = subprocess.Popen(
@@ -156,19 +167,28 @@ def _run_background(cmd, log_path):
     print(_color(DIM, "Check progress with: pastForward status"))
 
 
-def cmd_run(argv):
+def cmd_run(argv, extra_flags=(), name="run"):
     _ensure_project_root()
     # --fg/--foreground is pastForward's own flag, not snakemake's - pulled out here rather
     # than by argparse so it can sit anywhere among the passed-through snakemake args.
     extra = [a for a in argv if a not in ("--fg", "--foreground")]
     foreground = len(extra) != len(argv)
     if not any(a in CORES_FLAGS for a in extra):
-        _die("pastForward run: pass --cores <N> (e.g. --cores 8, or --cores all).")
+        _die(f"pastForward {name}: pass --cores <N> (e.g. --cores 8, or --cores all).")
+    for flag in extra_flags:
+        if flag not in extra:
+            extra.append(flag)
     cmd = _build_run_cmd(extra)
     log_path = LOG_DIR / f"run_{_timestamp()}.log"
     if foreground:
         sys.exit(_run_foreground(cmd, log_path))
     _run_background(cmd, log_path)
+
+
+def cmd_resume(argv):
+    # Same as `run`, plus --rerun-incomplete - for continuing after a crash/kill, per
+    # CLAUDE.md's documented resume command.
+    cmd_run(argv, extra_flags=("--rerun-incomplete",), name="resume")
 
 
 def cmd_dryrun(argv):
@@ -240,6 +260,22 @@ def _cores_from_cmd(cmd):
 
 def cmd_status(argv):
     live = "--live" in argv
+    watch = "--watch" in argv
+    if watch:
+        try:
+            while True:
+                os.system("clear")
+                alive = _print_status()
+                if not alive:
+                    break
+                time.sleep(5)
+        except KeyboardInterrupt:
+            pass
+        return
+    _print_status(live=live)
+
+
+def _print_status(live=False):
     state = _read_state()
     pid = state["pid"]
     alive = _is_alive(pid)
@@ -260,7 +296,7 @@ def cmd_status(argv):
 
     if not log_path.exists():
         print(_color(DIM, "(log file not found yet)"))
-        return
+        return alive
     text = log_path.read_text(errors="replace")
 
     progress = None
@@ -280,11 +316,13 @@ def cmd_status(argv):
                 print(f"  {_color(RED, lines[0])}")
                 for line in lines[1:]:
                     print(f"  {_color(DIM, line)}")
+        print(_color(DIM, "Resume with: pastForward resume --cores <N>"))
     elif not alive and (progress is None or progress.group(3) != "100.0"):
         # Died before 100% with no "did not complete successfully" marker either - Snakemake
         # never got the chance to log a reason, so this is most likely a force-kill (SIGKILL,
         # `abort --force`, OOM-killer) rather than a graceful failure.
         print(_color(YELLOW, "Interrupted: not running, and the log shows neither success nor a recorded failure - likely force-killed (SIGKILL/OOM) rather than a normal error exit."))
+        print(_color(DIM, "Resume with: pastForward resume --cores <N>"))
 
     print(f"{_color(CYAN, 'Progress:')}  {progress_str}")
 
@@ -303,6 +341,8 @@ def cmd_status(argv):
         except KeyboardInterrupt:
             pass
 
+    return alive
+
 
 def cmd_abort(argv):
     state = _read_state()
@@ -316,6 +356,13 @@ def cmd_abort(argv):
         os.kill(pid, signal.SIGTERM)
         print(_color(YELLOW, f"Sent SIGTERM to PID {pid}. Snakemake will shut its subprocesses down itself."))
         print(_color(DIM, "Use --force to kill the whole process group immediately instead."))
+
+
+def cmd_unlock(argv):
+    _ensure_project_root()
+    if argv:
+        _die("pastForward unlock: takes no arguments.")
+    sys.exit(subprocess.call(["snakemake", "--unlock"]))
 
 
 def _dryrun_capture():
@@ -402,9 +449,11 @@ def cmd_version(argv):
 
 COMMANDS = {
     "run": cmd_run,
+    "resume": cmd_resume,
     "dryrun": cmd_dryrun,
     "status": cmd_status,
     "abort": cmd_abort,
+    "unlock": cmd_unlock,
     "check": cmd_check,
     "preview": cmd_preview,
     "print-log": cmd_print_log,
@@ -419,13 +468,21 @@ Commands:
   run --cores <N> [snakemake-args...]
                                 Run the pipeline. --cores (or -j/--jobs) is required. Backgrounded
                                 by default; add --fg/--foreground anywhere to run in the
-                                foreground instead.
+                                foreground instead. Refuses to start if a tracked run is still
+                                alive - `abort` it first.
+  resume --cores <N> [snakemake-args...]
+                                Same as `run`, plus --rerun-incomplete - continue after a
+                                crash/kill.
   dryrun [snakemake-args...]   Run `snakemake --dryrun` in the foreground.
-  status [--live]               Show progress of the tracked background run. --live tails the
-                                 log (Ctrl-C to stop) after printing the normal status.
+  status [--live|--watch]       Show progress of the tracked background run. --live tails the
+                                 log (Ctrl-C to stop) after printing the normal status. --watch
+                                 reprints the formatted status every 5s until the run ends
+                                 (Ctrl-C to stop early).
   abort [--force]              Stop the tracked background run: SIGTERM by default (Snakemake
                                 shuts its own subprocesses down); --force kills the whole
                                 process group immediately.
+  unlock                        Run `snakemake --unlock` to clear a stale Snakemake lock left
+                                 by a crashed run.
   check                         Show what pastForward discovers on disk for the current config
                                  (species/individuals/references/...).
   preview                       Show expected output files for the current config, including

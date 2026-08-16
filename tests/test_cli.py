@@ -84,6 +84,33 @@ class ArgvValidationTestCase(unittest.TestCase):
             cli.cmd_run(["--forceall"])
         self.assertFalse(cli.STATE_FILE.exists())
 
+    def test_resume_without_cores_exits_before_spawning_anything(self):
+        with self.assertRaises(SystemExit):
+            cli.cmd_resume(["--forceall"])
+        self.assertFalse(cli.STATE_FILE.exists())
+
+    def test_resume_adds_rerun_incomplete(self):
+        # cmd_resume only differs from cmd_run by this flag - confirm it lands in the built
+        # command rather than actually spawning snakemake.
+        captured = {}
+        orig = cli._run_background
+        cli._run_background = lambda cmd, log_path: captured.setdefault("cmd", cmd)
+        try:
+            cli.cmd_resume(["--cores", "4"])
+        finally:
+            cli._run_background = orig
+        self.assertIn("--rerun-incomplete", captured["cmd"])
+
+    def test_run_refuses_when_a_tracked_run_is_still_alive(self):
+        cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
+        cli.STATE_FILE.write_text(json.dumps({"pid": os.getpid()}))
+        with self.assertRaises(SystemExit):
+            cli.cmd_run(["--cores", "4"])
+
+    def test_unlock_rejects_arguments(self):
+        with self.assertRaises(SystemExit):
+            cli.cmd_unlock(["--foo"])
+
     def test_check_rejects_arguments(self):
         # check/preview always run a plain `snakemake --dryrun` - passing a target/rule name
         # through would build a different DAG and silently drop the output they parse for.

@@ -42,6 +42,7 @@ Run `snakemake` (or the `pastForward` CLI below) from your **project folder**, t
 pastForward run --cores 40             # runs the pipeline, in the background, with the suggested flags
 pastForward run --cores 40 --fg        # same, but in the foreground
 pastForward run --cores 40 --forceall  # any extra arguments are passed straight through to snakemake
+pastForward resume --cores 40          # like run, but also picks back up rules left incomplete by a crash/kill
 
 pastForward dryrun           # snakemake --dryrun, in the foreground
 pastForward check            # what pastForward finds on disk for your config (species/individuals/references/...)
@@ -49,14 +50,16 @@ pastForward preview          # the output files a run would produce, including o
 
 pastForward status           # PID, progress %, and the last few pipeline steps of the tracked background run
 pastForward status --live    # same, then tails the log (Ctrl-C to stop)
+pastForward status --watch   # same, but reprints every 5s until the run ends (Ctrl-C to stop early)
 pastForward abort            # stop it gracefully (SIGTERM; snakemake shuts down its own subprocesses)
 pastForward abort --force    # or kill it and everything it started, immediately
+pastForward unlock           # snakemake --unlock, to clear a stale lock left by a crashed run
 pastForward print-log        # print the most recently written log from logs/
 
 pastForward version          # print the pipeline version
 ```
 
-`run` requires `--cores <N>` (or `-j`/`--jobs`), same as plain `snakemake` — pastForward won't guess a thread count for you. `--use-conda`, `--keep-going`, and `--rerun-trigger mtime` are added automatically, but any of those you pass yourself are used instead of the default.
+`run` requires `--cores <N>` (or `-j`/`--jobs`), same as plain `snakemake` — pastForward won't guess a thread count for you. `--use-conda`, `--keep-going`, and `--rerun-trigger mtime` are added automatically, but any of those you pass yourself are used instead of the default. `run` also refuses to start if a tracked run is still alive in the same project folder — `abort` it first.
 
 Each `run`/`dryrun` writes a timestamped log to `logs/` in your project folder; `status` reads the most recent `run` back out of there.
 
