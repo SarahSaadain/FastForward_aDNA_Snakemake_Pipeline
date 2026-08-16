@@ -8,7 +8,7 @@ check.py and expected_output_manager.py already emit on every invocation (includ
 --dryrun) — see workflow/rules/initialize.smk, workflow/scripts/check.py and
 workflow/scripts/expected_output_manager.py.
 
-Entry point: bin/pastForward (repo root) — a tiny shim that imports main() from here.
+Entry point: pastForward (project root) — a tiny shim that imports main() from here.
 
 Dispatch below is a hand-rolled `sys.argv` split rather than argparse subparsers: argparse's
 REMAINDER positional (needed to pass arbitrary snakemake flags through untouched) errors out

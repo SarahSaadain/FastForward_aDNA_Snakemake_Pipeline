@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### New Features
 
-- **`pastForward` CLI** (`bin/pastForward`, logic in `workflow/scripts/cli.py`): a thin wrapper around `snakemake` with `run` (backgrounded by default, `--fg` for foreground; requires `--cores`/`-j`, same as plain `snakemake`), `dryrun`, `status` (PID, progress %, last few steps), `abort`/`abort --force` (graceful SIGTERM vs. killing the whole process group), `check` (discovered species/individuals/references for the current config), `preview` (expected output files, including skipped ones), and `version`. `run`/`dryrun` write timestamped logs to `logs/` in the project folder
+- **`pastForward` CLI** (`pastForward` at the project root, logic in `workflow/scripts/cli.py`): a thin wrapper around `snakemake` with `run` (backgrounded by default, `--fg` for foreground; requires `--cores`/`-j`, same as plain `snakemake`), `dryrun`, `status` (PID, progress %, last few steps), `abort`/`abort --force` (graceful SIGTERM vs. killing the whole process group), `check` (discovered species/individuals/references for the current config), `preview` (expected output files, including skipped ones), and `version`. `run`/`dryrun` write timestamped logs to `logs/` in the project folder
 
 ### Changed
 

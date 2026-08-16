@@ -36,7 +36,7 @@ Run `snakemake` (or the `pastForward` CLI below) from your **project folder**, t
 
 ### Using the `pastForward` CLI
 
-`bin/pastForward` is a small wrapper that saves you from re-typing the flags below and adds a few things plain `snakemake` doesn't: backgrounding, progress checks, and a clean stop. Add `bin/` to your `PATH` (or call it as `./bin/pastForward` from your project folder):
+`pastForward`, right in your project folder, is a small wrapper that saves you from re-typing the flags below and adds a few things plain `snakemake` doesn't: backgrounding, progress checks, and a clean stop. Call it as `./pastForward` from your project folder, or add the project folder to your `PATH` to just type `pastForward`:
 
 ```bash
 pastForward run --cores 40             # runs the pipeline, in the background, with the suggested flags
