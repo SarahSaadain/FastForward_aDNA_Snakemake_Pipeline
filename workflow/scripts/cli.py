@@ -228,7 +228,13 @@ def cmd_status(argv):
     pid = state["pid"]
     alive = _is_alive(pid)
     started = datetime.fromisoformat(state["started_at"])
-    runtime = _format_duration((datetime.now() - started).total_seconds())
+    log_path = Path(state["log_file"])
+    # Once the process has died, "now" no longer reflects its runtime - use the log file's
+    # last write instead, so runtime freezes at whenever it actually stopped.
+    end = datetime.now() if alive else (
+        datetime.fromtimestamp(log_path.stat().st_mtime) if log_path.exists() else started
+    )
+    runtime = _format_duration((end - started).total_seconds())
     cores = _cores_from_cmd(state["cmd"]) or "?"
     print(f"{_color(CYAN, 'PID:')}       {pid} ({_color(GREEN, 'running') if alive else _color(RED, 'not running')})")
     print(f"{_color(CYAN, 'Started:')}   {state['started_at']}")
@@ -236,7 +242,6 @@ def cmd_status(argv):
     print(f"{_color(CYAN, 'Cores:')}     {cores}")
     print(f"{_color(CYAN, 'Log:')}       {state['log_file']}")
 
-    log_path = Path(state["log_file"])
     if not log_path.exists():
         print(_color(DIM, "(log file not found yet)"))
         return
