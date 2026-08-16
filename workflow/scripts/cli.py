@@ -45,6 +45,7 @@ JOB_FINISHED_RE = re.compile(r"Finished jobid:\s*(\d+)\s*\(Rule:\s*(\S+)\)")
 DETECTED_SPECIES_RE = re.compile(r"^\[.*?Detected species", re.MULTILINE)
 ABORTING_RE = re.compile(r"Will exit after finishing currently running jobs \(scheduler\)\.")
 FAILED_RE = re.compile(r"At least one job did not complete successfully\.")
+LOCK_RE = re.compile(r"LockException")
 JOB_ERROR_BLOCK_RE = re.compile(r"^Error in rule \S+:\n(?:[ \t]+.*\n?)*", re.MULTILINE)
 
 
@@ -317,6 +318,9 @@ def _print_status(live=False):
                 for line in lines[1:]:
                     print(f"  {_color(DIM, line)}")
         print(_color(DIM, "Resume with: pastForward resume --cores <N>"))
+    elif not alive and LOCK_RE.search(text):
+        print(_color(RED, "Locked:     directory is locked (stale lock from a killed run or power loss)."))
+        print(_color(DIM, "Fix with: pastForward unlock, then pastForward resume --cores <N>"))
     elif not alive and (progress is None or progress.group(3) != "100.0"):
         # Died before 100% with no "did not complete successfully" marker either - Snakemake
         # never got the chance to log a reason, so this is most likely a force-kill (SIGKILL,
@@ -362,7 +366,7 @@ def cmd_unlock(argv):
     _ensure_project_root()
     if argv:
         _die("pastForward unlock: takes no arguments.")
-    sys.exit(subprocess.call(["snakemake", "--unlock"]))
+    sys.exit(subprocess.call(["snakemake", "--unlock", "--cores", "1"]))
 
 
 def _dryrun_capture():

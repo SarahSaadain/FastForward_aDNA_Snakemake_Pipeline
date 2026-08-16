@@ -111,6 +111,18 @@ class ArgvValidationTestCase(unittest.TestCase):
         with self.assertRaises(SystemExit):
             cli.cmd_unlock(["--foo"])
 
+    def test_unlock_passes_cores_one(self):
+        # snakemake >= 9.9 requires --cores even for --unlock.
+        captured = {}
+        orig = cli.subprocess.call
+        cli.subprocess.call = lambda cmd: captured.setdefault("cmd", cmd) or 0
+        try:
+            with self.assertRaises(SystemExit):
+                cli.cmd_unlock([])
+        finally:
+            cli.subprocess.call = orig
+        self.assertEqual(captured["cmd"], ["snakemake", "--unlock", "--cores", "1"])
+
     def test_check_rejects_arguments(self):
         # check/preview always run a plain `snakemake --dryrun` - passing a target/rule name
         # through would build a different DAG and silently drop the output they parse for.
@@ -159,6 +171,35 @@ class ArgvValidationTestCase(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()) as out:
             cli.cmd_status([])
         self.assertIn("Interrupted", out.getvalue())
+
+    def test_status_flags_lock_exception(self):
+        # Process not running, log has a LockException (stale lock from a killed run or
+        # power loss) - must be reported as "Locked", not misread as a force-kill.
+        cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
+        log_path = cli.LOG_DIR / "run_locked.log"
+        os.makedirs(cli.LOG_DIR)
+        log_path.write_text(
+            "[2026-08-16 12:49:14 (CEST)] [ERROR] LockException:\n"
+            "Error: Directory cannot be locked. Please make sure that no other Snakemake "
+            "process is trying to create the same files in the following directory:\n"
+            "/mnt/data5/sarah/snakemake_demo_pipelines/demo_adna_pipeline\n"
+        )
+        cli.STATE_FILE.write_text(
+            json.dumps(
+                {
+                    "pid": 999999,
+                    "cmd": ["snakemake", "--cores", "4"],
+                    "log_file": str(log_path),
+                    "started_at": datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+        )
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_status([])
+        output = out.getvalue()
+        self.assertIn("Locked", output)
+        self.assertIn("pastForward unlock", output)
+        self.assertNotIn("Interrupted", output)
 
     def test_print_log_rejects_arguments(self):
         with self.assertRaises(SystemExit):
