@@ -308,7 +308,9 @@ def _dryrun_capture():
     # that only get emitted while Snakemake builds rule all's DAG - passing a target/rule name
     # through here would build a different DAG and silently drop that output instead.
     _ensure_project_root()
-    proc = subprocess.run(_build_dryrun_cmd([]), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    # --nolock: check/preview are read-only (never touch outputs), so they should not be
+    # blocked by - or block - a real `snakemake` run's directory lock.
+    proc = subprocess.run(_build_dryrun_cmd(["--nolock"]), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     if proc.returncode != 0:
         print(_color(RED, "snakemake --dryrun failed:"), file=sys.stderr)
         print("\n".join(proc.stdout.splitlines()[-20:]), file=sys.stderr)
