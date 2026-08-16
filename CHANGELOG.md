@@ -17,6 +17,10 @@ All notable changes to this project will be documented in this file.
 - **Auto-determined SCG library output path**: `{species}_relevant_scg.fasta` (the filtered FASTA used by the REVEAL mapping step) now lands in `{species}/results/reveal_module/scg/` instead of `processed/` — it's a primary output, not an intermediate. `{species}_relevant_scg.txt`/`.bed` stay in `processed/`. Existing SCG-selector logging also now states whether a previously-generated SCG library was found and reused, versus one being freshly auto-determined
 - **`visualization.settings.individual_plots` default**: Now defaults to `skip` (was `plot`) — per-individual REVEAL plot rendering is off by default; set explicitly in `config.yaml` to re-enable
 
+### Docs
+
+- **README overhaul**: `README.md`'s "Running the Pipeline" section now leads with the `pastForward` CLI (suggested order: `check` -> `preview` -> optional `dryrun` -> `run`); direct-`snakemake` usage, flags, backgrounding, restarting, and HPC/cluster notes moved to new [docs/snakemake.md](docs/snakemake.md)
+
 ### CI / Maintenance
 
 - **`file_manager.py` logger**: Was importing `logger` from the stdlib `venv` module (an internal implementation detail, not a public API) instead of creating its own; now uses `logging.getLogger(__name__)`. No behavior change today, but the old import was one Python version away from breaking

@@ -32,83 +32,42 @@ New to pastForward? Here's the whole path, start to finish. Each step links to m
 
 ## Running the Pipeline
 
-Run `snakemake` (or the `pastForward` CLI below) from your **project folder**, the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. See [Project Structure](config/README.md#project-structure) for what that folder should look like.
+Run `./pastForward` from your **project folder**, the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. See [Project Structure](config/README.md#project-structure) for what that folder should look like.
 
-### Using the `pastForward` CLI
+For a new project, run these in order:
 
-`pastForward`, right in your project folder, is a small wrapper that saves you from re-typing the flags below and adds a few things plain `snakemake` doesn't: backgrounding, progress checks, and a clean stop. Call it as `./pastForward` from your project folder, or add the project folder to your `PATH` to just type `pastForward`:
+1. **`./pastForward check`** — see what pastForward finds on disk for your config (species/individuals/references/...). Fix your data or config first if anything looks wrong here.
+2. **`./pastForward preview`** — see the output files a run would produce, including ones it'll skip.
+3. **`./pastForward dryrun`** *(optional)* — a full Snakemake dry run, to double-check the exact rules that would execute.
+4. **`./pastForward run --cores 40`** — runs the pipeline, in the background by default.
 
 ```bash
-pastForward run --cores 40             # runs the pipeline, in the background, with the suggested flags
-pastForward run --cores 40 --fg        # same, but in the foreground
-pastForward run --cores 40 --forceall  # any extra arguments are passed straight through to snakemake
-pastForward resume --cores 40          # like run, but also picks back up rules left incomplete by a crash/kill
+./pastForward check
+./pastForward preview
+./pastForward dryrun            # optional
 
-pastForward dryrun           # snakemake --dryrun, in the foreground
-pastForward check            # what pastForward finds on disk for your config (species/individuals/references/...)
-pastForward preview          # the output files a run would produce, including ones it'll skip
+./pastForward run --cores 40             # runs the pipeline, in the background, with the suggested flags
+./pastForward run --cores 40 --fg        # same, but in the foreground
+./pastForward resume --cores 40          # like run, but also picks back up rules left incomplete by a crash/kill
 
-pastForward status           # PID, progress %, and the last few pipeline steps of the tracked background run
-pastForward status --live    # same, then tails the log (Ctrl-C to stop)
-pastForward status --watch   # same, but reprints every 5s until the run ends (Ctrl-C to stop early)
-pastForward abort            # stop it gracefully (SIGTERM; snakemake shuts down its own subprocesses)
-pastForward abort --force    # or kill it and everything it started, immediately
-pastForward unlock           # snakemake --unlock, to clear a stale lock left by a crashed run
-pastForward print-log        # print the most recently written log from logs/
+./pastForward status           # PID, progress %, and the last few pipeline steps of the tracked background run
+./pastForward status --live    # same, then tails the log (Ctrl-C to stop)
+./pastForward status --watch   # same, but reprints every 5s until the run ends (Ctrl-C to stop early)
+./pastForward abort            # stop it gracefully (SIGTERM; snakemake shuts down its own subprocesses)
+./pastForward abort --force    # or kill it and everything it started, immediately
+./pastForward unlock           # clear a stale lock left by a crashed run
+./pastForward print-log        # print the most recently written log from logs/
 
-pastForward version          # print the pipeline version
+./pastForward version          # print the pipeline version
 ```
 
-`run` requires `--cores <N>` (or `-j`/`--jobs`), same as plain `snakemake` — pastForward won't guess a thread count for you. `--use-conda`, `--keep-going`, and `--rerun-trigger mtime` are added automatically, but any of those you pass yourself are used instead of the default. `run` also refuses to start if a tracked run is still alive in the same project folder — `abort` it first.
+`run` requires `--cores <N>` (or `-j`/`--jobs`) — pastForward won't guess a thread count for you. `--use-conda`, `--keep-going`, and `--rerun-trigger mtime` are added automatically, but any of those you pass yourself are used instead of the default; any other extra arguments (e.g. `--forceall`) are passed straight through to Snakemake. `run` also refuses to start if a tracked run is still alive in the same project folder — `abort` it first.
 
 Each `run`/`dryrun` writes a timestamped log to `logs/` in your project folder; `status` reads the most recent `run` back out of there.
 
-### Calling `snakemake` directly
+Snakemake keeps track of what's already been done and only re-runs steps that are missing or out of date. To start completely over, delete the relevant `results` and `processed` folders and run the pipeline again.
 
-```bash
-# minimum command to run the pipeline
-#snakemake --cores <number_of_threads> --use-conda
-
-# suggested command to run the pipeline
-snakemake --cores <number_of_threads> --use-conda --rerun-trigger mtime
-```
-
-Replace `<number_of_threads>` with the number of CPU threads you want to give the pipeline.
-
-**What the suggested flags do:**
-
-* `--use-conda` lets Snakemake install and use the software each step needs automatically.
-* `--rerun-trigger mtime` re-runs a step only when its input files have changed since the last run, instead of pastForward's more thorough (and slower) default checks.
-
-**A few other flags you might want:**
-
-* `--dryrun` (or `-n`): show what the pipeline *would* do, without actually running anything. Use it to check if pastForward picks up all your data correctly.
-* `--configfile <path_to_config.yaml>`: use a config file other than the default.
-* `--rerun-incomplete`: pick back up rules that failed or were cancelled in a previous run.
-* `--keep-going` lets the pipeline carry on if one step fails, instead of stopping everything. This matters because the contamination-screening tool ECMSD sometimes fails on individual samples with low-quality or low-coverage data. With this flag, the rest of the pipeline still runs.
-* `--rerun-trigger <code|input|mtime|params|software-env>`: choose what counts as "changed" when deciding whether to re-run a step. By default, all of these are checked, which is the safest option. `mtime` (used above) checks only file modification times, which is faster but less thorough.
-
-For the full list of Snakemake's command-line options, see the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/executing/cli.html).
-
-### Running the Pipeline in the Background
-
-Large datasets can take a while to process, so it's often best to run pastForward in the background. That way it keeps running even if you close your terminal window. `pastForward run` does this by default (see [above](#using-the-pastforward-cli)); the equivalent with plain `snakemake` is:
-
-```bash
-nohup snakemake --cores 40 --use-conda --keep-going --rerun-trigger mtime > pipeline.log 2>&1 &
-```
-
-This starts the pipeline and sends all its output to a file called `pipeline.log`. Check progress any time with `tail -f pipeline.log`.
-
-### Restarting the Pipeline
-
-Snakemake keeps track of what's already been done and only re-runs steps that are missing or out of date. To start completely over, delete the relevant `result` and `processed` folders and run the pipeline again.
-
-If the pipeline crashed or was stopped partway through, add `--rerun-incomplete` when you restart it. This re-runs any step that was left unfinished, even if its files look unchanged since the last run.
-
-### Running on an HPC Cluster
-
-pastForward is a standard Snakemake workflow, so it should work with Snakemake's [cluster/HPC execution support](https://snakemake.readthedocs.io/en/stable/executing/cluster.html) (for example, Slurm or PBS) via the matching [executor plugin](https://snakemake.github.io/snakemake-plugin-catalog/), with no changes to the pipeline itself. This hasn't been specifically tested yet on a Slurm-based cluster, though that's planned. If you try it, feedback is very welcome.
+Want to call `snakemake` directly, tune its flags, run without the CLI wrapper, or run on an HPC cluster? See [Running with Snakemake](docs/snakemake.md).
 
 ## Reports
 
