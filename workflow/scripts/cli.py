@@ -41,15 +41,22 @@ JOB_FINISHED_RE = re.compile(r"Finished jobid:\s*(\d+)")
 DETECTED_SPECIES_RE = re.compile(r"^\[.*?Detected species", re.MULTILINE)
 
 
+RED, GREEN, YELLOW, CYAN, DIM = 31, 32, 33, 36, 90
+
+
 def _color(code, text):
-    if not sys.stdout.isatty():
+    if not sys.stdout.isatty() or os.environ.get("NO_COLOR"):
         return text
     return f"\033[{code}m{text}\033[0m"
 
 
+def _die(msg):
+    sys.exit(_color(RED, msg))
+
+
 def _ensure_project_root():
     if not Path("workflow").is_dir() or not Path("config").is_dir():
-        sys.exit(
+        _die(
             "pastForward: this isn't a project root (needs workflow/ and config/ in the "
             "current directory). cd into your project folder first."
         )
@@ -80,8 +87,8 @@ def _build_dryrun_cmd(extra_args):
 
 def _run_foreground(cmd, log_path):
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    print(f"$ {' '.join(cmd)}")
-    print(f"Logging to {log_path}")
+    print(_color(DIM, f"$ {' '.join(cmd)}"))
+    print(_color(DIM, f"Logging to {log_path}"))
     with open(log_path, "w") as logf:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
         for line in proc.stdout:
@@ -108,9 +115,9 @@ def _run_background(cmd, log_path):
             indent=2,
         )
     )
-    print(_color(32, f"Started pastForward run (PID {proc.pid})"))
-    print(f"Log: {log_path}")
-    print("Check progress with: pastForward status")
+    print(_color(GREEN, f"Started pastForward run (PID {proc.pid})"))
+    print(_color(DIM, f"Log: {log_path}"))
+    print(_color(DIM, "Check progress with: pastForward status"))
 
 
 def cmd_run(argv):
@@ -120,7 +127,7 @@ def cmd_run(argv):
     extra = [a for a in argv if a not in ("--fg", "--foreground")]
     foreground = len(extra) != len(argv)
     if not any(a in CORES_FLAGS for a in extra):
-        sys.exit("pastForward run: pass --cores <N> (e.g. --cores 8, or --cores all).")
+        _die("pastForward run: pass --cores <N> (e.g. --cores 8, or --cores all).")
     cmd = _build_run_cmd(extra)
     log_path = LOG_DIR / f"run_{_timestamp()}.log"
     if foreground:
@@ -137,7 +144,7 @@ def cmd_dryrun(argv):
 
 def _read_state():
     if not STATE_FILE.exists():
-        sys.exit("pastForward: no tracked run in this directory (start one with `pastForward run`).")
+        _die("pastForward: no tracked run in this directory (start one with `pastForward run`).")
     return json.loads(STATE_FILE.read_text())
 
 
@@ -167,25 +174,26 @@ def cmd_status(argv):
     state = _read_state()
     pid = state["pid"]
     alive = _is_alive(pid)
-    print(f"PID:       {pid} ({_color(32, 'running') if alive else _color(31, 'not running')})")
-    print(f"Started:   {state['started_at']}")
-    print(f"Log:       {state['log_file']}")
+    print(f"{_color(CYAN, 'PID:')}       {pid} ({_color(GREEN, 'running') if alive else _color(RED, 'not running')})")
+    print(f"{_color(CYAN, 'Started:')}   {state['started_at']}")
+    print(f"{_color(CYAN, 'Log:')}       {state['log_file']}")
 
     log_path = Path(state["log_file"])
     if not log_path.exists():
-        print("(log file not found yet)")
+        print(_color(DIM, "(log file not found yet)"))
         return
     text = log_path.read_text(errors="replace")
 
     progress = None
     for progress in PROGRESS_RE.finditer(text):
         pass
-    print(f"Progress:  {progress.group(1)}/{progress.group(2)} steps ({progress.group(3)}%)" if progress else "Progress:  (not available yet)")
+    progress_str = f"{progress.group(1)}/{progress.group(2)} steps ({progress.group(3)}%)" if progress else _color(DIM, "(not available yet)")
+    print(f"{_color(CYAN, 'Progress:')}  {progress_str}")
 
     steps = _parse_last_steps(text)
-    print("Last steps:" if steps else "Last steps: (none yet)")
+    print(_color(CYAN, "Last steps:") if steps else _color(DIM, "Last steps: (none yet)"))
     for rule_name, status in steps:
-        marker = _color(32, "done") if status == "done" else _color(33, "running")
+        marker = _color(GREEN, "done") if status == "done" else _color(YELLOW, "running")
         print(f"  - {rule_name} [{marker}]")
 
 
@@ -193,14 +201,14 @@ def cmd_abort(argv):
     state = _read_state()
     pid = state["pid"]
     if not _is_alive(pid):
-        sys.exit("pastForward: tracked process is not running.")
+        _die("pastForward: tracked process is not running.")
     if "--force" in argv:
         os.killpg(pid, signal.SIGKILL)
-        print(_color(31, f"Force-killed process group {pid} (main process + subprocesses)."))
+        print(_color(RED, f"Force-killed process group {pid} (main process + subprocesses)."))
     else:
         os.kill(pid, signal.SIGTERM)
-        print(_color(33, f"Sent SIGTERM to PID {pid}. Snakemake will shut its subprocesses down itself."))
-        print("Use --force to kill the whole process group immediately instead.")
+        print(_color(YELLOW, f"Sent SIGTERM to PID {pid}. Snakemake will shut its subprocesses down itself."))
+        print(_color(DIM, "Use --force to kill the whole process group immediately instead."))
 
 
 def _dryrun_capture():
@@ -210,7 +218,7 @@ def _dryrun_capture():
     _ensure_project_root()
     proc = subprocess.run(_build_dryrun_cmd([]), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     if proc.returncode != 0:
-        print(_color(31, "snakemake --dryrun failed:"), file=sys.stderr)
+        print(_color(RED, "snakemake --dryrun failed:"), file=sys.stderr)
         print("\n".join(proc.stdout.splitlines()[-20:]), file=sys.stderr)
         sys.exit(proc.returncode)
     return proc.stdout
@@ -218,11 +226,11 @@ def _dryrun_capture():
 
 def cmd_check(argv):
     if argv:
-        sys.exit("pastForward check: takes no arguments (it always runs a plain `snakemake --dryrun`).")
+        _die("pastForward check: takes no arguments (it always runs a plain `snakemake --dryrun`).")
     text = _dryrun_capture()
     m = DETECTED_SPECIES_RE.search(text)
     if not m:
-        sys.exit("pastForward: no species tree found in dryrun output — check config.yaml.")
+        _die("pastForward: no species tree found in dryrun output — check config.yaml.")
     # check.py's tree lines all start with "-" or indentation (or are blank, between species) -
     # the first line that starts with anything else is the next, unrelated log message.
     lines = text[m.start() :].splitlines()
@@ -237,27 +245,27 @@ def cmd_check(argv):
 
 def cmd_preview(argv):
     if argv:
-        sys.exit("pastForward preview: takes no arguments (it always runs a plain `snakemake --dryrun`).")
+        _die("pastForward preview: takes no arguments (it always runs a plain `snakemake --dryrun`).")
     text = _dryrun_capture()
     skipped_species = re.findall(r"Skipping species '(.+?)' \(execute: false\)", text)
     existing = re.findall(r"- Skipping: (.+)", text)
     requested = re.findall(r"- Requesting: (.+)", text)
 
     if skipped_species:
-        print(_color(33, f"Skipped species ({len(skipped_species)}, execute: false):"))
+        print(_color(YELLOW, f"Skipped species ({len(skipped_species)}, execute: false):"))
         for s in skipped_species:
-            print(f"  - {s}")
+            print(_color(DIM, f"  - {s}"))
         print()
     if existing:
-        print(_color(33, f"Already produced ({len(existing)}, will be skipped):"))
+        print(_color(YELLOW, f"Already produced ({len(existing)}, will be skipped):"))
         for f in existing:
-            print(f"  - {f}")
+            print(_color(DIM, f"  - {f}"))
         print()
-    print(_color(32, f"Expected output ({len(requested)}):"))
+    print(_color(GREEN, f"Expected output ({len(requested)}):"))
     for f in requested:
         print(f"  - {f}")
     if not requested:
-        print("  (none — check config.yaml, or run `pastForward check` to see what was discovered)")
+        print(_color(DIM, "  (none — check config.yaml, or run `pastForward check` to see what was discovered)"))
 
 
 def cmd_version(argv):
@@ -303,15 +311,26 @@ Logs for `run`/`dryrun` are written to logs/<command>_<timestamp>.log.
 """
 
 
+def _print_help():
+    for line in HELP.splitlines():
+        if line.startswith("pastForward") or line in ("Usage: pastForward <command> [args...]", "Commands:"):
+            print(_color(CYAN, line))
+        else:
+            print(line)
+
+
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
     if not argv or argv[0] in ("-h", "--help"):
-        print(HELP)
+        _print_help()
         return
     command, rest = argv[0], argv[1:]
     func = COMMANDS.get(command)
     if func is None:
-        sys.exit(f"pastForward: unknown command '{command}'\n\n{HELP}")
+        print(_color(RED, f"pastForward: unknown command '{command}'"))
+        print()
+        _print_help()
+        sys.exit(1)
     func(rest)
 
 
