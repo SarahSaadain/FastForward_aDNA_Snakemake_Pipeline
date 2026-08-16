@@ -203,10 +203,12 @@ def cmd_abort(argv):
         print("Use --force to kill the whole process group immediately instead.")
 
 
-def _dryrun_capture(extra_args):
+def _dryrun_capture():
+    # No passthrough args: check/preview parse the "Detected species"/"Requesting:" log lines
+    # that only get emitted while Snakemake builds rule all's DAG - passing a target/rule name
+    # through here would build a different DAG and silently drop that output instead.
     _ensure_project_root()
-    cmd = _build_dryrun_cmd(extra_args)
-    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    proc = subprocess.run(_build_dryrun_cmd([]), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     if proc.returncode != 0:
         print(_color(31, "snakemake --dryrun failed:"), file=sys.stderr)
         print("\n".join(proc.stdout.splitlines()[-20:]), file=sys.stderr)
@@ -215,7 +217,9 @@ def _dryrun_capture(extra_args):
 
 
 def cmd_check(argv):
-    text = _dryrun_capture(argv)
+    if argv:
+        sys.exit("pastForward check: takes no arguments (it always runs a plain `snakemake --dryrun`).")
+    text = _dryrun_capture()
     m = DETECTED_SPECIES_RE.search(text)
     if not m:
         sys.exit("pastForward: no species tree found in dryrun output — check config.yaml.")
@@ -232,7 +236,9 @@ def cmd_check(argv):
 
 
 def cmd_preview(argv):
-    text = _dryrun_capture(argv)
+    if argv:
+        sys.exit("pastForward preview: takes no arguments (it always runs a plain `snakemake --dryrun`).")
+    text = _dryrun_capture()
     skipped_species = re.findall(r"Skipping species '(.+?)' \(execute: false\)", text)
     existing = re.findall(r"- Skipping: (.+)", text)
     requested = re.findall(r"- Requesting: (.+)", text)
@@ -286,10 +292,10 @@ Commands:
   abort [--force]              Stop the tracked background run: SIGTERM by default (Snakemake
                                 shuts its own subprocesses down); --force kills the whole
                                 process group immediately.
-  check [snakemake-args...]    Show what pastForward discovers on disk for the current config
-                                (species/individuals/references/...).
-  preview [snakemake-args...]  Show expected output files for the current config, including
-                                skipped ones.
+  check                         Show what pastForward discovers on disk for the current config
+                                 (species/individuals/references/...).
+  preview                       Show expected output files for the current config, including
+                                 skipped ones.
   version                      Print the pastForward pipeline version.
 
 Run from a project root: the folder containing workflow/ and config/.

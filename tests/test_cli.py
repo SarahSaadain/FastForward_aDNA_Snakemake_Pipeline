@@ -46,9 +46,10 @@ class BuildCmdTestCase(unittest.TestCase):
         self.assertEqual(cmd, ["snakemake", "--dryrun", "-j", "8"])
 
 
-class RunRequiresCoresTestCase(unittest.TestCase):
-    """`run` (unlike `dryrun`) never guesses a thread count - see README's "Using the
-    pastForward CLI" section."""
+class ArgvValidationTestCase(unittest.TestCase):
+    """Argument checks that must fail fast, before any subprocess is spawned: `run` (unlike
+    `dryrun`) never guesses a thread count, and `check`/`preview` never take snakemake
+    arguments at all - see README's "Using the pastForward CLI" section."""
 
     def setUp(self):
         self._orig_cwd = os.getcwd()
@@ -65,6 +66,16 @@ class RunRequiresCoresTestCase(unittest.TestCase):
         with self.assertRaises(SystemExit):
             cli.cmd_run(["--forceall"])
         self.assertFalse(cli.STATE_FILE.exists())
+
+    def test_check_rejects_arguments(self):
+        # check/preview always run a plain `snakemake --dryrun` - passing a target/rule name
+        # through would build a different DAG and silently drop the output they parse for.
+        with self.assertRaises(SystemExit):
+            cli.cmd_check(["--configfile", "other.yaml"])
+
+    def test_preview_rejects_arguments(self):
+        with self.assertRaises(SystemExit):
+            cli.cmd_preview(["some_target"])
 
 
 class ParseLastStepsTestCase(unittest.TestCase):
