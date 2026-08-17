@@ -441,7 +441,7 @@ def cmd_unlock(argv):
 
 
 def _known_env_names():
-    # workflow/envs/<name>.yaml -> "<name>", e.g. "ecmsd", "reveal_module".
+    # workflow/envs/<name>.yaml -> "<name>", e.g. "ecmsd", "reveal".
     return sorted(p.stem for p in Path("workflow/envs").glob("*.yaml"))
 
 

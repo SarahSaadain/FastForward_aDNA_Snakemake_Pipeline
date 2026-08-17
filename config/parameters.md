@@ -148,7 +148,7 @@ Place feature libraries in `{species}/input/reveal_module/feature_library/` and,
 
 | Setting | Default | Description |
 |---|---|---|
-| `settings.version_source` | `pinned` | Where to get the REVEAL toolkit (not yet on bioconda, always side-loaded). `pinned` uses the exact version pinned in `reveal_module.post-deploy.sh`; `latest_release` always side-loads the newest tagged release from [SarahSaadain/REVEAL](https://github.com/SarahSaadain/REVEAL); `dev` **(experimental)** side-loads the tip of REVEAL's `develop` branch — unreleased and untested. Only takes effect when the `reveal_module` conda env is (re)created — see [FAQ.md](FAQ.md). |
+| `settings.version_source` | `pinned` | Where to get the REVEAL toolkit (not yet on bioconda, always side-loaded). `pinned` uses the exact version pinned in `reveal.post-deploy.sh`; `latest_release` always side-loads the newest tagged release from [SarahSaadain/REVEAL](https://github.com/SarahSaadain/REVEAL); `dev` **(experimental)** side-loads the tip of REVEAL's `develop` branch — unreleased and untested. Only takes effect when the `reveal` conda env is (re)created — see [FAQ.md](FAQ.md). |
 
 #### `scg_selector`
 

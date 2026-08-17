@@ -4,7 +4,7 @@ Side-loads REVEAL (https://github.com/SarahSaadain/REVEAL) into this conda envir
 REVEAL is not yet published on bioconda.
 
 Snakemake runs this once, automatically, right after creating the conda environment from the
-neighboring reveal_module.yaml (see "Post-Deployment Scripts for Conda Environments" in the
+neighboring reveal.yaml (see "Post-Deployment Scripts for Conda Environments" in the
 Snakemake docs) -- no manual setup needed, and every reveal_module rule keeps calling the plain
 `REVEAL` command as if it came from bioconda.
 
@@ -24,7 +24,7 @@ Since conda only re-runs this script when the environment is (re)created, changi
 version_source alone does not fetch a new version -- recreate the env (e.g.
 `snakemake --conda-create-envs-only --conda-cleanup-envs`).
 
-Once reveal-tools is published on bioconda: replace reveal_module.yaml's dependency list with
+Once reveal-tools is published on bioconda: replace reveal.yaml's dependency list with
 `- reveal-tools` and delete this file. No rule changes are needed either way.
 """
 

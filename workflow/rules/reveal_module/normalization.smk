@@ -13,7 +13,7 @@ rule normalize_visualization_of_individual:
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.log",
     conda:
-        "../../envs/reveal_module.yaml"
+        "../../envs/reveal.yaml"
     params:
         end_distance=lambda _: config.get("pipeline", {})
         .get("reveal_module", {})

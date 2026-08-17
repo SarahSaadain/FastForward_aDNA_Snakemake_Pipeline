@@ -59,7 +59,7 @@ configfile: "config/config.yaml"
 #     External tool version source (ECMSD / REVEAL)
 # =================================================================================================
 # ECMSD and REVEAL can each be pinned (the default) or side-loaded straight from GitHub via
-# workflow/envs/ecmsd.post-deploy.sh / reveal_module.post-deploy.sh. Those post-deploy scripts run
+# workflow/envs/ecmsd.post-deploy.sh / reveal.post-deploy.sh. Those post-deploy scripts run
 # as a plain subprocess right after conda (re)creates the environment and have no access to this
 # `config` object, so the chosen source is bridged across as an environment variable that the
 # subprocess inherits normally. Conda only re-runs a post-deploy script when its environment is

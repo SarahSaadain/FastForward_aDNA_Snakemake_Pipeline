@@ -30,7 +30,7 @@ rule determine_visualization_of_individual_bam_to_so:
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_bam2so.log",
     conda:
-        "../../envs/reveal_module.yaml"
+        "../../envs/reveal.yaml"
     params:
         mapqth=lambda _: config.get("pipeline", {})
         .get("reveal_module", {})
