@@ -67,8 +67,12 @@ configfile: "config/config.yaml"
 # depends on and Snakemake (re)creates/reuses envs accordingly, same as any other conda env.
 from scripts.config_validation import resolve_ecmsd_conda_env, resolve_reveal_conda_env
 
-ECMSD_CONDA_ENV = os.path.join(workflow.basedir, "envs", resolve_ecmsd_conda_env(config))
-REVEAL_CONDA_ENV = os.path.join(workflow.basedir, "envs", resolve_reveal_conda_env(config))
+ECMSD_CONDA_ENV = os.path.join(
+    workflow.basedir, "envs", resolve_ecmsd_conda_env(config)
+)
+REVEAL_CONDA_ENV = os.path.join(
+    workflow.basedir, "envs", resolve_reveal_conda_env(config)
+)
 
 
 # =================================================================================================
