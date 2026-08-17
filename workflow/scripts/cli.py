@@ -111,6 +111,8 @@ def _ensure_project_root():
             "pastForward: this isn't a project root (needs workflow/ and config/ in the "
             "current directory). cd into your project folder first."
         )
+    if shutil.which("snakemake") is None:
+        _die("pastForward: `snakemake` not found on PATH. Activate its conda env first.")
 
 
 def _timestamp():
