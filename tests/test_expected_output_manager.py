@@ -261,7 +261,7 @@ class TestReferenceModuleToggles(ExpectedOutputManagerTestCase):
             "reference_module": {"filter_unmapped_reads": {"execute": True, "settings": {"action": "extract_fastq"}}}
         })
         outputs = self.get_all_outputs(config)
-        self.assertIn("Dmel/processed/reference_module/genome/unmapped/IND001_genome_unmapped.fastq.gz", outputs)
+        self.assertIn("Dmel/results/reference_module/genome/unmapped/IND001_genome_unmapped.fastq.gz", outputs)
 
 
 if __name__ == "__main__":

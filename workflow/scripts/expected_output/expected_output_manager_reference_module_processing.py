@@ -74,9 +74,9 @@ def get_expected_output_reference_module(species):
                     # remove: _mapped_only.bam is a temp intermediate; get_final_bam copies to _final.bam
                     pass
                 elif action == "extract_fastq":
-                    expected_outputs.append(f"{species}/processed/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped.fastq.gz")
+                    expected_outputs.append(f"{species}/results/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped.fastq.gz")
                 elif action == "extract_fasta":
-                    expected_outputs.append(f"{species}/processed/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped.fasta.gz")
+                    expected_outputs.append(f"{species}/results/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped.fasta.gz")
                 else:
                     logging.warning(f"Unknown filter_unmapped_reads action '{action}' for {individual}/{reference}. Skipping.")
             else:
