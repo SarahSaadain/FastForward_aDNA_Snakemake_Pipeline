@@ -83,6 +83,20 @@ class StatusHelpersTestCase(unittest.TestCase):
         full = cli._progress_bar(100.0, width=10)
         self.assertIn("100.0%", full)
 
+    def test_job_log_paths_extracts_single_and_multiple(self):
+        block = (
+            "Error in rule fastqc:\n"
+            "    jobid: 3\n"
+            "    log: logs/fastqc/sample.log (check log file(s) for error message)\n"
+        )
+        self.assertEqual(cli._job_log_paths(block), ["logs/fastqc/sample.log"])
+
+        multi_block = "Error in rule merge:\n    log: a.log, b.log (check log file(s) for error message)\n"
+        self.assertEqual(cli._job_log_paths(multi_block), ["a.log", "b.log"])
+
+        no_log_block = "Error in rule foo:\n    jobid: 1\n"
+        self.assertEqual(cli._job_log_paths(no_log_block), [])
+
 
 class ArgvValidationTestCase(unittest.TestCase):
     """Argument checks that must fail fast, before any subprocess is spawned: `run` (unlike
@@ -336,6 +350,67 @@ class ArgvValidationTestCase(unittest.TestCase):
         self.assertIn("Locked", output)
         self.assertIn("pastForward unlock", output)
         self.assertNotIn("Interrupted", output)
+
+    def test_status_hides_job_lists_when_process_is_dead(self):
+        # Process finished (not running anymore) - "Last finished jobs"/"Currently running
+        # jobs" describe live progress and are meaningless once the run has stopped.
+        cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
+        os.makedirs(cli.LOG_DIR)
+        log_path = cli.LOG_DIR / "run_finished.log"
+        log_path.write_text("210 of 210 steps (100.0%) done\n")
+        cli.STATE_FILE.write_text(
+            json.dumps(
+                {
+                    "pid": 999999,
+                    "cmd": ["snakemake", "--cores", "4"],
+                    "log_file": str(log_path),
+                    "started_at": datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+        )
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_status([])
+        output = out.getvalue()
+        self.assertNotIn("Last finished jobs", output)
+        self.assertNotIn("Currently running jobs", output)
+
+    def test_status_prints_tail_of_failed_job_log(self):
+        # On a dead+failed run, status should surface the actual error message from each
+        # failed job's own log file - not just Snakemake's "check log file(s)" pointer.
+        cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
+        os.makedirs(cli.LOG_DIR)
+        main_log = cli.LOG_DIR / "run_failed.log"
+        job_log = cli.LOG_DIR / "bwa_mem2_sample.log"
+        job_log.write_text("bwa-mem2: error: index file not found\nAborting.\n")
+        main_log.write_text(
+            "12 of 210 steps (5.7%) done\n"
+            "Error in rule map_reads_to_reference_bwa_mem2:\n"
+            "    jobid: 12\n"
+            "    input: sample.fastq.gz, ref.fasta\n"
+            "    output: sample.bam\n"
+            f"    log: {job_log} (check log file(s) for error message)\n"
+            "    shell:\n"
+            "        bwa-mem2 mem ref.fasta sample.fastq.gz > sample.bam\n"
+            "        (one of the commands exited with non-zero exit code; note that "
+            "snakemake uses bash strict mode!)\n"
+            "\n"
+            "At least one job did not complete successfully.\n"
+        )
+        cli.STATE_FILE.write_text(
+            json.dumps(
+                {
+                    "pid": 999999,
+                    "cmd": ["snakemake", "--cores", "4"],
+                    "log_file": str(main_log),
+                    "started_at": datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+        )
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_status([])
+        output = out.getvalue()
+        self.assertIn("index file not found", output)
+        self.assertIn(str(job_log), output)
 
     def test_print_log_rejects_arguments(self):
         with self.assertRaises(SystemExit):

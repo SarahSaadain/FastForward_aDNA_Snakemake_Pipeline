@@ -36,6 +36,7 @@ DEFAULT_CONFIGFILE = "config/config.yaml"  # matches initialize.smk's `configfil
 
 DEFAULT_TAIL_LINES = 20
 WATCH_TAIL_LINES = 10
+FAILED_JOB_LOG_TAIL_LINES = 20
 
 # Matches CLAUDE.md's documented "real run" command.
 DEFAULT_RUN_FLAGS = [("--use-conda", None), ("--keep-going", None), ("--rerun-trigger", "mtime")]
@@ -53,6 +54,11 @@ FAILED_RE = re.compile(r"At least one job did not complete successfully\.")
 LOCK_RE = re.compile(r"LockException")
 PROJECT_NAME_RE = re.compile(r'^project_name:\s*["\']?([^"\'\n]+?)["\']?\s*$', re.MULTILINE)
 JOB_ERROR_BLOCK_RE = re.compile(r"^Error in rule \S+:\n(?:[ \t]+.*\n?)*", re.MULTILINE)
+# The `log:` line Snakemake prints inside an "Error in rule" block - points at the rule's own
+# log file (from its `log:` directive), which holds the actual command output/error message.
+# That's distinct from the main pipeline log (LOG_DIR/*.log) this module otherwise parses -
+# the "Error in rule" block itself only ever says "check log file(s) for error message".
+JOB_LOG_PATH_RE = re.compile(r"^\s*log:\s*(.+?)(?:\s*\(check log file\(s\) for error message\))?\s*$", re.MULTILINE)
 
 
 RED, GREEN, YELLOW, CYAN, DIM, BOLD_GREEN = 31, 32, 33, 36, 90, "1;32"
@@ -245,6 +251,26 @@ def _parse_job_errors(text, n=3):
     return list(by_rule.values())[-n:]
 
 
+def _job_log_paths(error_block):
+    """Log file path(s) declared on an "Error in rule" block's own `log:` line - a rule can
+    declare more than one, comma-separated."""
+    m = JOB_LOG_PATH_RE.search(error_block)
+    if not m:
+        return []
+    return [p.strip() for p in m.group(1).split(",") if p.strip()]
+
+
+def _print_failed_job_log(path, tail=FAILED_JOB_LOG_TAIL_LINES):
+    p = Path(path)
+    print(_color(DIM, f"    --- tail -n {tail} {path} ---"))
+    if not p.exists():
+        print(_color(DIM, "    (log file not found)"))
+        return
+    lines = p.read_text(errors="replace").splitlines()[-tail:]
+    for line in lines:
+        print(f"    {_colorize(line, SNAKEMAKE_LINE_RULES)}")
+
+
 def _format_duration(seconds):
     minutes, seconds = divmod(int(seconds), 60)
     hours, minutes = divmod(minutes, 60)
@@ -355,6 +381,8 @@ def _print_status(tail=None):
                 print(f"  {_color(RED, lines[0])}")
                 for line in lines[1:]:
                     print(f"  {_color(DIM, line)}")
+                for job_log_path in _job_log_paths(block):
+                    _print_failed_job_log(job_log_path)
         print(_color(DIM, "Resume with: pastForward resume --cores <N>"))
     elif not alive and LOCK_RE.search(text):
         print(_color(RED, "Locked:     directory is locked (stale lock from a killed run or power loss)."))
@@ -368,13 +396,17 @@ def _print_status(tail=None):
 
     print(f"{_color(CYAN, 'Progress:')}  {progress_str}")
 
-    finished, running = _parse_last_steps(text)
-    print(_color(CYAN, "Last finished jobs:") if finished else _color(DIM, "Last finished jobs: (none yet)"))
-    for rule_name, jobid in finished:
-        print(f"  - {rule_name} (jobid {jobid}) [{_color(GREEN, 'done')}]")
-    print(_color(CYAN, f"Currently running jobs ({len(running)}):") if running else _color(DIM, "Currently running jobs: (none)"))
-    for rule_name, jobid in running:
-        print(f"  - {rule_name} (jobid {jobid})")
+    # Once the process is dead, "currently running" is meaningless and "last finished" is a
+    # stale snapshot rather than live progress - the Failed/Locked/Interrupted messaging above
+    # (plus the failed-job logs) already covers what matters for a finished run.
+    if alive:
+        finished, running = _parse_last_steps(text)
+        print(_color(CYAN, "Last finished jobs:") if finished else _color(DIM, "Last finished jobs: (none yet)"))
+        for rule_name, jobid in finished:
+            print(f"  - {rule_name} (jobid {jobid}) [{_color(GREEN, 'done')}]")
+        print(_color(CYAN, f"Currently running jobs ({len(running)}):") if running else _color(DIM, "Currently running jobs: (none)"))
+        for rule_name, jobid in running:
+            print(f"  - {rule_name} (jobid {jobid})")
 
     if tail:
         print(_color(DIM, f"\n--- tail -n {tail} {log_path} ---"))
@@ -540,10 +572,14 @@ Commands:
   dryrun [snakemake-args...]    Run `snakemake --dryrun` in the foreground.
   status [--watch]              Show progress of the tracked background run:
                                 project name, config file, PID, runtime, a
-                                progress bar, and the last/currently running
-                                jobs. --watch reprints the formatted status
-                                (with a short log tail) every 5s until the run
-                                ends (Ctrl-C to stop early).
+                                progress bar, and (while still running) the
+                                last/currently running jobs. If the process
+                                has stopped and at least one job failed, prints
+                                the failing rule(s) plus a tail of each
+                                failed job's own log file. --watch reprints
+                                the formatted status (with a short log tail)
+                                every 5s until the run ends (Ctrl-C to stop
+                                early).
   abort [--force]               Stop the tracked background run: SIGTERM by
                                 default (Snakemake shuts its own subprocesses
                                 down); --force kills the whole process group
