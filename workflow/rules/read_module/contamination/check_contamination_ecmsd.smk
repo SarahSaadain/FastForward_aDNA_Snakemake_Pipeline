@@ -52,10 +52,10 @@ rule ecmsd_analyze_contamination:
         paf="{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito.paf.gz",
         coverage="{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_coverage.txt",
         ranked_summary="{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.ref_summary.txt",
-        tax_hierarchy_proportions=_ecmsd_tax_hierarchy_proportions_txt_output,
-        tax_hierarchy_summary=_ecmsd_tax_hierarchy_summary_txt_output,
-        tax_hierarchy_readlength=_ecmsd_tax_hierarchy_readlength_output,
-        tax_hierarchy_proportions_png=_ecmsd_tax_hierarchy_proportions_png_output,
+        #tax_hierarchy_proportions=_ecmsd_tax_hierarchy_proportions_txt_output,
+        #tax_hierarchy_summary=_ecmsd_tax_hierarchy_summary_txt_output,
+        #tax_hierarchy_readlength=_ecmsd_tax_hierarchy_readlength_output,
+        #tax_hierarchy_proportions_png=_ecmsd_tax_hierarchy_proportions_png_output,
     log:
         "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_ecmsd.log",
     conda:
