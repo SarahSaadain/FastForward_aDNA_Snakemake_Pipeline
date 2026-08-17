@@ -8,16 +8,25 @@ output_file = snakemake.output[0]     # output TSV path
 taxonomic_hierarchy = snakemake.params.taxonomic_hierarchy  # e.g., "genus", "family", etc.
 
 all_dfs = []
+taxonomic_column = taxonomic_hierarchy.lower()
 
 for file in input_files:
     df = pd.read_csv(file, sep="\t")
+
+    # no contamination hits for this sample -> keep it as a zero row instead of
+    # dropping it, otherwise a clean sample vanishes from the matrix entirely
+    # and, if it's the only sample for its individual, MultiQC gets a
+    # data-less TSV it can't parse (ponytail: header-only synthetic row, revisit if ECMSD output format changes)
+    if df.empty:
+        df = pd.DataFrame({taxonomic_column: ["none_detected"], "TotalReads": [0]})
+
     sample_name = Path(file).stem
     df['Sample'] = sample_name.replace(f"_Mito_summary_{taxonomic_hierarchy}_proportions", '')
-    
+
     # remove Proportion column if exists
     if 'Proportion' in df.columns:
         df = df.drop(columns=['Proportion'])
-    
+
     all_dfs.append(df)
 
 # Combine all dataframes
