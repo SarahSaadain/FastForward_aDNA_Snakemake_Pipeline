@@ -22,6 +22,17 @@ CONDA_ENV="snakemake"
 KEEP=0
 [ "${1:-}" = "--keep" ] && KEEP=1
 
+# macOS ships BSD coreutils, which has no `timeout`; GNU coreutils (`brew install coreutils`)
+# installs it prefixed as `gtimeout` to avoid clobbering the BSD tools.
+if command -v timeout >/dev/null 2>&1; then
+  TIMEOUT_CMD="timeout"
+elif command -v gtimeout >/dev/null 2>&1; then
+  TIMEOUT_CMD="gtimeout"
+else
+  echo "ERROR: no 'timeout' or 'gtimeout' on PATH. On macOS: brew install coreutils." >&2
+  exit 2
+fi
+
 PASS_COUNT=0
 FAIL_COUNT=0
 FAILED_NAMES=()
@@ -67,7 +78,7 @@ job_total() {  # job_total <dryrun_log_file> - the "total   N" line from Snakema
 }
 
 run_dryrun() {  # run_dryrun <project_dir> <log_file> -> sets $DRYRUN_EXIT
-  ( cd "$1" && timeout 120 snakemake --cores 4 --dryrun > "$2" 2>&1 )
+  ( cd "$1" && "$TIMEOUT_CMD" 120 snakemake --cores 4 --dryrun > "$2" 2>&1 )
   DRYRUN_EXIT=$?
 }
 
@@ -295,7 +306,7 @@ rule make_out:
 onsuccess:
     release_pastforward_locks()
 EOF
-( cd "$S7" && timeout 30 snakemake --cores 1 -s Snakefile > run.log 2>&1 )
+( cd "$S7" && "$TIMEOUT_CMD" 30 snakemake --cores 1 -s Snakefile > run.log 2>&1 )
 S7_EXIT=$?
 if [ "$S7_EXIT" -eq 0 ] && [ ! -e "$EXT7/.pastforward.lock" ]; then
   pass "7: real run acquires the lock and releases it via onsuccess:"

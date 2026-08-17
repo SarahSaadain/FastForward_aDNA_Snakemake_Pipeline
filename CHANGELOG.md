@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 
 ### CI / Maintenance
 
+- **`tests/dryrun_scenarios.sh` on macOS**: Was hard-coded to GNU `timeout`, which macOS doesn't ship, so every scenario failed with exit 127 there; now falls back to `gtimeout` (`brew install coreutils`) when plain `timeout` isn't on PATH
 - **`file_manager.py` logger**: Was importing `logger` from the stdlib `venv` module (an internal implementation detail, not a public API) instead of creating its own; now uses `logging.getLogger(__name__)`. No behavior change today, but the old import was one Python version away from breaking
 - Removed dead commented-out code (copy-pasted across `common.smk` and one `expected_output` script) and unused imports
 - Consolidated duplicated FASTA-glob discovery logic in `file_manager.py` (reference/feature-library/SCG/competition lookups) into a shared helper

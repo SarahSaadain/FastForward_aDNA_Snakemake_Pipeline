@@ -14,3 +14,4 @@ __pycache__
 # Synthetic test library materialized by tests/build_test_library.py (rebuilt on every
 # test run - see tests/README.md).
 tests/fixtures/
+config.yaml
