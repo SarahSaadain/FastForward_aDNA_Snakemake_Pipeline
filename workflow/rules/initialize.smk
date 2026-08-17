@@ -56,6 +56,51 @@ configfile: "config/config.yaml"
 
 
 # =================================================================================================
+#     External tool version source (ECMSD / REVEAL)
+# =================================================================================================
+# ECMSD and REVEAL can each be pinned (the default) or side-loaded straight from GitHub via
+# workflow/envs/ecmsd.post-deploy.sh / reveal_module.post-deploy.sh. Those post-deploy scripts run
+# as a plain subprocess right after conda (re)creates the environment and have no access to this
+# `config` object, so the chosen source is bridged across as an environment variable that the
+# subprocess inherits normally. Conda only re-runs a post-deploy script when its environment is
+# (re)created, so changing version_source alone does not fetch a new version until that env is
+# recreated (e.g. `snakemake --conda-create-envs-only --conda-cleanup-envs`) — see FAQ.md.
+_ECMSD_VERSION_SOURCES = ("conda", "latest_release", "dev")
+_REVEAL_VERSION_SOURCES = ("pinned", "latest_release", "dev")
+
+_ecmsd_version_source = (
+    config.get("pipeline", {})
+    .get("read_module", {})
+    .get("contamination", {})
+    .get("tools", {})
+    .get("ecmsd", {})
+    .get("settings", {})
+    .get("version_source", "conda")
+)
+if _ecmsd_version_source not in _ECMSD_VERSION_SOURCES:
+    raise ValueError(
+        "pipeline.read_module.contamination.tools.ecmsd.settings.version_source must be "
+        f"one of {_ECMSD_VERSION_SOURCES}, got {_ecmsd_version_source!r}"
+    )
+os.environ["PASTFORWARD_ECMSD_VERSION_SOURCE"] = _ecmsd_version_source
+
+_reveal_version_source = (
+    config.get("pipeline", {})
+    .get("reveal_module", {})
+    .get("settings", {})
+    .get("version_source", "pinned")
+)
+if _reveal_version_source not in _REVEAL_VERSION_SOURCES:
+    raise ValueError(
+        "pipeline.reveal_module.settings.version_source must be "
+        f"one of {_REVEAL_VERSION_SOURCES}, got {_reveal_version_source!r}"
+    )
+os.environ["PASTFORWARD_REVEAL_VERSION_SOURCE"] = _reveal_version_source
+
+del _ecmsd_version_source, _reveal_version_source
+
+
+# =================================================================================================
 #     Workflow Header Logging
 # =================================================================================================
 # Skip all info gathering and output when running as a subprocess

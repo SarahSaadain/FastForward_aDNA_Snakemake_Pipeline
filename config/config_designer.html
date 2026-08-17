@@ -702,6 +702,24 @@
                   <div class="when-hint"><span class="def-pill on">Default: ON</span>Turn off if ECMSD is not installed or configured on your system. Well-suited for vertebrate aDNA where mitochondrial contamination is the primary concern.</div>
                 </p>
                 <div class="opt-group">
+                  <div class="opt-header" id="ca_ecmsd_vs_hdr">
+                    <input type="checkbox" id="ca_ecmsd_vs_en" onchange="optToggle('ca_ecmsd_vs_en','ca_ecmsd_vs_body','ca_ecmsd_vs_hdr'); render()">
+                    <label for="ca_ecmsd_vs_en">Tool version source</label>
+                    <span class="opt-tag">optional</span>
+                  </div>
+                  <div class="opt-body" id="ca_ecmsd_vs_body">
+                    <div class="field" style="margin-top:8px">
+                      <label>Version source</label>
+                      <select id="ca_ecmsd_vs" onchange="render()">
+                        <option value="conda" selected>conda (bioconda-packaged ecmsd=1.*)</option>
+                        <option value="latest_release">latest_release (always newest GitHub release)</option>
+                        <option value="dev">dev [experimental] (tip of ECMSD's development branch)</option>
+                      </select>
+                      <p class="hint">Default: <code>conda</code>. Only takes effect when the <code>ecmsd</code> conda environment is (re)created — see FAQ.md.</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="opt-group">
                   <div class="opt-header" id="ca_ecmsd_db_hdr">
                     <input type="checkbox" id="ca_ecmsd_db_en" onchange="optToggle('ca_ecmsd_db_en','ca_ecmsd_db_body','ca_ecmsd_db_hdr'); render()">
                     <label for="ca_ecmsd_db_en">Custom database path</label>
@@ -1082,6 +1100,28 @@
         <p class="exec-note"><span class="def-pill on">Default: ON</span>Turn off if you are not performing TE or genomic feature abundance analysis, or if the feature library and SCG library are not yet prepared. Requires both libraries placed in <code style="font-size:.68rem;background:#e9ecf0;padding:1px 4px;border-radius:3px">{species}/input/reveal_module/</code>.</p>
 
         <div id="rv_body">
+
+          <!-- REVEAL version source -->
+          <div style="border:1px solid var(--border);border-radius:7px;padding:11px 12px;margin-bottom:10px">
+            <div class="opt-group" style="margin:0">
+              <div class="opt-header" id="rv_vs_hdr">
+                <input type="checkbox" id="rv_vs_en" onchange="optToggle('rv_vs_en','rv_vs_body','rv_vs_hdr'); render()">
+                <label for="rv_vs_en">Tool version source</label>
+                <span class="opt-tag">optional</span>
+              </div>
+              <div class="opt-body" id="rv_vs_body">
+                <div class="field" style="margin-top:8px">
+                  <label>Version source</label>
+                  <select id="rv_vs" onchange="render()">
+                    <option value="pinned" selected>pinned (version pinned in reveal_module.post-deploy.sh)</option>
+                    <option value="latest_release">latest_release (always newest GitHub release)</option>
+                    <option value="dev">dev [experimental] (tip of REVEAL's develop branch)</option>
+                  </select>
+                  <p class="hint">Default: <code>pinned</code>. REVEAL is not yet on bioconda and is always side-loaded; this only takes effect when the <code>reveal_module</code> conda environment is (re)created — see FAQ.md.</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <!-- SCG Selector -->
           <div class="subsection">
@@ -1639,8 +1679,9 @@ function buildYAML() {
   p(6, 'tools:');
   p(8, 'ecmsd:');
   kv(10, 'execute', gb('ca_ecmsd_exec'));
-  if (gb('ca_ecmsd_db_en') || gb('ca_ecmsd_adv_en')) {
+  if (gb('ca_ecmsd_vs_en') || gb('ca_ecmsd_db_en') || gb('ca_ecmsd_adv_en')) {
     p(10, 'settings:');
+    if (gb('ca_ecmsd_vs_en') && gv('ca_ecmsd_vs') !== 'conda') kv(12, 'version_source', gv('ca_ecmsd_vs'));
     if (gb('ca_ecmsd_db_en') && gv('ca_ecmsd_db').trim()) kv(12, 'database', gv('ca_ecmsd_db'));
     if (gb('ca_ecmsd_adv_en')) {
       kv(12, 'cov_threshold', gn('ca_ecmsd_cov_threshold'));
@@ -1694,6 +1735,10 @@ function buildYAML() {
   p(0, ''); p(0, '');
   p(2, 'reveal_module:');
   kv(4, 'execute', gb('rv_exec'));
+  if (gb('rv_vs_en') && gv('rv_vs') !== 'pinned') {
+    p(4, 'settings:');
+    kv(6, 'version_source', gv('rv_vs'));
+  }
   p(4, 'scg_selector:');
   kv(6, 'execute', gb('scg_exec'));
   p(6, 'settings:');
@@ -1914,6 +1959,8 @@ function populateForm(c) {
   const ecmsd_tool = cat.ecmsd || {};
   const ecmsd_s = ecmsd_tool.settings || {};
   sb('ca_ecmsd_exec', ecmsd_tool.execute);
+  if (ecmsd_s.version_source !== undefined) { setOpt('ca_ecmsd_vs_en','ca_ecmsd_vs_body','ca_ecmsd_vs_hdr',true); sv('ca_ecmsd_vs',ecmsd_s.version_source); }
+  else { setOpt('ca_ecmsd_vs_en','ca_ecmsd_vs_body','ca_ecmsd_vs_hdr',false); sv('ca_ecmsd_vs','conda'); }
   if (ecmsd_s.database !== undefined) { setOpt('ca_ecmsd_db_en','ca_ecmsd_db_body','ca_ecmsd_db_hdr',true); sv('ca_ecmsd_db',ecmsd_s.database); }
   else setOpt('ca_ecmsd_db_en','ca_ecmsd_db_body','ca_ecmsd_db_hdr',false);
   if (ecmsd_s.cov_threshold !== undefined || ecmsd_s.top_n !== undefined || ecmsd_s.mapping_quality !== undefined || ecmsd_s.taxonomic_hierarchy !== undefined) {
@@ -1958,6 +2005,9 @@ function populateForm(c) {
 
   sb('rv_exec', reveal.execute);
   toggleStage('rv_body', document.getElementById('rv_exec'));
+  const revealS = reveal.settings || {};
+  if (revealS.version_source !== undefined) { setOpt('rv_vs_en','rv_vs_body','rv_vs_hdr',true); sv('rv_vs',revealS.version_source); }
+  else { setOpt('rv_vs_en','rv_vs_body','rv_vs_hdr',false); sv('rv_vs','pinned'); }
   const scg  = reveal.scg_selector || {};
   const scgs = scg.settings || {};
   sb('scg_exec', scg.execute); dot('scg_exec','d_scg');

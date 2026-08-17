@@ -19,6 +19,7 @@ ourselves sidesteps that entirely.
 import json
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -437,6 +438,80 @@ def cmd_unlock(argv):
     sys.exit(subprocess.call(["snakemake", "--unlock", "--cores", "1"]))
 
 
+def _known_env_names():
+    # workflow/envs/<name>.yaml -> "<name>", e.g. "ecmsd", "reveal_module".
+    return sorted(p.stem for p in Path("workflow/envs").glob("*.yaml"))
+
+
+def _list_conda_envs():
+    # `--list-conda-envs` never creates anything on disk (Snakemake always resolves it with
+    # dryrun=True internally, regardless of whether --dryrun is passed) - safe to call any time.
+    # --nolock: read-only, like check/preview - must not be blocked by, or block, a real run.
+    proc = subprocess.run(
+        ["snakemake", "--use-conda", "--list-conda-envs", "--cores", "1", "--nolock"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    if proc.returncode != 0:
+        print(_color(RED, "snakemake --list-conda-envs failed:"), file=sys.stderr)
+        print("\n".join(proc.stdout.splitlines()[-20:]), file=sys.stderr)
+        sys.exit(proc.returncode)
+    # The env table is the only tab-separated, 3-column output on the whole stream - everything
+    # else is the usual startup logging (see initialize.smk), which never looks like that.
+    envs = []
+    for line in proc.stdout.splitlines():
+        parts = line.split("\t")
+        if len(parts) == 3 and parts[0] != "environment":
+            envs.append({"env_file": parts[0], "location": parts[2]})
+    return envs
+
+
+def cmd_doctor(argv):
+    _ensure_project_root()
+    rebuild = "--rebuild-envs" in argv
+    names = [a for a in argv if a != "--rebuild-envs"]
+    if not rebuild and names:
+        _die(f"pastForward doctor: unknown argument(s): {' '.join(names)} (did you mean --rebuild-envs?)")
+    known = _known_env_names()
+    unknown = [n for n in names if n not in known]
+    if unknown:
+        _die(f"pastForward doctor: unknown env name(s): {', '.join(unknown)}\nKnown envs: {', '.join(known)}")
+
+    print(_color(DIM, "Resolving conda environments (snakemake --list-conda-envs)..."))
+    envs = _list_conda_envs()
+    if not envs:
+        _die("pastForward doctor: no conda environments found for the current config.")
+
+    targets = [e for e in envs if Path(e["env_file"]).stem in names] if names else envs
+
+    print(f"{'ENV FILE':<28}{'STATUS':<10}LOCATION")
+    for e in envs:
+        built = Path(e["location"]).is_dir()
+        # Pad the plain text first, then colorize - _color()'s ANSI codes would otherwise count
+        # toward the width and throw off alignment.
+        status = _color(GREEN if built else YELLOW, f"{'built' if built else 'missing':<10}")
+        marker = _color(CYAN, " (rebuilding)") if rebuild and e in targets else ""
+        print(f"{Path(e['env_file']).name:<28}{status}{e['location']}{marker}")
+
+    if not rebuild:
+        print()
+        print(_color(DIM, "Add --rebuild-envs [name ...] to force one or more of these to be recreated."))
+        return
+
+    print()
+    removed = [e for e in targets if Path(e["location"]).is_dir()]
+    for e in removed:
+        shutil.rmtree(e["location"])
+        print(_color(YELLOW, f"Removed {e['location']}"))
+    if not removed:
+        print(_color(DIM, "Nothing to remove - target environment(s) not yet built."))
+
+    print()
+    print(_color(DIM, "Recreating via snakemake --use-conda --conda-create-envs-only..."))
+    sys.exit(subprocess.call(["snakemake", "--use-conda", "--conda-create-envs-only", "--cores", "1"]))
+
+
 def _dryrun_capture():
     # No passthrough args: check/preview parse the "Detected species"/"Requesting:" log lines
     # that only get emitted while Snakemake builds rule all's DAG - passing a target/rule name
@@ -549,6 +624,7 @@ COMMANDS = {
     "status": cmd_status,
     "abort": cmd_abort,
     "unlock": cmd_unlock,
+    "doctor": cmd_doctor,
     "check": cmd_check,
     "preview": cmd_preview,
     "print-log": cmd_print_log,
@@ -586,6 +662,15 @@ Commands:
                                 immediately.
   unlock                        Run `snakemake --unlock` to clear a stale
                                 Snakemake lock left by a crashed run.
+  doctor [--rebuild-envs [name ...]]
+                                List the pipeline's conda environments
+                                (workflow/envs/*.yaml) and whether each is
+                                currently built. Add --rebuild-envs to force
+                                one or more back to a not-yet-built state and
+                                immediately recreate them - e.g. after bumping
+                                an ecmsd/reveal_module version_source setting,
+                                which only takes effect on the next env build.
+                                With no names, rebuilds every environment.
   check                         Show what pastForward discovers on disk for
                                 the current config
                                 (species/individuals/references/...).

@@ -148,6 +148,15 @@ pipeline:
           # When true, this tool will be executed (Default: true)
           execute: true
           settings:
+            # Where to get the ECMSD binary from (Default: "conda"). Options:
+            #   "conda"          -- the bioconda-packaged ecmsd=1.* release (default)
+            #   "latest_release" -- always side-load the newest tagged release from
+            #                        https://github.com/capoony/ECMSD (unpinned by design)
+            #   "dev"            -- [experimental] side-load the tip of ECMSD's "development"
+            #                        branch. Unreleased and untested -- use at your own risk.
+            # Only takes effect when the ecmsd conda environment is (re)created; changing this
+            # alone does not update an already-built environment (see FAQ.md).
+            #version_source: "conda"
             # Optional: Path to the ECMSD database folder.
             # If not provided, the database will be auto-created via ECMSD --create-db
             #database: "resources/ecmsd_database"
@@ -264,6 +273,18 @@ pipeline:
   reveal_module:
     # When true, this stage will be executed (Default: true)
     execute: true
+
+    settings:
+      # Where to get the REVEAL toolkit from (not yet on bioconda, always side-loaded)
+      # (Default: "pinned"). Options:
+      #   "pinned"          -- the version pinned in reveal_module.post-deploy.sh (default)
+      #   "latest_release"  -- always side-load the newest tagged release from
+      #                        https://github.com/SarahSaadain/REVEAL (unpinned by design)
+      #   "dev"             -- [experimental] side-load the tip of REVEAL's "develop" branch.
+      #                        Unreleased and untested -- use at your own risk.
+      # Only takes effect when the reveal_module conda environment is (re)created; changing
+      # this alone does not update an already-built environment (see FAQ.md).
+      #version_source: "pinned"
 
     # ── SCG Selector ──────────────────────────────────────────────────────────
     # Automatically determines single-copy genes (SCGs) via BUSCO when no SCG

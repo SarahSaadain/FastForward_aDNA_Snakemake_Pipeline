@@ -55,6 +55,8 @@ For a new project, run these in order:
 ./pastForward abort            # stop it gracefully (SIGTERM; snakemake shuts down its own subprocesses)
 ./pastForward abort --force    # or kill it and everything it started, immediately
 ./pastForward unlock           # clear a stale lock left by a crashed run
+./pastForward doctor                        # list conda envs and whether each is built
+./pastForward doctor --rebuild-envs ecmsd   # force one (or, with no names, all) to be recreated
 ./pastForward print-log        # print the most recently written log from logs/
 ./pastForward print-log --tail 50  # only the last 50 lines (default 20)
 ./pastForward print-log --live     # tail -f the log (Ctrl-C to stop)
