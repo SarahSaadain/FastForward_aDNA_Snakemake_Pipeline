@@ -27,7 +27,7 @@ rule ecmsd_database_setup:
     log:
         "resources/ecmsd_database_setup.log",
     conda:
-        "../../../envs/ecmsd.yaml"
+        ECMSD_CONDA_ENV
     message:
         "Setting up ECMSD database."
     shell:
@@ -59,7 +59,7 @@ rule ecmsd_analyze_contamination:
     log:
         "{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_ecmsd.log",
     conda:
-        "../../../envs/ecmsd.yaml"
+        ECMSD_CONDA_ENV
     threads: 15
     params:
         cov_threshold=config.get("pipeline", {})

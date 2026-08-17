@@ -330,7 +330,7 @@ Yes. As long as the ECMSD database is accessible at the expected path in the pip
 Use `tools.ecmsd.settings.database` to specify a custom path to the ECMSD database if needed. Otherwise, pastForward will manage it automatically.
 
 **Q: Can I make pastForward always use the latest ECMSD release instead of the bioconda-pinned one?**
-Yes. Set `tools.ecmsd.settings.version_source: "latest_release"` to side-load the newest tagged release from [capoony/ECMSD](https://github.com/capoony/ECMSD) instead of the bioconda-packaged `ecmsd=1.*`. There is also an **experimental** `"dev"` option that tracks the tip of ECMSD's `development` branch — unreleased and untested, use at your own risk. Note the resolution timing caveat: this is only re-checked when the `ecmsd` conda environment is (re)created, not on every run — see the REVEAL Module section below for details, the mechanism is identical for both tools.
+Yes. Set `tools.ecmsd.settings.version_source: "latest_release"` to side-load the newest tagged release from [capoony/ECMSD](https://github.com/capoony/ECMSD) instead of the bioconda-packaged `ecmsd=1.*`. There is also an **experimental** `"dev"` option that tracks the tip of ECMSD's `development` branch — unreleased and untested, use at your own risk. Each `version_source` value has its own dedicated conda env file (`workflow/envs/ecmsd*.yaml`), so switching the setting switches which env a rule depends on and Snakemake builds/reuses that env automatically — see the REVEAL Module section below for the one case that still needs a manual rebuild, the mechanism is identical for both tools.
 
 **Q: The Centrifuge database isn't specified. What happens?**
 If `tools.centrifuge.settings.index` is not set, pastForward will attempt to download a default index automatically. For reproducible runs, specify your own index path.
@@ -371,10 +371,10 @@ Sequences are flagged if the log₂ fold-change in median coverage across indivi
 Yes. Set `pipeline.reveal_module.settings.version_source: "latest_release"` to side-load the newest tagged release from [SarahSaadain/REVEAL](https://github.com/SarahSaadain/REVEAL) instead of the version pinned in `reveal.post-deploy.sh`. There is also an **experimental** `"dev"` option that tracks the tip of REVEAL's `develop` branch — unreleased and untested, use at your own risk. The same two options exist for ECMSD via `tools.ecmsd.settings.version_source` (default `"conda"` there instead of `"pinned"`, since ECMSD normally comes from bioconda rather than a pinned tarball).
 
 **Q: I set `version_source` to `latest_release` or `dev`, but pastForward is still using the old version. Why?**
-REVEAL and ECMSD are installed by a conda post-deploy script that runs exactly once, right when their conda environment is first created — it has no way to notice a config change on later runs, so it never re-checks GitHub on its own. To actually pick up a newer release or a new dev-branch commit, force that one environment to be rebuilt:
+REVEAL and ECMSD are installed by a conda post-deploy script that runs exactly once, right when their conda environment is first created — it has no way to notice a config change on later runs, so it never re-checks GitHub on its own. Switching `version_source` itself (e.g. `conda` → `latest_release`) points the rule at a different env file and Snakemake builds that env fresh on its own, no manual step needed. But staying on the same unpinned `version_source` while wanting to pick up a newer release/commit needs that one environment force-rebuilt:
 ```bash
-pastForward doctor --rebuild-envs ecmsd          # or: reveal
-pastForward doctor --rebuild-envs                # rebuilds every conda env, not just these two
+pastForward doctor --rebuild-envs ecmsd_git_release   # or: ecmsd_git_development, reveal_git_release, reveal_git_development
+pastForward doctor --rebuild-envs                      # rebuilds every conda env, not just these
 ```
 `pastForward doctor` on its own lists every conda environment the pipeline uses and whether each is currently built, without changing anything. Under the hood this deletes that environment's folder under `.snakemake/conda/` and runs `snakemake --use-conda --conda-create-envs-only` to recreate it — the same thing you'd do by hand with plain `snakemake --cores <N> --use-conda --conda-create-envs-only --conda-cleanup-envs`. This is intentional: it keeps a single pipeline run reproducible even when `version_source` is set to a moving target, at the cost of not auto-updating mid-project.
 

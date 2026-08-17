@@ -154,8 +154,9 @@ pipeline:
             #                        https://github.com/capoony/ECMSD (unpinned by design)
             #   "dev"            -- [experimental] side-load the tip of ECMSD's "development"
             #                        branch. Unreleased and untested -- use at your own risk.
-            # Only takes effect when the ecmsd conda environment is (re)created; changing this
-            # alone does not update an already-built environment (see FAQ.md).
+            # Each option has its own conda env file, so switching this builds/reuses that env
+            # automatically; picking up a newer release/commit on an already-built unpinned env
+            # still needs a manual rebuild (see FAQ.md).
             #version_source: "conda"
             # Optional: Path to the ECMSD database folder.
             # If not provided, the database will be auto-created via ECMSD --create-db
@@ -282,8 +283,9 @@ pipeline:
       #                        https://github.com/SarahSaadain/REVEAL (unpinned by design)
       #   "dev"             -- [experimental] side-load the tip of REVEAL's "develop" branch.
       #                        Unreleased and untested -- use at your own risk.
-      # Only takes effect when the reveal conda environment is (re)created; changing
-      # this alone does not update an already-built environment (see FAQ.md).
+      # Each option has its own conda env file, so switching this builds/reuses that env
+      # automatically; picking up a newer release/commit on an already-built unpinned env
+      # still needs a manual rebuild (see FAQ.md).
       #version_source: "pinned"
 
     # ── SCG Selector ──────────────────────────────────────────────────────────

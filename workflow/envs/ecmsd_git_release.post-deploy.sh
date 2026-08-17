@@ -1,28 +1,14 @@
 #!/usr/bin/env python3
 """
-Optionally overrides the bioconda-installed ECMSD (https://github.com/capoony/ECMSD) in this
-conda environment with a version side-loaded straight from GitHub.
+Side-loads the latest tagged GitHub release of ECMSD (https://github.com/capoony/ECMSD) into this
+conda environment, overriding the bioconda-installed copy created from the neighboring
+ecmsd_git_release.yaml (see "Post-Deployment Scripts for Conda Environments" in the Snakemake
+docs). Matches bioconda's own recipe layout (bioconda-recipes/recipes/ecmsd/build.sh) exactly so
+every ecmsd rule keeps calling the plain `ECMSD` command unchanged.
 
-Snakemake runs this once, automatically, right after creating the conda environment from the
-neighboring ecmsd.yaml (see "Post-Deployment Scripts for Conda Environments" in the Snakemake
-docs). ecmsd.yaml's `ecmsd=1.*` dependency already installs ECMSD normally via bioconda -- this
-script only does something when a non-default source is requested, in which case it overwrites
-that bioconda-installed copy in place, matching bioconda's own recipe layout
-(bioconda-recipes/recipes/ecmsd/build.sh) exactly so every ecmsd rule keeps calling the plain
-`ECMSD` command unchanged either way.
-
-Which build wins is controlled by
-pipeline.read_module.contamination.tools.ecmsd.settings.version_source in config.yaml (bridged
-in via the PASTFORWARD_ECMSD_VERSION_SOURCE env var -- see initialize.smk, post-deploy scripts
-have no access to Snakemake's `config`):
-  - "conda" (default): do nothing -- keep the bioconda-installed ecmsd=1.*.
-  - "latest_release": side-load whatever GitHub currently reports as ECMSD's latest release.
-    Unpinned by design -- recreate the env to update.
-  - "dev" [experimental]: side-load the tip of ECMSD's "development" branch. Unreleased,
-    untested, no integrity check possible.
-Since conda only re-runs this script when the environment is (re)created, changing
-version_source alone does not fetch a new version -- recreate the env (e.g.
-`snakemake --conda-create-envs-only --conda-cleanup-envs`).
+Selected via pipeline.read_module.contamination.tools.ecmsd.settings.version_source: "latest_release"
+(see initialize.smk, which maps that setting to this env file). Unpinned by design -- recreate the
+env to pick up a newer release (e.g. `snakemake --conda-create-envs-only --conda-cleanup-envs`).
 """
 
 import hashlib
@@ -34,23 +20,11 @@ import tempfile
 import urllib.request
 
 ECMSD_REPO = "capoony/ECMSD"
-ECMSD_DEV_BRANCH = "development"
-
-VERSION_SOURCE = os.environ.get("PASTFORWARD_ECMSD_VERSION_SOURCE", "conda")
 
 GITHUB_API_HEADERS = {
     "User-Agent": "pastForward-pipeline",
     "Accept": "application/vnd.github+json",
 }
-
-if VERSION_SOURCE == "conda":
-    raise SystemExit(0)
-
-if VERSION_SOURCE not in ("latest_release", "dev"):
-    raise ValueError(
-        f"unknown PASTFORWARD_ECMSD_VERSION_SOURCE {VERSION_SOURCE!r} "
-        "(expected 'conda', 'latest_release', or 'dev')"
-    )
 
 
 def _latest_release_tag():
@@ -62,13 +36,9 @@ def _latest_release_tag():
         return json.load(resp)["tag_name"]
 
 
-if VERSION_SOURCE == "latest_release":
-    resolved_tag = _latest_release_tag()
-    tarball_url = f"https://github.com/{ECMSD_REPO}/archive/refs/tags/{resolved_tag}.tar.gz"
-    description = f"latest release ({resolved_tag})"
-else:
-    tarball_url = f"https://github.com/{ECMSD_REPO}/archive/refs/heads/{ECMSD_DEV_BRANCH}.tar.gz"
-    description = f"[experimental] tip of '{ECMSD_DEV_BRANCH}' branch"
+resolved_tag = _latest_release_tag()
+tarball_url = f"https://github.com/{ECMSD_REPO}/archive/refs/tags/{resolved_tag}.tar.gz"
+description = f"latest release ({resolved_tag})"
 
 conda_prefix = os.environ["CONDA_PREFIX"]
 

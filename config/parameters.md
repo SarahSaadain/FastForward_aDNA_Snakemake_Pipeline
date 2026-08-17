@@ -77,7 +77,7 @@ Both tools operate on quality-filtered reads and can be toggled independently.
 
 | Setting | Default | Description |
 |---|---|---|
-| `tools.ecmsd.settings.version_source` | `conda` | Where to get the ECMSD binary. `conda` uses the bioconda-packaged `ecmsd=1.*` release; `latest_release` always side-loads the newest tagged release from [capoony/ECMSD](https://github.com/capoony/ECMSD); `dev` **(experimental)** side-loads the tip of ECMSD's `development` branch — unreleased and untested. Only takes effect when the `ecmsd` conda env is (re)created — see [FAQ.md](FAQ.md). |
+| `tools.ecmsd.settings.version_source` | `conda` | Where to get the ECMSD binary. `conda` uses the bioconda-packaged `ecmsd=1.*` release (`workflow/envs/ecmsd.yaml`); `latest_release` always side-loads the newest tagged release from [capoony/ECMSD](https://github.com/capoony/ECMSD) (`ecmsd_git_release.yaml`); `dev` **(experimental)** side-loads the tip of ECMSD's `development` branch — unreleased and untested (`ecmsd_git_development.yaml`). Each value has its own conda env, so switching it builds/reuses that env automatically; picking up a newer release/commit on an already-built unpinned env still needs a manual rebuild — see [FAQ.md](FAQ.md). |
 | `tools.ecmsd.settings.database` | — | Path to the ECMSD database folder. If omitted, the pipeline auto-creates a database at `resources/ecmsd_database` via `ECMSD --create-db`. |
 | `tools.ecmsd.settings.cov_threshold` | `25` | Minimum % of reference covered by reads to retain it. |
 | `tools.ecmsd.settings.top_n` | `25` | Number of top references to generate alignment plots for. |
@@ -148,7 +148,7 @@ Place feature libraries in `{species}/input/reveal_module/feature_library/` and,
 
 | Setting | Default | Description |
 |---|---|---|
-| `settings.version_source` | `pinned` | Where to get the REVEAL toolkit (not yet on bioconda, always side-loaded). `pinned` uses the exact version pinned in `reveal.post-deploy.sh`; `latest_release` always side-loads the newest tagged release from [SarahSaadain/REVEAL](https://github.com/SarahSaadain/REVEAL); `dev` **(experimental)** side-loads the tip of REVEAL's `develop` branch — unreleased and untested. Only takes effect when the `reveal` conda env is (re)created — see [FAQ.md](FAQ.md). |
+| `settings.version_source` | `pinned` | Where to get the REVEAL toolkit (not yet on bioconda, always side-loaded). `pinned` uses the exact version pinned in `reveal.post-deploy.sh` (`reveal.yaml`); `latest_release` always side-loads the newest tagged release from [SarahSaadain/REVEAL](https://github.com/SarahSaadain/REVEAL) (`reveal_git_release.yaml`); `dev` **(experimental)** side-loads the tip of REVEAL's `develop` branch — unreleased and untested (`reveal_git_development.yaml`). Each value has its own conda env, so switching it builds/reuses that env automatically; picking up a newer release/commit on an already-built unpinned env still needs a manual rebuild — see [FAQ.md](FAQ.md). |
 
 #### `scg_selector`
 
