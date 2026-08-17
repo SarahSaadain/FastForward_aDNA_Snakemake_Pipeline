@@ -174,7 +174,7 @@ pipeline:
           execute: true
           settings:
             # Optional: When true, human will be included in the Centrifuge analysis (Default: false)
-            include_human_taxid: true
+            include_human_taxid: false
             # Optional: Path to the conda environment for Centrifuge
             # If not provided, the default environment will be used
             #conda_env: "../../../../envs/centrifuge.yaml"
