@@ -78,9 +78,23 @@ REVEAL_CONDA_ENV = os.path.join(
 # =================================================================================================
 #     Workflow Header Logging
 # =================================================================================================
+PASTFORWARD_BANNER = r"""
+                 _   ___                           _
+   _ __  __ _ __| |_| __|__ _ ___ __ ____ _ _ _ __| |
+  | '_ \/ _` (_-<  _| _/ _ \ '_\ V  V / _` | '_/ _` |
+  | .__/\__,_/__/\__|_|\___/_|  \_/\_/\__,_|_| \__,_|
+  |_|
+"""
+
 # Skip all info gathering and output when running as a subprocess
 # (spawned by a parent Snakemake process — the parent already printed this)
 if workflow.exec_mode != ExecMode.SUBPROCESS:
+
+    # Printed directly (not via logger) so it isn't broken up by the per-line
+    # timestamp/level prefix; written to stderr to stay in the same stream as
+    # the logging handler so ordering is preserved when stdout+stderr are
+    # redirected to one log file.
+    print(PASTFORWARD_BANNER, file=sys.stderr)
 
     # Resolve optional per-species data-location overrides (species_dir, reads_dir, ...) into
     # symlinks at the conventional locations, and acquire the cross-project collision lock for
