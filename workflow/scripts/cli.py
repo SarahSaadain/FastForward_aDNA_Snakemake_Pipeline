@@ -58,8 +58,11 @@ JOB_ERROR_BLOCK_RE = re.compile(r"^Error in rule \S+:\n(?:[ \t]+.*\n?)*", re.MUL
 # The `log:` line Snakemake prints inside an "Error in rule" block - points at the rule's own
 # log file (from its `log:` directive), which holds the actual command output/error message.
 # That's distinct from the main pipeline log (LOG_DIR/*.log) this module otherwise parses -
-# the "Error in rule" block itself only ever says "check log file(s) for error message".
-JOB_LOG_PATH_RE = re.compile(r"^\s*log:\s*(.+?)(?:\s*\(check log file\(s\) for error message\))?\s*$", re.MULTILINE)
+# the "Error in rule" block itself only ever says "check log file(s) for error <message/details>".
+# The exact wording has changed across Snakemake versions (seen: "message", "details"), so match
+# either rather than hardcoding one - a mismatch here means the suffix gets captured as part of
+# the path instead of stripped, breaking the tail-the-failed-log lookup.
+JOB_LOG_PATH_RE = re.compile(r"^\s*log:\s*(.+?)(?:\s*\(check log file\(s\) for error \w+\))?\s*$", re.MULTILINE)
 
 
 RED, GREEN, YELLOW, CYAN, DIM, BOLD_GREEN = 31, 32, 33, 36, 90, "1;32"

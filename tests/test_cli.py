@@ -97,6 +97,16 @@ class StatusHelpersTestCase(unittest.TestCase):
         no_log_block = "Error in rule foo:\n    jobid: 1\n"
         self.assertEqual(cli._job_log_paths(no_log_block), [])
 
+    def test_job_log_paths_handles_details_wording(self):
+        # Newer Snakemake versions say "for error details" instead of "for error message" -
+        # the suffix must still be stripped rather than captured as part of the path.
+        block = (
+            "Error in rule normalize_visualization_of_individual:\n"
+            "    jobid: 52\n"
+            "    log: demo/results/Dmel1959_coverage.normalized.log (check log file(s) for error details)\n"
+        )
+        self.assertEqual(cli._job_log_paths(block), ["demo/results/Dmel1959_coverage.normalized.log"])
+
 
 class ArgvValidationTestCase(unittest.TestCase):
     """Argument checks that must fail fast, before any subprocess is spawned: `run` (unlike
