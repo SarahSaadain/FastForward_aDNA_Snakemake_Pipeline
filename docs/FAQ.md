@@ -376,10 +376,10 @@ Yes. Set `pipeline.reveal_module.settings.version_source: "latest_release"` to s
 **Q: I set `version_source` to `latest_release` or `dev`, but pastForward is still using the old version. Why?**
 REVEAL and ECMSD are installed by a conda post-deploy script that runs exactly once, right when their conda environment is first created — it has no way to notice a config change on later runs, so it never re-checks GitHub on its own. Switching `version_source` itself (e.g. `conda` → `latest_release`) points the rule at a different env file and Snakemake builds that env fresh on its own, no manual step needed. But staying on the same unpinned `version_source` while wanting to pick up a newer release/commit needs that one environment force-rebuilt:
 ```bash
-pastForward doctor --rebuild-envs ecmsd_git_release   # or: ecmsd_git_development, reveal_git_release, reveal_git_development
-pastForward doctor --rebuild-envs                      # rebuilds every conda env, not just these
+./pastForward doctor --rebuild-envs ecmsd_git_release   # or: ecmsd_git_development, reveal_git_release, reveal_git_development
+./pastForward doctor --rebuild-envs                      # rebuilds every conda env, not just these
 ```
-`pastForward doctor` on its own lists every conda environment the pipeline uses and whether each is currently built, without changing anything. Under the hood this deletes that environment's folder under `.snakemake/conda/` and runs `snakemake --use-conda --conda-create-envs-only` to recreate it — the same thing you'd do by hand with plain `snakemake --cores <N> --use-conda --conda-create-envs-only --conda-cleanup-envs`. This is intentional: it keeps a single pipeline run reproducible even when `version_source` is set to a moving target, at the cost of not auto-updating mid-project.
+`./pastForward doctor` on its own lists every conda environment the pipeline uses and whether each is currently built, without changing anything. Under the hood this deletes that environment's folder under `.snakemake/conda/` and runs `snakemake --use-conda --conda-create-envs-only` to recreate it — the same thing you'd do by hand with plain `snakemake --cores <N> --use-conda --conda-create-envs-only --conda-cleanup-envs`. This is intentional: it keeps a single pipeline run reproducible even when `version_source` is set to a moving target, at the cost of not auto-updating mid-project.
 
 ---
 

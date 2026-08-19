@@ -41,7 +41,7 @@ sections.
   targets that rely on sharing the Snakefile's globals (`config`, and each other's top-level
   functions) rather than importing anything, `workflow/scripts/pipeline_namespace.py` loads them into a
   shared namespace dict the same way, so they can run standalone (the same loader
-  `pastForward check`/`preview` use).
+  `./pastForward check`/`preview` use).
 
 - **`test_endogenous_reads_stats.py`** — the two endogenous-reads statistics helpers that are
   plain functions with no `snakemake` object dependency at import time

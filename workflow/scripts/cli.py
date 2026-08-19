@@ -8,7 +8,7 @@ scripts/pipeline_namespace.py, the same shared-namespace trick Snakemake's `incl
 and parse the provenance logging those files emit — same output as a --dryrun, without the
 DAG build or conda resolution, so they return in well under a second.
 
-Entry point: pastForward (project root) — a tiny shim that imports main() from here.
+Entry point: ./pastForward (project root) — a tiny shim that imports main() from here.
 
 Dispatch below is a hand-rolled `sys.argv` split rather than argparse subparsers: argparse's
 REMAINDER positional (needed to pass arbitrary snakemake flags through untouched) errors out
@@ -121,8 +121,9 @@ def _ensure_project_root(require_snakemake=True):
             "pastForward: this isn't a project root (needs workflow/ and config/ in the "
             "current directory). cd into your project folder first."
         )
-    # check/preview never spawn snakemake, but they do import its Python dependencies
-    # (yaml, snakemake_interface_executor_plugins), so the env still has to be active.
+    # check/preview/version never spawn snakemake. check/preview still import Python packages
+    # that only live in the pipeline's conda env (yaml, snakemake_interface_executor_plugins),
+    # so they fail later on ImportError instead; version needs neither.
     if require_snakemake and shutil.which("snakemake") is None:
         _die("pastForward: `snakemake` not found on PATH. Activate its conda env first.")
 
@@ -171,7 +172,7 @@ def _run_background(cmd, log_path):
         if old_pid is not None and _is_alive(old_pid):
             _die(
                 f"pastForward: a run is already tracked here (PID {old_pid}, still running). "
-                "Use `pastForward status` to check it or `pastForward abort` to stop it first."
+                "Use `./pastForward status` to check it or `./pastForward abort` to stop it first."
             )
     log_path.parent.mkdir(parents=True, exist_ok=True)
     logf = open(log_path, "w")
@@ -192,7 +193,7 @@ def _run_background(cmd, log_path):
     )
     print(_color(GREEN, f"Started pastForward run (PID {proc.pid})"))
     print(_color(DIM, f"Log: {log_path}"))
-    print(_color(DIM, "Check progress with: pastForward status"))
+    print(_color(DIM, "Check progress with: ./pastForward status"))
 
 
 def cmd_run(argv, extra_flags=(), name="run"):
@@ -228,7 +229,7 @@ def cmd_dryrun(argv):
 
 def _read_state():
     if not STATE_FILE.exists():
-        _die("pastForward: no tracked run in this directory (start one with `pastForward run`).")
+        _die("pastForward: no tracked run in this directory (start one with `./pastForward run`).")
     return json.loads(STATE_FILE.read_text())
 
 
@@ -334,7 +335,7 @@ def cmd_status(argv):
     if rest:
         _die(
             f"pastForward status: unknown argument(s): {' '.join(rest)}. "
-            "--live/--tail moved to `pastForward print-log`."
+            "--live/--tail moved to `./pastForward print-log`."
         )
     if watch:
         try:
@@ -398,16 +399,16 @@ def _print_status(tail=None):
                     print(f"  {_color(DIM, line)}")
                 for job_log_path in _job_log_paths(block):
                     _print_failed_job_log(job_log_path)
-        print(_color(DIM, "Resume with: pastForward resume --cores <N>"))
+        print(_color(DIM, "Resume with: ./pastForward resume --cores <N>"))
     elif not alive and LOCK_RE.search(text):
         print(_color(RED, "Locked:     directory is locked (stale lock from a killed run or power loss)."))
-        print(_color(DIM, "Fix with: pastForward unlock, then pastForward resume --cores <N>"))
+        print(_color(DIM, "Fix with: ./pastForward unlock, then ./pastForward resume --cores <N>"))
     elif not alive and (progress is None or progress.group(3) != "100.0"):
         # Died before 100% with no "did not complete successfully" marker either - Snakemake
         # never got the chance to log a reason, so this is most likely a force-kill (SIGKILL,
         # `abort --force`, OOM-killer) rather than a graceful failure.
         print(_color(YELLOW, "Interrupted: not running, and the log shows neither success nor a recorded failure - likely force-killed (SIGKILL/OOM) rather than a normal error exit."))
-        print(_color(DIM, "Resume with: pastForward resume --cores <N>"))
+        print(_color(DIM, "Resume with: ./pastForward resume --cores <N>"))
 
     print(f"{_color(CYAN, 'Progress:')}  {progress_str}")
 
@@ -549,7 +550,7 @@ def _capture_pipeline_log(include_check):
         from scripts.pipeline_namespace import load_pipeline_namespace
         from scripts.species_paths import setup_species_data_locations
     except ImportError as e:
-        _die(f"pastForward: {e}. Activate the conda env that has snakemake installed first.")
+        _die(f"pastForward: {e}. Activate the pipeline's conda env first.")
 
     config = yaml.safe_load(Path(DEFAULT_CONFIGFILE).read_text()) or {}
     buffer = io.StringIO()
@@ -617,7 +618,7 @@ def cmd_preview(argv):
     for f in requested:
         print(f"  - {f}")
     if not requested:
-        print(_color(DIM, "  (none — check config.yaml, or run `pastForward check` to see what was discovered)"))
+        print(_color(DIM, "  (none — check config.yaml, or run `./pastForward check` to see what was discovered)"))
 
 
 def cmd_print_log(argv):
@@ -635,7 +636,7 @@ def cmd_print_log(argv):
     if rest:
         _die(f"pastForward print-log: unknown argument(s): {' '.join(rest)}")
     if not LOG_DIR.is_dir():
-        _die("pastForward: no logs/ directory found — run `pastForward run` or `dryrun` first.")
+        _die("pastForward: no logs/ directory found — run `./pastForward run` or `./pastForward dryrun` first.")
     logs = sorted(LOG_DIR.glob("*.log"), key=lambda p: p.stat().st_mtime)
     if not logs:
         _die("pastForward: no log files found in logs/.")
@@ -659,7 +660,8 @@ def cmd_print_log(argv):
 
 
 def cmd_version(argv):
-    _ensure_project_root()
+    # Only reads workflow/scripts/version.py - no snakemake needed, on PATH or as an import.
+    _ensure_project_root(require_snakemake=False)
     sys.path.insert(0, str(Path("workflow")))
     from scripts.version import __version__
 
@@ -682,7 +684,7 @@ COMMANDS = {
 
 HELP = """pastForward — CLI wrapper around the pastForward Snakemake pipeline.
 
-Usage: pastForward <command> [args...]
+Usage: ./pastForward <command> [args...]
 
 Commands:
   run --cores <N> [snakemake-args...]
@@ -741,7 +743,7 @@ Logs for `run`/`dryrun` are written to logs/<command>_<timestamp>.log.
 
 def _print_help():
     for line in HELP.splitlines():
-        if line.startswith("pastForward") or line in ("Usage: pastForward <command> [args...]", "Commands:"):
+        if line.startswith("pastForward") or line in ("Usage: ./pastForward <command> [args...]", "Commands:"):
             print(_color(CYAN, line))
             continue
         stripped = line[2:] if line.startswith("  ") else line
