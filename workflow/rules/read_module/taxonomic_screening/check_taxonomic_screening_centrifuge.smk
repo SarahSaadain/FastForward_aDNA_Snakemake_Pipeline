@@ -7,7 +7,7 @@
 _configured_index = (
     config.get("pipeline", {})
     .get("read_module", {})
-    .get("contamination", {})
+    .get("taxonomic_screening", {})
     .get("tools", {})
     .get("centrifuge", {})
     .get("settings", {})
@@ -43,7 +43,7 @@ rule download_centrifuge_index:
         """
 
 
-rule analyze_contamination_with_centrifuge:
+rule centrifuge_taxonomic_screening:
     input:
         fastq="{species}/processed/read_module/reads_quality_filtered/{sample}_quality_filtered_final.fastq.gz",
         index=lambda wildcards: (
@@ -55,15 +55,15 @@ rule analyze_contamination_with_centrifuge:
         ),
     output:
         output=temp(
-            "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv"
+            "{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv"
         ),
-        report="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
+        report="{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
     log:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge.log",
+        "{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge.log",
     conda:
         config.get("pipeline", {})
         .get("read_module", {})
-        .get("contamination", {})
+        .get("taxonomic_screening", {})
         .get("tools", {})
         .get("centrifuge", {})
         .get("settings", {})
@@ -76,7 +76,7 @@ rule analyze_contamination_with_centrifuge:
             else "resources/centrifuge_index/p+h+v"
         ),
     message:
-        "Running Centrifuge contamination analysis for {input.fastq}"
+        "Running Centrifuge taxonomic screening for {input.fastq}"
     shell:
         """
         centrifuge \
@@ -90,11 +90,11 @@ rule analyze_contamination_with_centrifuge:
 
 rule analyze_centrifuge_report_taxon_counts:
     input:
-        centrifuge_out="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv",
+        centrifuge_out="{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv",
     output:
-        taxon_counts="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_taxon_counts.tsv",
+        taxon_counts="{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_taxon_counts.tsv",
     log:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_taxon_counts.log",
+        "{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_taxon_counts.log",
     conda:
         "../../../envs/python_and_r.yaml"
     message:
@@ -111,50 +111,50 @@ rule analyze_centrifuge_report_taxon_counts:
 
 rule analyze_centrifuge_report_proportions:
     input:
-        report="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
+        report="{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
         count_reads="{species}/processed/read_module/statistics/{sample}_quality_filtered.count",
     output:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_proportions.tsv",
+        "{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge_proportions.tsv",
     log:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_proportions.log",
+        "{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge_proportions.log",
     conda:
         "../../../envs/python_and_r.yaml"
     params:
         sample="{sample}",
     script:
-        "../../../scripts/read_module/contamination/check_contamination_ecmsd_script_analyze_centrifuge_report_proportions.py"
+        "../../../scripts/read_module/taxonomic_screening/check_taxonomic_screening_centrifuge_script_analyze_centrifuge_report_proportions.py"
 
 
 rule analyze_centrifuge_report_top_taxa:
     input:
-        report="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
+        report="{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv",
     output:
-        top10_unique="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_unique_taxa.tsv",
-        top10_total="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv",
+        top10_unique="{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_top10_unique_taxa.tsv",
+        top10_total="{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv",
     log:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top_taxa.log",
+        "{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_top_taxa.log",
     conda:
         "../../../envs/python_and_r.yaml"
     params:
         sample="{sample}",
         include_human=config.get("pipeline", {})
         .get("read_module", {})
-        .get("contamination", {})
+        .get("taxonomic_screening", {})
         .get("tools", {})
         .get("centrifuge", {})
         .get("settings", {})
         .get("include_human_taxid", False),
     script:
-        "../../../scripts/read_module/contamination/check_contamination_ecmsd_script_analyze_centrifuge_report_top_taxa.py"
+        "../../../scripts/read_module/taxonomic_screening/check_taxonomic_screening_centrifuge_script_analyze_centrifuge_report_top_taxa.py"
 
 
 rule compress_centrifuge_output:
     input:
-        tsv="{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv",
+        tsv="{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv",
     output:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv.gz",
+        "{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv.gz",
     log:
-        "{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output_compress.log",
+        "{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge_output_compress.log",
     conda:
         "../../../envs/pigz.yaml"
     threads: 4

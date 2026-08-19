@@ -191,23 +191,23 @@ All pastForward stages are enabled by default, so this minimal config is suffici
 Open `config/config_designer.html` in a browser. The interactive Config Designer lets you toggle pastForward stages and species settings and exports a ready-to-use `config.yaml`.
 
 **Q: How do I disable a pastForward stage I don't need?**
-Set its `execute` flag to `false` in `config/config.yaml`. For example, to skip contamination analysis:
+Set its `execute` flag to `false` in `config/config.yaml`. For example, to skip taxonomic screening:
 
 ```yaml
 pipeline:
   read_module:
-    contamination:
+    taxonomic_screening:
       execute: false
 ```
 
 **Q: Can I enable or disable specific steps after a completed run?**
 Yes. You can modify the config to enable or disable specific steps and then re-run pastForward. pastForward will detect which outputs are missing or outdated based on the new configuration and will only execute the necessary rules to generate the required outputs.
 
-For example, if you initially ran pastForward with contamination analysis disabled and later want to enable it, simply set `execute: true` for the contamination analysis step in the config and re-run pastForward. It will then execute only the rules related to contamination analysis without re-running the entire pipeline.
+For example, if you initially ran pastForward with taxonomic screening disabled and later want to enable it, simply set `execute: true` for the taxonomic screening step in the config and re-run pastForward. It will then execute only the rules related to taxonomic screening without re-running the entire pipeline.
 
 > ⚠️ Warning: In some cases, enabling certain steps may affect downstream outputs (e.g., summary reports). In such cases, pastForward will automatically re-run the affected downstream rules to ensure that all outputs are consistent with the new configuration (Snakemake default behavior). Using `skip_existing_files: true` can help avoid unnecessary re-processing of unchanged files, but be cautious as it may still lead to re-processing of some steps. In such cases, you can also disable the affected downstream steps temporarily, run pastForward to generate the new outputs for the enabled step, and then re-enable the downstream steps in a subsequent run to update the reports or other affected outputs. Check using a dry run to see which steps will be re-run and adjust the config accordingly to minimise unnecessary processing.
 >
-> Example: If you enable contamination analysis after the first run (e.g. reads + ref + summary), pastForward will need to re-run adapter removal and quality filtering for all samples to generate the necessary inputs for contamination analysis. Since these outputs are temporary, they are not stored between runs. To allow contamination analysis, pastForward must re-generate these outputs. In this case Snakemake will determine that there has been a change and conclude that all downstream steps that depend on these outputs need to be re-run to ensure consistency. Using `skip_existing_files: true` can help avoid unnecessary re-processing, but it is better to check the pastForward log to ensure that the re-processing is indeed suppressed. If Snakemake still triggers a re-run (e.g. reference processing, mapping, ...), the downstream steps can be temporarily disabled in the config.
+> Example: If you enable taxonomic screening after the first run (e.g. reads + ref + summary), pastForward will need to re-run adapter removal and quality filtering for all samples to generate the necessary inputs for taxonomic screening. Since these outputs are temporary, they are not stored between runs. To allow taxonomic screening, pastForward must re-generate these outputs. In this case Snakemake will determine that there has been a change and conclude that all downstream steps that depend on these outputs need to be re-run to ensure consistency. Using `skip_existing_files: true` can help avoid unnecessary re-processing, but it is better to check the pastForward log to ensure that the re-processing is indeed suppressed. If Snakemake still triggers a re-run (e.g. reference processing, mapping, ...), the downstream steps can be temporarily disabled in the config.
 
 **Q: Can I store a species' data outside the project directory?**
 Yes. By default a species' data must live at `<species>/input`, `<species>/processed`, and `<species>/results` inside the project directory. To point some or all of it elsewhere, set one or more of the following optional keys under `species.<key>` in `config.yaml`: `species_dir` (whole species root; sets the default for everything below), `reads_dir`, `reference_dir`, `scg_dir`, `feature_library_dir`, `competition_dir`, `processed_dir`, `results_dir`. An explicit key always wins over a path derived from `species_dir`.
@@ -310,10 +310,13 @@ pastForward follows a priority chain: rescaled BAM → deduplicated BAM → sort
 
 ---
 
-## Contamination Analysis
+## Taxonomic Screening
 
-**Q: Is this really a "contamination" analysis, or is it metagenomic profiling?**
-Both ECMSD and Centrifuge are taxonomic read classifiers — they assign reads to reference taxa and report proportions/top taxa, the same kind of output any metagenomic profiling tool would produce. Neither computes a dedicated contamination statistic (e.g. mismatch-to-consensus or heterozygosity-based estimates). pastForward treats the results as a contamination signal because each sample is expected to come from one known target organism, so a significant proportion of reads assigned to other taxa is interpreted as exogenous/contaminating DNA rather than as a community to characterize.
+**Q: This step used to be called `contamination`. Do my old configs still work?**
+Yes. `pipeline.read_module.contamination` is still accepted and is rewritten to `pipeline.read_module.taxonomic_screening` at startup, with a deprecation warning in the log. Only the output folder changed without a fallback: results now land in `{species}/results/read_module/taxonomic_screening/` instead of `{species}/results/read_module/contamination/`. Rename that folder in existing projects (or let pastForward regenerate it) to reuse previous results.
+
+**Q: Why is it called taxonomic screening and not contamination analysis?**
+Both ECMSD and Centrifuge are taxonomic read classifiers — they assign reads to reference taxa and report proportions/top taxa, the same kind of output any metagenomic profiling tool would produce. Neither computes a dedicated contamination statistic (e.g. mismatch-to-consensus or heterozygosity-based estimates), so the step is named after what it measures. Reading the result as a contamination signal is the interpretation you apply on top: each sample is expected to come from one known target organism, so a significant proportion of reads assigned to other taxa points to exogenous/contaminating DNA rather than to a community worth characterizing.
 
 **Q: ECMSD keeps failing on some samples. Do I have to fix this before pastForward continues?**
 No. Run with `--keep-going` and pastForward will skip the failed samples and continue processing everything else. ECMSD failures are common on low-coverage or low-quality samples.
@@ -325,7 +328,7 @@ ECMSD is sensitive to low-coverage samples and may fail to detect contamination 
 Yes. The ECMSD database is downloaded and stored in the pipelines resource directory. If it already exists, pastForward will reuse it without re-downloading. You can safely run multiple instances of pastForward without worrying about redundant ECMSD database downloads.
 
 **Q: Can I reuse the same ECMSD database for multiple pastForward instances?**
-Yes. As long as the ECMSD database is accessible at the expected path in the pipelines resource directory, multiple pastForward instances can use the same database for contamination analysis without conflict.
+Yes. As long as the ECMSD database is accessible at the expected path in the pipelines resource directory, multiple pastForward instances can use the same database for taxonomic screening without conflict.
 
 Use `tools.ecmsd.settings.database` to specify a custom path to the ECMSD database if needed. Otherwise, pastForward will manage it automatically.
 
@@ -336,15 +339,15 @@ Yes. Set `tools.ecmsd.settings.version_source: "latest_release"` to side-load th
 If `tools.centrifuge.settings.index` is not set, pastForward will attempt to download a default index automatically. For reproducible runs, specify your own index path.
 
 **Q: Can I use a custom Centrifuge database?**
-Yes. Set `tools.centrifuge.settings.index` to the path of your custom index. pastForward will use it for contamination analysis instead of downloading the default.
+Yes. Set `tools.centrifuge.settings.index` to the path of your custom index. pastForward will use it for taxonomic screening instead of downloading the default.
 
 **Q: Can I reuse the same index for multiple runs?**
 Yes. pastForward checks if the specified Centrifuge index already exists and will reuse it if found. You can safely point to the same index across multiple runs without worrying about redundant downloads.
 
 **Q: Can I reuse the same Centrifuge database for multiple pastForward instances?**
-Yes. As long as the Centrifuge index is accessible at the specified path, multiple pastForward instances can use the same database for contamination analysis without conflict.
+Yes. As long as the Centrifuge index is accessible at the specified path, multiple pastForward instances can use the same database for taxonomic screening without conflict.
 
-You can even share the same Centrifuge index across different projects or species, as long as the path is correctly specified in each config. This allows for efficient use of resources and consistent contamination analysis across multiple datasets.
+You can even share the same Centrifuge index across different projects or species, as long as the path is correctly specified in each config. This allows for efficient use of resources and consistent taxonomic screening across multiple datasets.
 
 ---
 
@@ -420,4 +423,4 @@ Workaround: force conda to resolve Intel (`osx-64`) packages and let macOS run t
    This applies to every conda environment Snakemake creates in that shell session, not just Centrifuge's, so the whole pipeline runs under Rosetta emulation for that run.
 3. If a Centrifuge env was already partially created under `osx-arm64`, clear it out first by removing the `.snakemake` folder in the project directory, then re-run with `--use-conda` as usual.
 
-Alternatively, if Centrifuge isn't required for your analysis, disable it in the config instead (`pipeline.read_module.contamination.settings.centrifuge.execute: false` — see `config/parameters.md`).
+Alternatively, if Centrifuge isn't required for your analysis, disable it in the config instead (`pipeline.read_module.taxonomic_screening.tools.centrifuge.execute: false` — see `config/parameters.md`).

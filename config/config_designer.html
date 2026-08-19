@@ -666,11 +666,11 @@
             </div><!-- /.adv-content -->
           </div>
 
-          <!-- Contamination Analysis -->
+          <!-- Taxonomic Screening -->
           <div class="subsection">
             <div class="subsection-header clickable" onclick="toggleSub(this)">
               <span class="sdot on" id="d_ca"></span>
-              <span class="subsection-title">Contamination Analysis</span>
+              <span class="subsection-title">Taxonomic Screening</span>
               <label class="toggle" onclick="event.stopPropagation()">
                 <input type="checkbox" id="ca_exec" checked onchange="dot('ca_exec','d_ca'); render()">
                 <span class="slider"></span>
@@ -682,7 +682,7 @@
               <span class="tool-pill green">ECMSD</span><span class="tool-pill green">Centrifuge</span>
               Both tools operate on <strong>quality-filtered reads</strong>. Each tool can be toggled independently.
               Results from multiple samples belonging to the same individual are merged into a combined summary.
-              <div class="when-hint"><span class="def-pill on">Default: ON</span>Recommended for all aDNA work — contamination is a key quality metric for any ancient specimen. Turn off only if contamination screening has already been done externally, or if you need mapping results quickly and plan to run this separately.</div>
+              <div class="when-hint"><span class="def-pill on">Default: ON</span>Recommended for all aDNA work — the share of reads assigned to non-target taxa is a key quality metric for any ancient specimen. Turn off only if taxonomic screening has already been done externally, or if you need mapping results quickly and plan to run this separately.</div>
             </div>
             <div class="subsection-body open">
 
@@ -847,7 +847,7 @@
           </label>
           <label class="lbl" for="rp_exec">Execute Reference Processing</label>
         </div>
-        <p class="exec-note"><span class="def-pill on">Default: ON</span>Turn off if you only need raw-reads QC and contamination screening without genome mapping. Must be explicitly set to <code style="font-size:.68rem;background:#e9ecf0;padding:1px 4px;border-radius:3px">true</code> in the config to run.</p>
+        <p class="exec-note"><span class="def-pill on">Default: ON</span>Turn off if you only need raw-reads QC and taxonomic screening without genome mapping. Must be explicitly set to <code style="font-size:.68rem;background:#e9ecf0;padding:1px 4px;border-radius:3px">true</code> in the config to run.</p>
 
         <div id="rp_body">
 
@@ -978,7 +978,7 @@
             <div class="step-desc">
               Optionally dispose of reads that did not map to the reference. Choose between writing a
               <strong>mapped-reads-only BAM</strong>, or extracting the unmapped reads to <strong>FASTQ.gz</strong>
-              or <strong>FASTA.gz</strong> for downstream analysis (e.g. further contamination screening).
+              or <strong>FASTA.gz</strong> for downstream analysis (e.g. further taxonomic screening).
               <div class="when-hint"><span class="def-pill off">Default: OFF</span>Turn on to process unmapped reads. The default action is <strong>keep</strong> (no-op) — you must explicitly change it to <strong>remove</strong> (mapped-only BAM), <strong>extract_fastq</strong>, or <strong>extract_fasta</strong>. Not needed for standard aDNA workflows.</div>
             </div>
             <div class="subsection-body open">
@@ -1674,7 +1674,7 @@ function buildYAML() {
     kv(8, 'n_base_limit', gn('qf_nbase'));
   }
   p(0, '');
-  p(4, 'contamination:');
+  p(4, 'taxonomic_screening:');
   kv(6, 'execute', gb('ca_exec'));
   p(6, 'tools:');
   p(8, 'ecmsd:');
@@ -1951,7 +1951,9 @@ function populateForm(c) {
     setOpt('qf_adv_en','qf_adv_body','qf_adv_hdr', true);
     sv('qf_unqual', qfs.unqualified_percent_limit); sv('qf_nbase', qfs.n_base_limit);
   } else setOpt('qf_adv_en','qf_adv_body','qf_adv_hdr', false);
-  const ca = rrp.contamination || {};
+  // `contamination` is the pre-rename name of `taxonomic_screening`; still loadable here,
+  // matching the pipeline's own config_compat fallback. Only the new name is ever written out.
+  const ca = rrp.taxonomic_screening || rrp.contamination || {};
   const cat = ca.tools || {};
   const cen = cat.centrifuge || {};
   const ces = cen.settings || {};
@@ -2089,7 +2091,7 @@ function resetDefaults() {
         analysis: { execute: true, settings: { multiqc_raw_reads: true, multiqc_trimmed_reads: true, multiqc_quality_filtered_reads: true, multiqc_merged_reads: true, create_plots: true } },
         adapter_removal: { execute: true, settings: { min_quality: 0, min_length: 0 } },
         quality_filtering: { execute: true, settings: { min_quality: 15, min_length: 30 } },
-        contamination: {
+        taxonomic_screening: {
           execute: true,
           tools: {
             ecmsd: { execute: true, settings: { cov_threshold: 25, top_n: 25, mapping_quality: 20, taxonomic_hierarchy: 'species' } },

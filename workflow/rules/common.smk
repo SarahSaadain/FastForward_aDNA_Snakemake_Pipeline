@@ -111,7 +111,7 @@ def create_multiqc_bam_individual_input(wildcards):
         if (
             config.get("pipeline", {})
             .get("read_module", {})
-            .get("contamination", {})
+            .get("taxonomic_screening", {})
             .get("execute", True)
             == True
         ):
@@ -119,7 +119,7 @@ def create_multiqc_bam_individual_input(wildcards):
             if (
                 config.get("pipeline", {})
                 .get("read_module", {})
-                .get("contamination", {})
+                .get("taxonomic_screening", {})
                 .get("tools", {})
                 .get("centrifuge", {})
                 .get("execute", True)
@@ -129,20 +129,20 @@ def create_multiqc_bam_individual_input(wildcards):
                 for sample in samples_of_individual:
                     raw_reads = get_raw_reads_for_sample(species, sample)
                     file_list.append(
-                        f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+                        f"{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
                     )
 
             if (
                 config.get("pipeline", {})
                 .get("read_module", {})
-                .get("contamination", {})
+                .get("taxonomic_screening", {})
                 .get("tools", {})
                 .get("ecmsd", {})
                 .get("execute", True)
                 == True
             ):
                 file_list.append(
-                    f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+                    f"{species}/results/read_module/taxonomic_screening/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
                 )
 
         # merged reads fastqc
@@ -261,7 +261,7 @@ def create_multiqc_reference_input(wildcards):
             if (
                 config.get("pipeline", {})
                 .get("read_module", {})
-                .get("contamination", {})
+                .get("taxonomic_screening", {})
                 .get("execute", True)
                 == True
             ):
@@ -269,7 +269,7 @@ def create_multiqc_reference_input(wildcards):
                 if (
                     config.get("pipeline", {})
                     .get("read_module", {})
-                    .get("contamination", {})
+                    .get("taxonomic_screening", {})
                     .get("tools", {})
                     .get("centrifuge", {})
                     .get("execute", True)
@@ -279,20 +279,20 @@ def create_multiqc_reference_input(wildcards):
                     for sample in samples_of_individual:
                         raw_reads = get_raw_reads_for_sample(species, sample)
                         file_list.append(
-                            f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+                            f"{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
                         )
 
                 if (
                     config.get("pipeline", {})
                     .get("read_module", {})
-                    .get("contamination", {})
+                    .get("taxonomic_screening", {})
                     .get("tools", {})
                     .get("ecmsd", {})
                     .get("execute", True)
                     == True
                 ):
                     file_list.append(
-                        f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+                        f"{species}/results/read_module/taxonomic_screening/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
                     )
 
             # merged reads fastqc
@@ -607,7 +607,7 @@ def create_multiqc_species_individual_input(wildcards):
         if (
             config.get("pipeline", {})
             .get("read_module", {})
-            .get("contamination", {})
+            .get("taxonomic_screening", {})
             .get("execute", True)
             == True
         ):
@@ -615,7 +615,7 @@ def create_multiqc_species_individual_input(wildcards):
             if (
                 config.get("pipeline", {})
                 .get("read_module", {})
-                .get("contamination", {})
+                .get("taxonomic_screening", {})
                 .get("tools", {})
                 .get("centrifuge", {})
                 .get("execute", True)
@@ -625,13 +625,13 @@ def create_multiqc_species_individual_input(wildcards):
                 for sample in samples_of_individual:
                     raw_reads = get_raw_reads_for_sample(species, sample)
                     file_list.append(
-                        f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+                        f"{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
                     )
 
             if (
                 config.get("pipeline", {})
                 .get("read_module", {})
-                .get("contamination", {})
+                .get("taxonomic_screening", {})
                 .get("tools", {})
                 .get("ecmsd", {})
                 .get("execute", True)
@@ -639,7 +639,7 @@ def create_multiqc_species_individual_input(wildcards):
             ):
 
                 file_list.append(
-                    f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+                    f"{species}/results/read_module/taxonomic_screening/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
                 )
 
         # merged reads fastqc
@@ -775,7 +775,7 @@ def create_multiqc_species_input(wildcards):
             if (
                 config.get("pipeline", {})
                 .get("read_module", {})
-                .get("contamination", {})
+                .get("taxonomic_screening", {})
                 .get("execute", True)
                 == True
             ):
@@ -783,7 +783,7 @@ def create_multiqc_species_input(wildcards):
                 if (
                     config.get("pipeline", {})
                     .get("read_module", {})
-                    .get("contamination", {})
+                    .get("taxonomic_screening", {})
                     .get("tools", {})
                     .get("centrifuge", {})
                     .get("execute", True)
@@ -793,20 +793,20 @@ def create_multiqc_species_input(wildcards):
                     for sample in samples_of_individual:
                         raw_reads = get_raw_reads_for_sample(species, sample)
                         file_list.append(
-                            f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+                            f"{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
                         )
 
                 if (
                     config.get("pipeline", {})
                     .get("read_module", {})
-                    .get("contamination", {})
+                    .get("taxonomic_screening", {})
                     .get("tools", {})
                     .get("ecmsd", {})
                     .get("execute", True)
                     == True
                 ):
                     file_list.append(
-                        f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+                        f"{species}/results/read_module/taxonomic_screening/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
                     )
 
             # merged reads fastqc

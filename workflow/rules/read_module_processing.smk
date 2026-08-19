@@ -21,14 +21,14 @@ include: "read_module/analytics/quality/fastqc_check.smk"
 include: "read_module/analytics/quality/multiqc_check.smk"
 # Plot comparison of reads before and after processing
 include: "read_module/plotting/plot_read_counts.smk"
-# Check for contamination using ECMSD
-include: "read_module/contamination/check_contamination_ecmsd.smk"
-# Check for contamination using Centrifuge
-include: "read_module/contamination/check_contamination_centrifuge.smk"
+# Taxonomic screening using ECMSD
+include: "read_module/taxonomic_screening/check_taxonomic_screening_ecmsd.smk"
+# Taxonomic screening using Centrifuge
+include: "read_module/taxonomic_screening/check_taxonomic_screening_centrifuge.smk"
 
 
-# Check for contamination using Kraken
-# include: "read_module/contamination/check_contamination_kraken.smk"
+# Taxonomic screening using Kraken
+# include: "read_module/taxonomic_screening/check_taxonomic_screening_kraken.smk"
 # =================================================================================================
 # End of read_module_processing.smk
 # =================================================================================================

@@ -138,7 +138,7 @@ class TestModuleExecuteFlags(ExpectedOutputManagerTestCase):
         self.assertTrue(any("results/read_module" in o for o in outputs))
 
 
-class TestContaminationToolToggles(ExpectedOutputManagerTestCase):
+class TestTaxonomicScreeningToolToggles(ExpectedOutputManagerTestCase):
     def setUp(self):
         super().setUp()
         testlib.build_species_library(self.project_dir)
@@ -146,19 +146,37 @@ class TestContaminationToolToggles(ExpectedOutputManagerTestCase):
 
     def test_centrifuge_disabled_leaves_ecmsd(self):
         config = dict(self.base_config, pipeline={
-            "read_module": {"contamination": {"tools": {"centrifuge": {"execute": False}}}}
+            "read_module": {"taxonomic_screening": {"tools": {"centrifuge": {"execute": False}}}}
         })
         outputs = self.get_all_outputs(config)
-        self.assertFalse(any("contamination/centrifuge" in o for o in outputs))
-        self.assertTrue(any("contamination/ecmsd" in o for o in outputs))
+        self.assertFalse(any("taxonomic_screening/centrifuge" in o for o in outputs))
+        self.assertTrue(any("taxonomic_screening/ecmsd" in o for o in outputs))
 
     def test_ecmsd_disabled_leaves_centrifuge(self):
         config = dict(self.base_config, pipeline={
-            "read_module": {"contamination": {"tools": {"ecmsd": {"execute": False}}}}
+            "read_module": {"taxonomic_screening": {"tools": {"ecmsd": {"execute": False}}}}
         })
         outputs = self.get_all_outputs(config)
-        self.assertFalse(any("contamination/ecmsd" in o for o in outputs))
-        self.assertTrue(any("contamination/centrifuge" in o for o in outputs))
+        self.assertFalse(any("taxonomic_screening/ecmsd" in o for o in outputs))
+        self.assertTrue(any("taxonomic_screening/centrifuge" in o for o in outputs))
+
+    def test_deprecated_contamination_key_still_toggles_tools(self):
+        """`taxonomic_screening` was previously called `contamination`; config_compat
+        keeps the old key working, so a config written against the old name must still
+        reach the same expected outputs."""
+        config = dict(self.base_config, pipeline={
+            "read_module": {"contamination": {"tools": {"centrifuge": {"execute": False}}}}
+        })
+        outputs = self.get_all_outputs(config)
+        self.assertFalse(any("taxonomic_screening/centrifuge" in o for o in outputs))
+        self.assertTrue(any("taxonomic_screening/ecmsd" in o for o in outputs))
+
+    def test_deprecated_contamination_key_still_disables_whole_step(self):
+        config = dict(self.base_config, pipeline={
+            "read_module": {"contamination": {"execute": False}}
+        })
+        outputs = self.get_all_outputs(config)
+        self.assertFalse(any("taxonomic_screening" in o for o in outputs))
 
 
 class TestScgSelectorDefaults(ExpectedOutputManagerTestCase):

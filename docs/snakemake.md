@@ -19,7 +19,7 @@ Replace `<number_of_threads>` with the number of CPU threads you want to give th
 **What the suggested flags do:**
 
 * `--use-conda` lets Snakemake install and use the software each step needs automatically.
-* `--keep-going` lets the pipeline carry on if one step fails, instead of stopping everything. This matters because the contamination-screening tool ECMSD sometimes fails on individual samples with low-quality or low-coverage data. With this flag, the rest of the pipeline still runs.
+* `--keep-going` lets the pipeline carry on if one step fails, instead of stopping everything. This matters because the taxonomic screening tool ECMSD sometimes fails on individual samples with low-quality or low-coverage data. With this flag, the rest of the pipeline still runs.
 * `--rerun-trigger mtime` re-runs a step only when its input files have changed since the last run, instead of Snakemake's more thorough (and slower) default checks.
 
 **A few other flags you might want:**

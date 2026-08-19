@@ -81,4 +81,4 @@ pastForward generates a MultiQC report for:
 * **Each individual sample**
   * Location: `{species}/results/summary_module/individual_level/{individual}_multiqc.html`
 
-These reports summarize reads before and after trimming, contamination analysis, coverage, deduplication, and damage rescaling. Use them to judge the quality of your sequenced reads and decide whether a sample needs additional library preparation.
+These reports summarize reads before and after trimming, taxonomic screening, coverage, deduplication, and damage rescaling. Use them to judge the quality of your sequenced reads and decide whether a sample needs additional library preparation.

@@ -31,7 +31,7 @@ Defines the overall pipeline behavior, including execution controls and process 
 
 ### Stage: `read_module`
 
-Quality checking, adapter removal, quality filtering, merging, contamination analysis, and read count statistics of raw reads.
+Quality checking, adapter removal, quality filtering, merging, taxonomic screening, and read count statistics of raw reads.
 
 > **Read count statistics always run** — per-stage counts (raw → trimmed → quality-filtered) are written unconditionally as `{species}/results/read_module/statistics/{species}_reads_counts.csv`.
 
@@ -69,9 +69,14 @@ Controls FastQC + MultiQC quality reports at each processing stage and read coun
 | `settings.unqualified_percent_limit` | `40` | Max percentage of unqualified bases allowed in a read. |
 | `settings.n_base_limit` | `5` | Max number of N bases allowed in a read. |
 
-#### `contamination`
+#### `taxonomic_screening`
 
-Both tools operate on quality-filtered reads and can be toggled independently.
+Both tools operate on quality-filtered reads and can be toggled independently. Reads are classified against a
+reference database, and the resulting taxon proportions are used to judge how much of a sample is exogenous
+(contaminating) DNA.
+
+> Renamed from `contamination`. The old key still works and is rewritten to `taxonomic_screening`
+> at startup, with a deprecation warning in the log.
 
 **ECMSD** — maps reads against a curated mitochondrial reference database.
 

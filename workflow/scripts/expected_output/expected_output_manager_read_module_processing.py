@@ -61,54 +61,54 @@ def get_expected_output_fastqc_merged(species):
     return all_inputs
 
 #-----------------------------------------------------------------------------------------------
-# Get expected output file paths for contamination analysis (ECMSD)
-def get_expected_output_contamination_ecmsd(species):  
+# Get expected output file paths for taxonomic screening (ECMSD)
+def get_expected_output_taxonomic_screening_ecmsd(species):  
 
-    if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("ecmsd", {}).get("execute", True) == False:
-        logging.info(f"Skipping contamination analysis with ECMSD for {species}. Disabled in config.")
+    if config.get("pipeline", {}).get("read_module", {}).get("taxonomic_screening", {}).get("tools", {}).get("ecmsd", {}).get("execute", True) == False:
+        logging.info(f"Skipping taxonomic screening with ECMSD for {species}. Disabled in config.")
         return []
 
     expected_outputs = []
 
     for individual in get_individuals_for_species(species):
         for sample in get_samples_for_species_individual(species, individual):
-            expected_outputs.append(f"{species}/results/read_module/contamination/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.txt")
+            expected_outputs.append(f"{species}/results/read_module/taxonomic_screening/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.txt")
     
     return expected_outputs
 
 #-----------------------------------------------------------------------------------------------
-# Get expected output file paths for contamination analysis (Centrifuge)
-def get_expected_output_contamination_centrifuge(species):
+# Get expected output file paths for taxonomic screening (Centrifuge)
+def get_expected_output_taxonomic_screening_centrifuge(species):
 
-    if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("tools", {}).get("centrifuge", {}).get("execute", True) == False:
-        logging.info(f"Skipping contamination analysis with Centrifuge for {species}. Disabled in config.")
+    if config.get("pipeline", {}).get("read_module", {}).get("taxonomic_screening", {}).get("tools", {}).get("centrifuge", {}).get("execute", True) == False:
+        logging.info(f"Skipping taxonomic screening with Centrifuge for {species}. Disabled in config.")
         return []
 
     expected_outputs = []
 
     for individual in get_individuals_for_species(species):
         for sample in get_samples_for_species_individual(species, individual):
-            expected_outputs.append(f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv")
-            expected_outputs.append(f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_taxon_counts.tsv")
-            expected_outputs.append(f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv.gz")
+            expected_outputs.append(f"{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge_report.tsv")
+            expected_outputs.append(f"{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_taxon_counts.tsv")
+            expected_outputs.append(f"{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_centrifuge_output.tsv.gz")
 
     return expected_outputs
 
 #-----------------------------------------------------------------------------------------------
-# Get expected output file paths for contamination analysis (all tools)
-def get_expected_output_contamination(species):  
+# Get expected output file paths for taxonomic screening (all tools)
+def get_expected_output_taxonomic_screening(species):  
 
-    if config.get("pipeline", {}).get("read_module", {}).get("contamination", {}).get("execute", True) == False:
-        logging.info(f"Skipping contamination analysis for {species}. Disabled in config.")
+    if config.get("pipeline", {}).get("read_module", {}).get("taxonomic_screening", {}).get("execute", True) == False:
+        logging.info(f"Skipping taxonomic screening for {species}. Disabled in config.")
         return []
 
     expected_outputs = []
 
-    # Add ECMSD contamination analysis outputs
-    expected_outputs += get_expected_output_contamination_ecmsd(species)
+    # Add ECMSD taxonomic screening outputs
+    expected_outputs += get_expected_output_taxonomic_screening_ecmsd(species)
 
-    # Add Centrifuge contamination analysis outputs
-    expected_outputs += get_expected_output_contamination_centrifuge(species)
+    # Add Centrifuge taxonomic screening outputs
+    expected_outputs += get_expected_output_taxonomic_screening_centrifuge(species)
 
     return expected_outputs
 
@@ -194,8 +194,8 @@ def get_expected_output_read_module(species):
     # Add merged reads to expected outputs since they are a product of raw read processing
     expected_outputs += get_expected_output_read_merging(species)
 
-    # Add  contamination outputs
-    expected_outputs += get_expected_output_contamination(species)
+    # Add taxonomic screening outputs
+    expected_outputs += get_expected_output_taxonomic_screening(species)
 
     # Read count statistics always run
     expected_outputs.append(f"{species}/results/read_module/statistics/{species}_reads_counts.csv")   

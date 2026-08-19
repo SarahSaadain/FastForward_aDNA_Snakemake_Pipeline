@@ -92,7 +92,7 @@ pipeline:
 
   # Raw reads processing
   # Includes quality checking, adapter removal, quality filtering, merging, 
-  # contamination analysis, and statistical analysis
+  # taxonomic screening, and statistical analysis
   read_module:
     # When true, this stage will be executed. (Default: true)
     execute: true
@@ -138,12 +138,12 @@ pipeline:
         # Optional: Max number of N bases allowed in a read (Default: 5)
         #n_base_limit: 5
 
-    # Contamination analysis
-    contamination:
+    # Taxonomic screening
+    taxonomic_screening:
       # When true, this sub-stage will be executed (Default: true)
       execute: true
       tools:
-        # ECMSD tool settings for contamination analysis
+        # ECMSD tool settings for taxonomic screening
         ecmsd:
           # When true, this tool will be executed (Default: true)
           execute: true
@@ -169,7 +169,7 @@ pipeline:
             mapping_quality: 20
             # Taxonomic level for aggregating results. Options: "species", "genus", "family", "order" (Default: "species")
             taxonomic_hierarchy: "species"
-        # Centrifuge tool settings for contamination analysis
+        # Centrifuge tool settings for taxonomic screening
         centrifuge:
           # When true, this tool will be executed (Default: true)
           execute: true

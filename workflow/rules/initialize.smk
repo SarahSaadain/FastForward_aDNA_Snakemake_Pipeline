@@ -20,6 +20,9 @@ from scripts.version import __version__
 # import species data-location symlink/lock setup from workflow/scripts/species_paths.py
 from scripts.species_paths import setup_species_data_locations
 
+# import deprecated-config-key handling from workflow/scripts/config_compat.py
+from scripts.config_compat import apply_config_key_aliases
+
 # Import Snakemake plugin settings for executor modes
 from snakemake_interface_executor_plugins.settings import ExecMode
 
@@ -53,6 +56,12 @@ snakemake.utils.min_version("9.9.0")
 # =================================================================================================
 # Specify the main configuration file for the workflow
 configfile: "config/config.yaml"
+
+
+# Rewrite deprecated config keys onto their current names before any other file reads
+# config, so every read site only has to know the current key. Runs unconditionally
+# (subprocess Snakemake runs re-read the config file too, so they need it as well).
+apply_config_key_aliases(config)
 
 
 # =================================================================================================

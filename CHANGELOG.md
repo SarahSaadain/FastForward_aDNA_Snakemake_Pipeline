@@ -12,6 +12,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- **`contamination` renamed to `taxonomic_screening`**: the read-module step, its config key, its workflow folders, and its output folder are now named after what the step measures (taxonomic classification of reads) rather than after how the result is interpreted. Concretely:
+  - Config: `pipeline.read_module.contamination` -> `pipeline.read_module.taxonomic_screening`. **The old key still works** - it is rewritten onto the new name at startup (`workflow/scripts/config_compat.py`, called from `initialize.smk`) and logs a deprecation warning, so existing `config.yaml` files keep running unchanged
+  - Outputs: `{species}/results/read_module/contamination/` -> `{species}/results/read_module/taxonomic_screening/`. This has **no** fallback - rename the folder in existing projects to reuse previous results, or let pastForward regenerate them
+  - Workflow layout: `workflow/{rules,scripts}/read_module/contamination/` -> `.../taxonomic_screening/`, with `check_contamination_*` files renamed to `check_taxonomic_screening_*`; the two Centrifuge helper scripts also lost their incorrect `_ecmsd_` infix. Rules `ecmsd_analyze_contamination` and `analyze_contamination_with_centrifuge` are now `ecmsd_taxonomic_screening` and `centrifuge_taxonomic_screening`
+
 - **`pastForward status`**: now flags a likely force-kill (SIGKILL, `abort --force`, OOM-killer) when the tracked process is not running and the log shows neither completion nor a recorded failure - previously that case printed no explanation at all
 - **`preview.py` renamed to `check.py`**: matches the new `pastForward check` command it backs; no behavior change (still the per-species discovery tree logged at startup)
 
