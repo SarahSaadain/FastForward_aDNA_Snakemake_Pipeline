@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- **MultiQC report wording for ECMSD corrected**: the ECMSD section no longer lists bacteria as an example contaminant. ECMSD screens against a mitochondrial reference database, so only organisms carrying mitochondria can be detected and bacterial contamination never shows up there; the section now says so explicitly and points to the Centrifuge section for bacteria (`workflow/scripts/summary_module/create_multiqc_species_individual_script_create_multiqc_species_individual_config.py`)
+
 - **`contamination` renamed to `taxonomic_screening`**: the read-module step, its config key, its workflow folders, and its output folder are now named after what the step measures (taxonomic classification of reads) rather than after how the result is interpreted. Concretely:
   - Config: `pipeline.read_module.contamination` -> `pipeline.read_module.taxonomic_screening`. **The old key still works** - it is rewritten onto the new name at startup (`workflow/scripts/config_compat.py`, called from `initialize.smk`) and logs a deprecation warning, so existing `config.yaml` files keep running unchanged
   - Outputs: `{species}/results/read_module/contamination/` -> `{species}/results/read_module/taxonomic_screening/`. This has **no** fallback - rename the folder in existing projects to reuse previous results, or let pastForward regenerate them
