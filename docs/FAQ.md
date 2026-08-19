@@ -128,6 +128,13 @@ Yes. pastForward is designed to be flexible and can accommodate new samples at a
 
 In case you use `skip_existing_files: true`, pastForward will not re-process existing files, so only the new samples will be processed without affecting previous results. This might be an issue if summary reports need to be updated to include the new samples, as they may rely on outputs from all samples. Either you can re-run pastForward without `skip_existing_files` to regenerate all outputs including the new samples, or you can remove the summary reports, so they will be regenerated with the new samples included.
 
+**Q: What does `skip_existing_files` do, and should I turn it on?**
+When `pipeline.global.skip_existing_files: true`, pastForward drops every output file that already exists from the target list it hands to Snakemake, so those files are never re-computed.
+
+> ⚠️ Warning: Because those files are not requested at all, Snakemake can no longer see that they are out of date. If you change an input file (or an upstream step re-runs), existing downstream outputs are **not** updated and your results can end up inconsistent.
+
+It defaults to `false`, which leaves Snakemake's normal re-run logic in charge: only what actually changed is recomputed. Turn it on only to resume an interrupted run without reprocessing completed steps, and only when you know the inputs have not changed. pastForward logs a warning on every run in which the option is enabled.
+
 **Q: I added new samples but they are not showing up in the reports. What do I do?**
 If you added new samples after the first run and your summary reports are not updating, it may be because pastForward is skipping existing files. 
 

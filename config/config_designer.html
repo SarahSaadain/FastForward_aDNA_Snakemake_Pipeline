@@ -418,16 +418,19 @@
       <div class="section-body open">
         <div class="toggle-wrap">
           <label class="toggle">
-            <input type="checkbox" id="global_skip" checked onchange="render()">
+            <input type="checkbox" id="global_skip" onchange="render()">
             <span class="slider"></span>
           </label>
           <label class="lbl" for="global_skip">Skip existing files</label>
         </div>
         <p class="hint" style="margin-top:6px">
-          <span class="def-pill on" style="vertical-align:middle">Default: ON</span>
+          <span class="def-pill off" style="vertical-align:middle">Default: OFF</span>
           Before each run the pipeline checks which output files already exist and excludes them from the target list.
-          <strong>Keep on</strong> to resume interrupted runs without reprocessing completed steps.
-          Turn off only if you want to force a full recomputation of all outputs from scratch.
+          <strong>Warning:</strong> because those files are never requested, changed input files do not propagate to
+          existing downstream outputs, which can leave results inconsistent.
+          <strong>Keep off</strong> so Snakemake decides itself what needs re-running.
+          Turn on only to resume an interrupted run without reprocessing completed steps, and only when you know the
+          inputs have not changed.
         </p>
       </div>
     </div>
@@ -2085,7 +2088,7 @@ function resetDefaults() {
   populateForm({
     project_name: 'pastForward_Project',
     pipeline: {
-      global: { skip_existing_files: true },
+      global: { skip_existing_files: false },
       read_module: {
         execute: true,
         analysis: { execute: true, settings: { multiqc_raw_reads: true, multiqc_trimmed_reads: true, multiqc_quality_filtered_reads: true, multiqc_merged_reads: true, create_plots: true } },

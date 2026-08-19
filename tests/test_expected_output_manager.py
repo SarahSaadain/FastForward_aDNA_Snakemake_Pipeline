@@ -245,14 +245,19 @@ class TestSkipExistingFiles(ExpectedOutputManagerTestCase):
         with open(self.existing_output, "w") as f:
             f.write("already computed")
 
-    def test_existing_output_skipped_by_default(self):
+    def test_existing_output_kept_by_default(self):
         outputs = self.get_all_outputs(self.config)
-        self.assertNotIn(self.existing_output, outputs)
+        self.assertIn(self.existing_output, outputs)
 
     def test_existing_output_kept_when_skip_disabled(self):
         config = dict(self.config, pipeline={"global": {"skip_existing_files": False}})
         outputs = self.get_all_outputs(config)
         self.assertIn(self.existing_output, outputs)
+
+    def test_existing_output_skipped_when_skip_enabled(self):
+        config = dict(self.config, pipeline={"global": {"skip_existing_files": True}})
+        outputs = self.get_all_outputs(config)
+        self.assertNotIn(self.existing_output, outputs)
 
 
 class TestReferenceModuleToggles(ExpectedOutputManagerTestCase):

@@ -27,7 +27,7 @@ Defines the overall pipeline behavior, including execution controls and process 
 
 | Setting | Default | Description |
 |---|---|---|
-| `pipeline.global.skip_existing_files` | `true` | When true, existing output files are skipped to avoid re-computation. |
+| `pipeline.global.skip_existing_files` | `false` | When true, output files that already exist are not requested from Snakemake, so they are never re-computed. This also means changed input files do not propagate to existing downstream outputs, which can leave results inconsistent. Keep it `false` to use Snakemake's normal re-run behaviour. |
 
 ### Stage: `read_module`
 

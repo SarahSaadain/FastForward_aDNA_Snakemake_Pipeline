@@ -85,8 +85,10 @@ pipeline:
 
   # Global settings
   global:
-    # When true, existing output files will be skipped to avoid re-computation (Default: true)
-    skip_existing_files: true
+    # When true, existing output files are not requested from Snakemake and are never
+    # re-computed. Warning: changed input files then do not propagate to existing
+    # downstream outputs, which can leave results inconsistent. (Default: false)
+    skip_existing_files: false
 
   # Stages of the pipeline
 
