@@ -121,9 +121,8 @@ def _ensure_project_root(require_snakemake=True):
             "pastForward: this isn't a project root (needs workflow/ and config/ in the "
             "current directory). cd into your project folder first."
         )
-    # check/preview/version never spawn snakemake. check/preview still import Python packages
-    # that only live in the pipeline's conda env (yaml, snakemake_interface_executor_plugins),
-    # so they fail later on ImportError instead; version needs neither.
+    # check/preview/version never spawn snakemake. check/preview still need PyYAML to read
+    # config.yaml, so they fail later on ImportError instead; version needs neither.
     if require_snakemake and shutil.which("snakemake") is None:
         _die("pastForward: `snakemake` not found on PATH. Activate its conda env first.")
 

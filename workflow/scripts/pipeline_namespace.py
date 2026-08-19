@@ -43,8 +43,8 @@ def load_pipeline_namespace(config, include_check=False):
 
     include_check also loads check.py, which - unlike the other files - does its work at
     include time: it logs the per-species discovery summary as a side effect of being
-    loaded. It needs `snakemake_interface_executor_plugins` importable (a Snakemake
-    dependency, so present in any env that has Snakemake).
+    loaded. Its `snakemake_interface_executor_plugins` import is optional (see the try/except
+    there), so this stays importable with nothing but the standard library plus PyYAML.
     """
     apply_config_key_aliases(config)
     namespace = {"config": config}
