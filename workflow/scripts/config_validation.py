@@ -22,7 +22,7 @@ def resolve_ecmsd_conda_env(config):
     version_source = (
         config.get("pipeline", {})
         .get("read_module", {})
-        .get("contamination", {})
+        .get("taxonomic_screening", {})
         .get("tools", {})
         .get("ecmsd", {})
         .get("settings", {})
@@ -30,7 +30,7 @@ def resolve_ecmsd_conda_env(config):
     )
     if version_source not in ECMSD_ENV_FILES:
         raise ConfigValidationError(
-            "pipeline.read_module.contamination.tools.ecmsd.settings.version_source must be "
+            "pipeline.read_module.taxonomic_screening.tools.ecmsd.settings.version_source must be "
             f"one of {tuple(ECMSD_ENV_FILES)}, got {version_source!r}"
         )
     return ECMSD_ENV_FILES[version_source]

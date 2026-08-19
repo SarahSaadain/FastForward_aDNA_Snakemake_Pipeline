@@ -6,7 +6,7 @@ ecmsd_git_development.yaml (see "Post-Deployment Scripts for Conda Environments"
 docs). Matches bioconda's own recipe layout (bioconda-recipes/recipes/ecmsd/build.sh) exactly so
 every ecmsd rule keeps calling the plain `ECMSD` command unchanged.
 
-Selected via pipeline.read_module.contamination.tools.ecmsd.settings.version_source: "dev" (see
+Selected via pipeline.read_module.taxonomic_screening.tools.ecmsd.settings.version_source: "dev" (see
 initialize.smk, which maps that setting to this env file). Unreleased, untested, no integrity check
 possible. Unpinned by design -- recreate the env to pick up newer commits (e.g.
 `snakemake --conda-create-envs-only --conda-cleanup-envs`).
