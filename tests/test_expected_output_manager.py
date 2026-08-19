@@ -9,7 +9,7 @@ exist to catch quickly, without needing Snakemake, conda, or any bioinformatics 
 
 Each test builds a small synthetic species library on disk (via tests/pf_test_library.py)
 and loads the manager scripts into a shared namespace that mimics Snakemake's `include:`
-(via tests/pipeline_namespace.py), then calls get_expected_outputs_from_pipeline() with a
+(via workflow/scripts/pipeline_namespace.py), then calls get_expected_outputs_from_pipeline() with a
 chosen config and asserts on which output paths are/aren't requested. Assertions target
 representative, distinctive path fragments rather than exhaustive output lists, so they
 track intent (e.g. "reference module outputs must disappear when reference_module.execute
@@ -25,10 +25,12 @@ import sys
 import tempfile
 import unittest
 
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(REPO_ROOT, "workflow"))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import pf_test_library as testlib  # noqa: E402
-from pipeline_namespace import load_pipeline_namespace  # noqa: E402
+from scripts.pipeline_namespace import load_pipeline_namespace  # noqa: E402
 from build_test_library import DEFAULT_TARGET as _PERSISTENT_LIBRARY_TARGET  # noqa: E402
 
 

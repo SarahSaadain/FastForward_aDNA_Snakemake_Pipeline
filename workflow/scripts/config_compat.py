@@ -5,8 +5,9 @@ When a config key is renamed, the old name keeps working: apply_config_key_alias
 moves the old key's value onto the new name before anything else reads the config, so
 the rest of the pipeline only ever sees current key names and no `.get("<old name>", {})`
 fallback chains are needed at the read sites. Called once from workflow/rules/initialize.smk,
-directly after the configfile is loaded, and mirrored by tests/pipeline_namespace.py so the
-unit tests see the same normalised config the real run does.
+directly after the configfile is loaded, and mirrored by workflow/scripts/pipeline_namespace.py so
+`pastForward check`/`preview` and the unit tests see the same normalised config the real run
+does.
 """
 
 import logging

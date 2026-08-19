@@ -110,8 +110,9 @@ class StatusHelpersTestCase(unittest.TestCase):
 
 class ArgvValidationTestCase(unittest.TestCase):
     """Argument checks that must fail fast, before any subprocess is spawned: `run` (unlike
-    `dryrun`) never guesses a thread count, and `check`/`preview` never take snakemake
-    arguments at all - see README's "Using the pastForward CLI" section."""
+    `dryrun`) never guesses a thread count, and `check`/`preview` take no arguments at all
+    (they run in-process and never invoke snakemake) - see README's "Using the pastForward
+    CLI" section."""
 
     def setUp(self):
         self._orig_cwd = os.getcwd()
@@ -169,8 +170,8 @@ class ArgvValidationTestCase(unittest.TestCase):
         self.assertEqual(captured["cmd"], ["snakemake", "--unlock", "--cores", "1"])
 
     def test_check_rejects_arguments(self):
-        # check/preview always run a plain `snakemake --dryrun` - passing a target/rule name
-        # through would build a different DAG and silently drop the output they parse for.
+        # check/preview always read config/config.yaml as-is - there is no Snakemake
+        # invocation left to forward flags to.
         with self.assertRaises(SystemExit):
             cli.cmd_check(["--configfile", "other.yaml"])
 

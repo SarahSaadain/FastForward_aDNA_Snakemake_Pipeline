@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file.
   - Outputs: `{species}/results/read_module/contamination/` -> `{species}/results/read_module/taxonomic_screening/`. This has **no** fallback - rename the folder in existing projects to reuse previous results, or let pastForward regenerate them
   - Workflow layout: `workflow/{rules,scripts}/read_module/contamination/` -> `.../taxonomic_screening/`, with `check_contamination_*` files renamed to `check_taxonomic_screening_*`; the two Centrifuge helper scripts also lost their incorrect `_ecmsd_` infix. Rules `ecmsd_analyze_contamination` and `analyze_contamination_with_centrifuge` are now `ecmsd_taxonomic_screening` and `centrifuge_taxonomic_screening`
 
+- **`pastForward check`/`preview` no longer start Snakemake**: both commands now load `check.py` and `expected_output_manager.py` in-process (`workflow/scripts/pipeline_namespace.py`, the same shared-namespace loader the unit tests use) instead of shelling out to `snakemake --dryrun` and parsing its log. Same output, but they return in well under a second instead of waiting for a full DAG build, and a rule-level dry-run error (e.g. an ambiguous SCG reference) no longer hides the discovery/expected-output listing they exist to show
+
 - **`pastForward status`**: now flags a likely force-kill (SIGKILL, `abort --force`, OOM-killer) when the tracked process is not running and the log shows neither completion nor a recorded failure - previously that case printed no explanation at all
 - **`preview.py` renamed to `check.py`**: matches the new `pastForward check` command it backs; no behavior change (still the per-species discovery tree logged at startup)
 

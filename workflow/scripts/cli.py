@@ -2,11 +2,11 @@
 """
 pastForward CLI — thin wrapper around the `snakemake` command.
 
-Standalone: no Snakemake/conda import needed, just stdlib. Shells out to `snakemake`
-and, for `check`/`preview`, parses the provenance logging that initialize.smk,
-check.py and expected_output_manager.py already emit on every invocation (including
---dryrun) — see workflow/rules/initialize.smk, workflow/scripts/check.py and
-workflow/scripts/expected_output_manager.py.
+Shells out to `snakemake` for everything that actually runs the workflow. `check`/`preview`
+skip Snakemake entirely: they load check.py and expected_output_manager.py in-process (via
+scripts/pipeline_namespace.py, the same shared-namespace trick Snakemake's `include:` uses)
+and parse the provenance logging those files emit — same output as a --dryrun, without the
+DAG build or conda resolution, so they return in well under a second.
 
 Entry point: pastForward (project root) — a tiny shim that imports main() from here.
 
@@ -16,7 +16,9 @@ on any "-"-looking token - like a genuine snakemake flag, e.g. --forceall - that
 before the parser has committed to consuming positionals. Splitting on the command name
 ourselves sidesteps that entirely.
 """
+import io
 import json
+import logging
 import os
 import re
 import shutil
@@ -34,6 +36,11 @@ STATE_FILE = STATE_DIR / "run_state.json"
 CORES_FLAGS = ("--cores", "-c", "-j", "--jobs")
 CONFIGFILE_FLAGS = ("--configfile", "--configfiles")
 DEFAULT_CONFIGFILE = "config/config.yaml"  # matches initialize.smk's `configfile:` directive
+
+# Must match initialize.smk's logging.basicConfig, so the regexes below parse in-process
+# check/preview output exactly like they parse a real run's log file.
+LOG_FORMAT = "[%(asctime)s] [%(levelname)s] %(message)s"
+LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S (%Z)"
 
 DEFAULT_TAIL_LINES = 20
 WATCH_TAIL_LINES = 10
@@ -108,13 +115,15 @@ def _die(msg):
     sys.exit(_color(RED, msg))
 
 
-def _ensure_project_root():
+def _ensure_project_root(require_snakemake=True):
     if not Path("workflow").is_dir() or not Path("config").is_dir():
         _die(
             "pastForward: this isn't a project root (needs workflow/ and config/ in the "
             "current directory). cd into your project folder first."
         )
-    if shutil.which("snakemake") is None:
+    # check/preview never spawn snakemake, but they do import its Python dependencies
+    # (yaml, snakemake_interface_executor_plugins), so the env still has to be active.
+    if require_snakemake and shutil.which("snakemake") is None:
         _die("pastForward: `snakemake` not found on PATH. Activate its conda env first.")
 
 
@@ -522,28 +531,58 @@ def cmd_doctor(argv):
     sys.exit(subprocess.call(["snakemake", "--use-conda", "--conda-create-envs-only", "--cores", "1"]))
 
 
-def _dryrun_capture():
-    # No passthrough args: check/preview parse the "Detected species"/"Requesting:" log lines
-    # that only get emitted while Snakemake builds rule all's DAG - passing a target/rule name
-    # through here would build a different DAG and silently drop that output instead.
-    _ensure_project_root()
-    # --nolock: check/preview are read-only (never touch outputs), so they should not be
-    # blocked by - or block - a real `snakemake` run's directory lock.
-    proc = subprocess.run(_build_dryrun_cmd(["--nolock"]), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    if proc.returncode != 0:
-        print(_color(RED, "snakemake --dryrun failed:"), file=sys.stderr)
-        print("\n".join(proc.stdout.splitlines()[-20:]), file=sys.stderr)
-        sys.exit(proc.returncode)
-    return proc.stdout
+def _capture_pipeline_log(include_check):
+    """Runs the pipeline's own discovery / expected-output code in-process and returns the log
+    output it produces, formatted exactly as initialize.smk formats it for a real run - so the
+    parsing in cmd_check/cmd_preview is the same either way.
+
+    include_check=True loads check.py (the per-species "Detected species" tree);
+    include_check=False calls get_expected_outputs_from_pipeline() (the Requesting/Skipping
+    lines). Neither needs Snakemake: no DAG, no conda envs, no directory lock.
+    """
+    _ensure_project_root(require_snakemake=False)
+    if not Path(DEFAULT_CONFIGFILE).is_file():
+        _die(f"pastForward: no {DEFAULT_CONFIGFILE} found in this project root.")
+    sys.path.insert(0, "workflow")
+    try:
+        import yaml
+        from scripts.pipeline_namespace import load_pipeline_namespace
+        from scripts.species_paths import setup_species_data_locations
+    except ImportError as e:
+        _die(f"pastForward: {e}. Activate the conda env that has snakemake installed first.")
+
+    config = yaml.safe_load(Path(DEFAULT_CONFIGFILE).read_text()) or {}
+    buffer = io.StringIO()
+    handler = logging.StreamHandler(buffer)
+    handler.setFormatter(logging.Formatter(LOG_FORMAT, LOG_DATE_FORMAT))
+    root = logging.getLogger()
+    root.addHandler(handler)
+    old_level = root.level
+    root.setLevel(logging.INFO)
+    try:
+        # dry_run=True: resolve the per-species data-location symlinks (discovery reads through
+        # them) but never take the cross-project .pastforward.lock - check/preview are
+        # read-only and must not block, or be blocked by, a real run. Same reason initialize.smk
+        # skips it on --dryrun.
+        setup_species_data_locations(config, dry_run=True)
+        namespace = load_pipeline_namespace(config, include_check=include_check)
+        if not include_check:
+            namespace["get_expected_outputs_from_pipeline"](None)
+    except Exception as e:
+        _die(f"pastForward: {type(e).__name__}: {e}")
+    finally:
+        root.removeHandler(handler)
+        root.setLevel(old_level)
+    return buffer.getvalue()
 
 
 def cmd_check(argv):
     if argv:
-        _die("pastForward check: takes no arguments (it always runs a plain `snakemake --dryrun`).")
-    text = _dryrun_capture()
+        _die("pastForward check: takes no arguments (it always reads config/config.yaml).")
+    text = _capture_pipeline_log(include_check=True)
     m = DETECTED_SPECIES_RE.search(text)
     if not m:
-        _die("pastForward: no species tree found in dryrun output — check config.yaml.")
+        _die("pastForward: no species found — check config.yaml.")
     # check.py's tree lines all start with "-" or indentation (or are blank, between species) -
     # the first line that starts with anything else is the next, unrelated log message.
     lines = text[m.start() :].splitlines()
@@ -558,8 +597,8 @@ def cmd_check(argv):
 
 def cmd_preview(argv):
     if argv:
-        _die("pastForward preview: takes no arguments (it always runs a plain `snakemake --dryrun`).")
-    text = _dryrun_capture()
+        _die("pastForward preview: takes no arguments (it always reads config/config.yaml).")
+    text = _capture_pipeline_log(include_check=False)
     skipped_species = re.findall(r"Skipping species '(.+?)' \(execute: false\)", text)
     existing = re.findall(r"- Skipping: (.+)", text)
     requested = re.findall(r"- Requesting: (.+)", text)
