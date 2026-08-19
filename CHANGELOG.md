@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-08-19
+
 ### New Features
 
 - **`pastForward` CLI**: a wrapper around `snakemake` at the project root — `run`/`resume` (backgrounded by default), `status`/`abort`/`unlock`, `check`/`preview`, `dryrun`, `doctor` (list/rebuild conda envs), `print-log`, `version`. `run`/`dryrun` write timestamped logs to `logs/`. `check`/`preview` run in-process, so they return in well under a second and need no Snakemake at all (`preview.py` was renamed to `check.py` to match). See [README.md](README.md#running-the-pipeline); plain `snakemake` usage moved to [docs/snakemake.md](docs/snakemake.md)
