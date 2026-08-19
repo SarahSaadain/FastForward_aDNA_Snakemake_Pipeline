@@ -27,11 +27,11 @@ Defines the overall pipeline behavior, including execution controls and process 
 
 | Setting | Default | Description |
 |---|---|---|
-| `pipeline.global.skip_existing_files` | `true` | When true, existing output files are skipped to avoid re-computation. |
+| `pipeline.global.skip_existing_files` | `false` | When true, output files that already exist are not requested from Snakemake, so they are never re-computed. This also means changed input files do not propagate to existing downstream outputs, which can leave results inconsistent. Keep it `false` to use Snakemake's normal re-run behaviour. |
 
 ### Stage: `read_module`
 
-Quality checking, adapter removal, quality filtering, merging, contamination analysis, and read count statistics of raw reads.
+Quality checking, adapter removal, quality filtering, merging, taxonomic screening, and read count statistics of raw reads.
 
 > **Read count statistics always run** — per-stage counts (raw → trimmed → quality-filtered) are written unconditionally as `{species}/results/read_module/statistics/{species}_reads_counts.csv`.
 
@@ -69,14 +69,20 @@ Controls FastQC + MultiQC quality reports at each processing stage and read coun
 | `settings.unqualified_percent_limit` | `40` | Max percentage of unqualified bases allowed in a read. |
 | `settings.n_base_limit` | `5` | Max number of N bases allowed in a read. |
 
-#### `contamination`
+#### `taxonomic_screening`
 
-Both tools operate on quality-filtered reads and can be toggled independently.
+Both tools operate on quality-filtered reads and can be toggled independently. Reads are classified against a
+reference database, and the resulting taxon proportions are used to judge how much of a sample is exogenous
+(contaminating) DNA.
+
+> Renamed from `contamination`. The old key still works and is rewritten to `taxonomic_screening`
+> at startup, with a deprecation warning in the log.
 
 **ECMSD** — maps reads against a curated mitochondrial reference database.
 
 | Setting | Default | Description |
 |---|---|---|
+| `tools.ecmsd.settings.version_source` | `conda` | Where to get the ECMSD binary. `conda` uses the bioconda-packaged `ecmsd=1.*` release (`workflow/envs/ecmsd.yaml`); `latest_release` always side-loads the newest tagged release from [capoony/ECMSD](https://github.com/capoony/ECMSD) (`ecmsd_git_release.yaml`); `dev` **(experimental)** side-loads the tip of ECMSD's `development` branch — unreleased and untested (`ecmsd_git_development.yaml`). Each value has its own conda env, so switching it builds/reuses that env automatically; picking up a newer release/commit on an already-built unpinned env still needs a manual rebuild — see [FAQ.md](FAQ.md). |
 | `tools.ecmsd.settings.database` | — | Path to the ECMSD database folder. If omitted, the pipeline auto-creates a database at `resources/ecmsd_database` via `ECMSD --create-db`. |
 | `tools.ecmsd.settings.cov_threshold` | `25` | Minimum % of reference covered by reads to retain it. |
 | `tools.ecmsd.settings.top_n` | `25` | Number of top references to generate alignment plots for. |
@@ -145,6 +151,10 @@ TE and genomic feature abundance analysis — maps to a combined SCG + feature l
 
 Place feature libraries in `{species}/input/reveal_module/feature_library/` and, optionally, a pre-built SCG FASTA in `{species}/input/reveal_module/scg/`. If no SCG FASTA is provided and `scg_selector.execute` is `true`, SCGs are determined automatically via BUSCO (requires a lineage configured per species). To use competitive mapping, place a single competition FASTA in `{species}/input/reveal_module/competition/`.
 
+| Setting | Default | Description |
+|---|---|---|
+| `settings.version_source` | `pinned` | Where to get the REVEAL toolkit (not yet on bioconda, always side-loaded). `pinned` uses the exact version pinned in `reveal.post-deploy.sh` (`reveal.yaml`); `latest_release` always side-loads the newest tagged release from [SarahSaadain/REVEAL](https://github.com/SarahSaadain/REVEAL) (`reveal_git_release.yaml`); `dev` **(experimental)** side-loads the tip of REVEAL's `develop` branch — unreleased and untested (`reveal_git_development.yaml`). Each value has its own conda env, so switching it builds/reuses that env automatically; picking up a newer release/commit on an already-built unpinned env still needs a manual rebuild — see [FAQ.md](FAQ.md). |
+
 #### `scg_selector`
 
 Automatically identifies single-copy genes (SCGs) from the reference genome using BUSCO. SCGs serve as coverage normalisers for the REVEAL pipeline. Skipped automatically when a user-provided SCG FASTA is already present in `{species}/input/reveal_module/scg/` or when no BUSCO lineage is configured for the species.
@@ -200,7 +210,7 @@ Competition sequences are internally suffixed with `_comp` to distinguish them f
 | `analysis.settings.coverage_analysis` | `true` | When `true`, produce per-individual and species-level coverage stats, comparisons, and plots. |
 | `analysis.settings.snp_analysis` | `false` | When `true`, produce per-individual and species-level SNP stats and comparisons. |
 | `analysis.settings.indel_analysis` | `false` | When `true`, produce per-individual and species-level indel stats and comparisons. |
-| `visualization.settings.individual_plots` | `plot` | `plot` — generate plotables and render per-individual plots; `plotable_only` — generate plotables only, skip rendering; `skip` — skip both. |
+| `visualization.settings.individual_plots` | `skip` | `plot` — generate plotables and render per-individual plots; `plotable_only` — generate plotables only, skip rendering; `skip` — skip both. |
 | `visualization.settings.comparison_plots` | `plot` | `plot` — generate plotables and render the faceted species comparison plot; `plotable_only` — generate plotables only, skip rendering; `skip` — skip both. |
 | `visualization.settings.y_axis_log_scale_threshold_individual` | `25` | Y-axis value above which per-individual plots switch to a log scale. |
 | `visualization.settings.y_axis_log_scale_threshold_species` | `25` | Y-axis value above which the species comparison plot switches to a log scale. |

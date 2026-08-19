@@ -77,9 +77,9 @@ rule convert_unmapped_reads_to_fastq:
     input:
         _pre_filter_bam,
     output:
-        "{species}/processed/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped.fastq.gz",
+        "{species}/results/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped.fastq.gz",
     log:
-        "{species}/processed/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped_fastq.log",
+        "{species}/results/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped_fastq.log",
     threads: 4
     params:
         outputtype="fastq",
@@ -99,9 +99,9 @@ rule convert_unmapped_reads_to_fasta:
     input:
         _pre_filter_bam,
     output:
-        "{species}/processed/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped.fasta.gz",
+        "{species}/results/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped.fasta.gz",
     log:
-        "{species}/processed/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped_fasta.log",
+        "{species}/results/reference_module/{reference}/unmapped/{individual}_{reference}_unmapped_fasta.log",
     threads: 4
     params:
         outputtype="fasta",

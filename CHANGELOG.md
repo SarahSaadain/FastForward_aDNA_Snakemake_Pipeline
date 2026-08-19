@@ -5,7 +5,47 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### New Features
+
+- **`pastForward` CLI**: a wrapper around `snakemake` at the project root — `run`/`resume` (backgrounded by default), `status`/`abort`/`unlock`, `check`/`preview`, `dryrun`, `doctor` (list/rebuild conda envs), `print-log`, `version`. `run`/`dryrun` write timestamped logs to `logs/`. `check`/`preview` run in-process, so they return in well under a second and need no Snakemake at all (`preview.py` was renamed to `check.py` to match). See [README.md](README.md#running-the-pipeline); plain `snakemake` usage moved to [docs/snakemake.md](docs/snakemake.md)
+- **Configurable ECMSD/REVEAL version source**: `tools.ecmsd.settings.version_source` (default `conda`) and `pipeline.reveal_module.settings.version_source` (default `pinned`) can side-load either tool straight from GitHub — `latest_release`, or an experimental `dev` — instead of its pinned build. Each value has its own conda env, so switching it rebuilds automatically. See [config/parameters.md](config/parameters.md) and [docs/FAQ.md](docs/FAQ.md)
+
+### Bug Fixes
+
+- **Read-number marker in raw read filenames**: a bare `1`/`2` mid-filename (e.g. `IND001_B_1_box-1-22_R1_001.fastq.gz`) could beat the explicit `R1`/`R2` token and cut the sample ID at the wrong underscore, silently merging two specimens into one sample. `R1`/`R2` now always wins, and `get_raw_reads_for_sample()` raises instead of silently picking one of several matching files
+- **ECMSD `cov_threshold` default**: the rule fell back to `50` when the key was omitted, while [config/parameters.md](config/parameters.md), the samples, and the config designer all documented `25`. The rule now uses `25` as intended
+- **ECMSD samples with no hits**: newer ECMSD writes an empty result table instead of failing when a sample has no hits, and the pipeline now handles that case — the sample is kept as a `none_detected` placeholder row so MultiQC's relative-stacked bargraph still renders, and the per-sample `_ReadLengths.png`/`_Proportions.png` plots ECMSD skips for an empty result are no longer declared rule outputs
+
+### Changed
+
+- **`contamination` renamed to `taxonomic_screening`**: config key, workflow folders, output folder, and rule names now say what the step measures. The old config key still works (rewritten at startup with a deprecation warning); the output folder `{species}/results/read_module/contamination/` has no fallback, so rename it in existing projects or let pastForward regenerate it. See [config/parameters.md](config/parameters.md)
+- **No `config/config.yaml` ships with the pipeline any more**: it is now `config/min_config_sample.yaml`, and `config.yaml` is gitignored so your own config survives a `git pull`. Copy a sample, or generate one with `config/config_designer.html`, before the first run. See [config/README.md](config/README.md)
+- **`pipeline.global.skip_existing_files` defaults to `false`** (was `true`), and a warning is logged whenever it is on. Existing outputs were dropped from Snakemake's target list, so changed inputs did not propagate downstream and results could end up inconsistent. See [docs/FAQ.md](docs/FAQ.md)
+- **`visualization.settings.individual_plots` defaults to `skip`** (was `plot`): per-individual REVEAL plots are off unless asked for
+- **Two outputs moved from `processed/` to `results/`**: the auto-determined SCG library `{species}_relevant_scg.fasta` and the `filter_unmapped_reads` FASTQ/FASTA exports are primary outputs, not intermediates. Move the old folders in existing projects or let pastForward regenerate them. SCG-selector logging now also says whether a previous SCG library was reused or a new one determined
+- **MultiQC report wording for ECMSD**: the ECMSD section no longer lists bacteria as an example contaminant — ECMSD screens a mitochondrial database, so bacteria never show up there. It now says so and points at the Centrifuge section
+- **REVEAL conda env files renamed** from `reveal_module.{yaml,post-deploy.sh}` to `reveal.{yaml,post-deploy.sh}`, matching the `ecmsd*` naming
+- **Run log opens with an ASCII pastForward banner**, so the start of a run is easy to find in a long log
+
+### Docs
+
+- **README overhaul**: "Running the Pipeline" leads with the CLI; direct-`snakemake` usage, flags, backgrounding, and HPC/cluster notes moved to [docs/snakemake.md](docs/snakemake.md)
+- **Sample defaults corrected**: `config/max_config_sample.yaml` and `config/config_designer.html` listed `tools.centrifuge.settings.include_human_taxid: true`, while the rule and [config/parameters.md](config/parameters.md) default it to `false`
+
+### CI / Maintenance
+
+- `tests/dryrun_scenarios.sh` falls back to `gtimeout` on macOS, which doesn't ship GNU `timeout`
+- `file_manager.py` no longer imports `logger` from the stdlib `venv` module and uses `logging.getLogger(__name__)` instead
+- Removed dead code and unused imports; consolidated duplicated FASTA-glob discovery in `file_manager.py` and repeated nested config lookups in the expected-output managers
+
 ## [2.0.2] - 2026-08-17
+
+> Hotfix released directly from `main`, for projects using the per-species data-location overrides added in 2.0.1. Both fixes are also in `develop`.
+
+### Bug Fixes
+
+- **Reference standardization no longer writes into `input/`**: it used to `os.rename()` the discovered reference in place and let the mapper index rules write into `input/reference_module/`, which could rename away or litter an external, possibly read-only `reference_dir`. It now only symlinks a standardized name into `{species}/processed/reference_module/{reference}/reference/`, and indexing plus every downstream consumer reads from there
+- **Standardization symlinks survive moving the project folder**: the reference, feature-library, and SCG-library symlinks resolved their target with a fully canonicalizing `realpath`, baking the external absolute path into the link. All three now use a lexical relative path, matching what `species_paths.py`'s own symlinks already did
 
 ## [2.0.1] - 2026-08-10
 

@@ -9,7 +9,7 @@ exist to catch quickly, without needing Snakemake, conda, or any bioinformatics 
 
 Each test builds a small synthetic species library on disk (via tests/pf_test_library.py)
 and loads the manager scripts into a shared namespace that mimics Snakemake's `include:`
-(via tests/pipeline_namespace.py), then calls get_expected_outputs_from_pipeline() with a
+(via workflow/scripts/pipeline_namespace.py), then calls get_expected_outputs_from_pipeline() with a
 chosen config and asserts on which output paths are/aren't requested. Assertions target
 representative, distinctive path fragments rather than exhaustive output lists, so they
 track intent (e.g. "reference module outputs must disappear when reference_module.execute
@@ -25,10 +25,12 @@ import sys
 import tempfile
 import unittest
 
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(REPO_ROOT, "workflow"))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import pf_test_library as testlib  # noqa: E402
-from pipeline_namespace import load_pipeline_namespace  # noqa: E402
+from scripts.pipeline_namespace import load_pipeline_namespace  # noqa: E402
 from build_test_library import DEFAULT_TARGET as _PERSISTENT_LIBRARY_TARGET  # noqa: E402
 
 
@@ -138,7 +140,7 @@ class TestModuleExecuteFlags(ExpectedOutputManagerTestCase):
         self.assertTrue(any("results/read_module" in o for o in outputs))
 
 
-class TestContaminationToolToggles(ExpectedOutputManagerTestCase):
+class TestTaxonomicScreeningToolToggles(ExpectedOutputManagerTestCase):
     def setUp(self):
         super().setUp()
         testlib.build_species_library(self.project_dir)
@@ -146,24 +148,42 @@ class TestContaminationToolToggles(ExpectedOutputManagerTestCase):
 
     def test_centrifuge_disabled_leaves_ecmsd(self):
         config = dict(self.base_config, pipeline={
-            "read_module": {"contamination": {"tools": {"centrifuge": {"execute": False}}}}
+            "read_module": {"taxonomic_screening": {"tools": {"centrifuge": {"execute": False}}}}
         })
         outputs = self.get_all_outputs(config)
-        self.assertFalse(any("contamination/centrifuge" in o for o in outputs))
-        self.assertTrue(any("contamination/ecmsd" in o for o in outputs))
+        self.assertFalse(any("taxonomic_screening/centrifuge" in o for o in outputs))
+        self.assertTrue(any("taxonomic_screening/ecmsd" in o for o in outputs))
 
     def test_ecmsd_disabled_leaves_centrifuge(self):
         config = dict(self.base_config, pipeline={
-            "read_module": {"contamination": {"tools": {"ecmsd": {"execute": False}}}}
+            "read_module": {"taxonomic_screening": {"tools": {"ecmsd": {"execute": False}}}}
         })
         outputs = self.get_all_outputs(config)
-        self.assertFalse(any("contamination/ecmsd" in o for o in outputs))
-        self.assertTrue(any("contamination/centrifuge" in o for o in outputs))
+        self.assertFalse(any("taxonomic_screening/ecmsd" in o for o in outputs))
+        self.assertTrue(any("taxonomic_screening/centrifuge" in o for o in outputs))
+
+    def test_deprecated_contamination_key_still_toggles_tools(self):
+        """`taxonomic_screening` was previously called `contamination`; config_compat
+        keeps the old key working, so a config written against the old name must still
+        reach the same expected outputs."""
+        config = dict(self.base_config, pipeline={
+            "read_module": {"contamination": {"tools": {"centrifuge": {"execute": False}}}}
+        })
+        outputs = self.get_all_outputs(config)
+        self.assertFalse(any("taxonomic_screening/centrifuge" in o for o in outputs))
+        self.assertTrue(any("taxonomic_screening/ecmsd" in o for o in outputs))
+
+    def test_deprecated_contamination_key_still_disables_whole_step(self):
+        config = dict(self.base_config, pipeline={
+            "read_module": {"contamination": {"execute": False}}
+        })
+        outputs = self.get_all_outputs(config)
+        self.assertFalse(any("taxonomic_screening" in o for o in outputs))
 
 
 class TestScgSelectorDefaults(ExpectedOutputManagerTestCase):
     """Regression coverage for the scg_selector.execute default, which drifted out of sync
-    with file_manager.should_auto_determine_scg() (default True), preview.py (default True)
+    with file_manager.should_auto_determine_scg() (default True), check.py (default True)
     and the documented behavior (docs/FAQ.md, docs/process_overview.md: "true (the
     default)") - expected_output_manager_reveal_module_processing.py had defaulted it to
     False, which silently skipped SCG auto-determination for any config that (per the docs)
@@ -225,14 +245,19 @@ class TestSkipExistingFiles(ExpectedOutputManagerTestCase):
         with open(self.existing_output, "w") as f:
             f.write("already computed")
 
-    def test_existing_output_skipped_by_default(self):
+    def test_existing_output_kept_by_default(self):
         outputs = self.get_all_outputs(self.config)
-        self.assertNotIn(self.existing_output, outputs)
+        self.assertIn(self.existing_output, outputs)
 
     def test_existing_output_kept_when_skip_disabled(self):
         config = dict(self.config, pipeline={"global": {"skip_existing_files": False}})
         outputs = self.get_all_outputs(config)
         self.assertIn(self.existing_output, outputs)
+
+    def test_existing_output_skipped_when_skip_enabled(self):
+        config = dict(self.config, pipeline={"global": {"skip_existing_files": True}})
+        outputs = self.get_all_outputs(config)
+        self.assertNotIn(self.existing_output, outputs)
 
 
 class TestReferenceModuleToggles(ExpectedOutputManagerTestCase):
@@ -261,7 +286,7 @@ class TestReferenceModuleToggles(ExpectedOutputManagerTestCase):
             "reference_module": {"filter_unmapped_reads": {"execute": True, "settings": {"action": "extract_fastq"}}}
         })
         outputs = self.get_all_outputs(config)
-        self.assertIn("Dmel/processed/reference_module/genome/unmapped/IND001_genome_unmapped.fastq.gz", outputs)
+        self.assertIn("Dmel/results/reference_module/genome/unmapped/IND001_genome_unmapped.fastq.gz", outputs)
 
 
 if __name__ == "__main__":

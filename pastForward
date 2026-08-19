@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+"""Entry point shim — real logic lives in workflow/scripts/cli.py so it can be
+unit-tested the same way as the rest of workflow/scripts/ (see tests/test_cli.py)."""
+import os
+import sys
+
+_REPO_ROOT = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join(_REPO_ROOT, "workflow"))
+
+from scripts.cli import main  # noqa: E402
+
+if __name__ == "__main__":
+    main()

@@ -10,10 +10,17 @@ import logging
 # Skip existing files based on configuration
 def skip_existing_files(expected_outputs):
 
-    # Filter out files that already exist if the skip_existing_files option is enabled
-    if config.get("pipeline", {}).get("global", {}).get("skip_existing_files", True) == False:
+    # Filter out files that already exist if the skip_existing_files option is enabled.
+    # Disabled by default so that Snakemake's own re-run logic stays in charge.
+    if not config.get("pipeline", {}).get("global", {}).get("skip_existing_files", False):
         return expected_outputs
-    
+
+    logging.warning(
+        "pipeline.global.skip_existing_files is enabled: existing output files are not "
+        "requested from Snakemake, so changed input files will NOT propagate to outputs "
+        "that already exist on disk. Results may be inconsistent. Set it to false (the "
+        "default) to restore Snakemake's normal re-run behaviour."
+    )
     logging.info("Checking for existing files to skip...")
 
     expected_outputs_existing = []

@@ -111,7 +111,7 @@ def create_multiqc_bam_individual_input(wildcards):
         if (
             config.get("pipeline", {})
             .get("read_module", {})
-            .get("contamination", {})
+            .get("taxonomic_screening", {})
             .get("execute", True)
             == True
         ):
@@ -119,7 +119,7 @@ def create_multiqc_bam_individual_input(wildcards):
             if (
                 config.get("pipeline", {})
                 .get("read_module", {})
-                .get("contamination", {})
+                .get("taxonomic_screening", {})
                 .get("tools", {})
                 .get("centrifuge", {})
                 .get("execute", True)
@@ -129,20 +129,20 @@ def create_multiqc_bam_individual_input(wildcards):
                 for sample in samples_of_individual:
                     raw_reads = get_raw_reads_for_sample(species, sample)
                     file_list.append(
-                        f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+                        f"{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
                     )
 
             if (
                 config.get("pipeline", {})
                 .get("read_module", {})
-                .get("contamination", {})
+                .get("taxonomic_screening", {})
                 .get("tools", {})
                 .get("ecmsd", {})
                 .get("execute", True)
                 == True
             ):
                 file_list.append(
-                    f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+                    f"{species}/results/read_module/taxonomic_screening/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
                 )
 
         # merged reads fastqc
@@ -237,9 +237,6 @@ def create_multiqc_bam_individual_input(wildcards):
             f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt"
         )
 
-    # if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
-    #     file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json")
-
     return file_list
 
 
@@ -264,7 +261,7 @@ def create_multiqc_reference_input(wildcards):
             if (
                 config.get("pipeline", {})
                 .get("read_module", {})
-                .get("contamination", {})
+                .get("taxonomic_screening", {})
                 .get("execute", True)
                 == True
             ):
@@ -272,7 +269,7 @@ def create_multiqc_reference_input(wildcards):
                 if (
                     config.get("pipeline", {})
                     .get("read_module", {})
-                    .get("contamination", {})
+                    .get("taxonomic_screening", {})
                     .get("tools", {})
                     .get("centrifuge", {})
                     .get("execute", True)
@@ -282,20 +279,20 @@ def create_multiqc_reference_input(wildcards):
                     for sample in samples_of_individual:
                         raw_reads = get_raw_reads_for_sample(species, sample)
                         file_list.append(
-                            f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+                            f"{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
                         )
 
                 if (
                     config.get("pipeline", {})
                     .get("read_module", {})
-                    .get("contamination", {})
+                    .get("taxonomic_screening", {})
                     .get("tools", {})
                     .get("ecmsd", {})
                     .get("execute", True)
                     == True
                 ):
                     file_list.append(
-                        f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+                        f"{species}/results/read_module/taxonomic_screening/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
                     )
 
             # merged reads fastqc
@@ -529,7 +526,16 @@ def clean_scg_library_name_input(wildcards):
     # Fall back to auto-determined SCG output
     auto_id = get_effective_scg_library_id_for_species(species)
     if scg_library == auto_id:
-        return f"{species}/processed/reveal_module/scg/{species}_relevant_scg.fasta"
+        auto_path = f"{species}/results/reveal_module/scg/{species}_relevant_scg.fasta"
+        if os.path.exists(auto_path):
+            logger.info(
+                f"Found SCG library from a previous run for {species} at {auto_path}, reusing it."
+            )
+        else:
+            logger.info(
+                f"No SCG library found for {species}, it will be auto-determined."
+            )
+        return auto_path
 
     raise ValueError(
         f"No SCG library file could be determined for species {species} and library {scg_library}."
@@ -601,7 +607,7 @@ def create_multiqc_species_individual_input(wildcards):
         if (
             config.get("pipeline", {})
             .get("read_module", {})
-            .get("contamination", {})
+            .get("taxonomic_screening", {})
             .get("execute", True)
             == True
         ):
@@ -609,7 +615,7 @@ def create_multiqc_species_individual_input(wildcards):
             if (
                 config.get("pipeline", {})
                 .get("read_module", {})
-                .get("contamination", {})
+                .get("taxonomic_screening", {})
                 .get("tools", {})
                 .get("centrifuge", {})
                 .get("execute", True)
@@ -619,13 +625,13 @@ def create_multiqc_species_individual_input(wildcards):
                 for sample in samples_of_individual:
                     raw_reads = get_raw_reads_for_sample(species, sample)
                     file_list.append(
-                        f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+                        f"{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
                     )
 
             if (
                 config.get("pipeline", {})
                 .get("read_module", {})
-                .get("contamination", {})
+                .get("taxonomic_screening", {})
                 .get("tools", {})
                 .get("ecmsd", {})
                 .get("execute", True)
@@ -633,7 +639,7 @@ def create_multiqc_species_individual_input(wildcards):
             ):
 
                 file_list.append(
-                    f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+                    f"{species}/results/read_module/taxonomic_screening/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
                 )
 
         # merged reads fastqc
@@ -734,9 +740,6 @@ def create_multiqc_species_individual_input(wildcards):
                     f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt"
                 )
 
-            # if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
-            #     file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json")
-
     logger.debug(f"MultiQC input files for species {species}: {file_list}")
 
     return file_list
@@ -772,7 +775,7 @@ def create_multiqc_species_input(wildcards):
             if (
                 config.get("pipeline", {})
                 .get("read_module", {})
-                .get("contamination", {})
+                .get("taxonomic_screening", {})
                 .get("execute", True)
                 == True
             ):
@@ -780,7 +783,7 @@ def create_multiqc_species_input(wildcards):
                 if (
                     config.get("pipeline", {})
                     .get("read_module", {})
-                    .get("contamination", {})
+                    .get("taxonomic_screening", {})
                     .get("tools", {})
                     .get("centrifuge", {})
                     .get("execute", True)
@@ -790,20 +793,20 @@ def create_multiqc_species_input(wildcards):
                     for sample in samples_of_individual:
                         raw_reads = get_raw_reads_for_sample(species, sample)
                         file_list.append(
-                            f"{species}/results/read_module/contamination/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
+                            f"{species}/results/read_module/taxonomic_screening/centrifuge/{individual}/{sample}/{sample}_top10_total_taxa.tsv"
                         )
 
                 if (
                     config.get("pipeline", {})
                     .get("read_module", {})
-                    .get("contamination", {})
+                    .get("taxonomic_screening", {})
                     .get("tools", {})
                     .get("ecmsd", {})
                     .get("execute", True)
                     == True
                 ):
                     file_list.append(
-                        f"{species}/results/read_module/contamination/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
+                        f"{species}/results/read_module/taxonomic_screening/ecmsd/{individual}_Mito_summary_hits_combined.tsv"
                     )
 
             # merged reads fastqc
@@ -902,9 +905,6 @@ def create_multiqc_species_input(wildcards):
                     file_list.append(
                         f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/multiqc_custom_content/mapdamage/{individual}_{reference}/lgdistribution.txt"
                     )
-
-                # if config.get("pipeline", {}).get("reference_module", {}).get("deduplication", {}).get("execute", True) == True:
-                #     file_list.append(f"{species}/results/reference_module/{reference}/analytics/individual_level/{individual}/dedup/{individual}_{reference}_final.dedup.json")
 
     logger.debug(f"MultiQC input files for species {species}: {file_list}")
 

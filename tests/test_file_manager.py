@@ -269,7 +269,7 @@ class TestScgDiscovery(FileManagerTestCase):
         self.assertEqual(fm.get_effective_scg_library_id_for_species("Dmel"), "Dmel_determined_scg")
         self.assertEqual(
             fm.get_effective_scg_library_path_for_species("Dmel"),
-            "Dmel/processed/reveal_module/scg/Dmel_relevant_scg.fasta",
+            "Dmel/results/reveal_module/scg/Dmel_relevant_scg.fasta",
         )
 
 
@@ -312,6 +312,75 @@ class TestFeatureLibraryIdCleaning(FileManagerTestCase):
             fm.get_cleaned_feature_library_id_for_library_path("/x/EquCab3.0.fna"),
             "EquCab3_0",
         )
+
+
+class TestReadMarkerRPrefersOverBare(unittest.TestCase):
+    """A bare replicate/box number elsewhere in the filename (e.g. "..._B_1_box-1-22_R1...")
+    must not be mistaken for the read marker when an explicit R1/R2 token is present."""
+
+    def test_r1_marker_used_even_with_earlier_bare_1(self):
+        marker = fm._find_read_marker("Tni157_B_1_box-1-22_R1.fastq.gz", "1")
+        self.assertEqual(marker.group(0), "_R1")
+
+    def test_r2_marker_used_even_with_earlier_bare_2(self):
+        marker = fm._find_read_marker("Tni157_B_2_box-1-26_R2.fastq.gz", "2")
+        self.assertEqual(marker.group(0), "_R2")
+
+    def test_r2_counterpart_of_r1_file_with_earlier_bare_digit(self):
+        r1 = "Tni157_2_box-1-20_R1.fastq.gz"
+        self.assertEqual(fm.get_read2_counterpart_path(r1), "Tni157_2_box-1-20_R2.fastq.gz")
+
+    def test_multiple_bare_markers_raise(self):
+        with self.assertRaises(ValueError):
+            fm._find_read_marker("Sample_1_rep_1.fastq.gz", "1")
+
+    def test_multiple_r_markers_raise(self):
+        with self.assertRaises(ValueError):
+            fm._find_read_marker("Sample_R1_dup_R1.fastq.gz", "1")
+
+    def test_single_bare_marker_still_works(self):
+        marker = fm._find_read_marker("IND002_lib1_1.fastq.gz", "1")
+        self.assertEqual(marker.group(0), "_1")
+
+
+class TestOneReadFileOrPairPerSample(unittest.TestCase):
+    """get_raw_reads_for_sample() must resolve exactly one R1 (and, if present, exactly one
+    R2) per sample. Two physical files that both resolve to the same sample+read-number are
+    two different specimens/libraries colliding under one name - that must error, never
+    silently pick one and drop the other (see the box-22/box-26 "_B" incident)."""
+
+    def setUp(self):
+        self._orig_cwd = os.getcwd()
+        self.project_dir = tempfile.mkdtemp(prefix="pf_test_dupreads_")
+        os.chdir(self.project_dir)
+        fm.config = {}
+        self.reads_dir = os.path.join(self.project_dir, "Dmel", "input", "read_module")
+
+    def tearDown(self):
+        os.chdir(self._orig_cwd)
+        shutil.rmtree(self.project_dir, ignore_errors=True)
+
+    def test_single_r1_r2_pair_resolves_fine(self):
+        testlib.write_fastq_gz(os.path.join(self.reads_dir, "IND001_R1.fastq.gz"))
+        testlib.write_fastq_gz(os.path.join(self.reads_dir, "IND001_R2.fastq.gz"))
+        r1, r2 = fm.get_raw_reads_for_sample("Dmel", "IND001")
+        self.assertTrue(r1.endswith("IND001_R1.fastq.gz"))
+        self.assertTrue(r2.endswith("IND001_R2.fastq.gz"))
+
+    def test_two_r1_candidates_for_same_sample_raises(self):
+        # Same sample, same read number, two extensions on disk - ambiguous, must not
+        # silently pick one.
+        testlib.write_fastq_gz(os.path.join(self.reads_dir, "IND001_R1.fastq.gz"))
+        testlib.write_fastq_gz(os.path.join(self.reads_dir, "IND001_R1.fq.gz"))
+        with self.assertRaisesRegex(ValueError, "Rename these files"):
+            fm.get_raw_reads_for_sample("Dmel", "IND001")
+
+    def test_two_r2_candidates_for_same_sample_raises(self):
+        testlib.write_fastq_gz(os.path.join(self.reads_dir, "IND001_R1.fastq.gz"))
+        testlib.write_fastq_gz(os.path.join(self.reads_dir, "IND001_R2.fastq.gz"))
+        testlib.write_fastq_gz(os.path.join(self.reads_dir, "IND001_R2.fq.gz"))
+        with self.assertRaisesRegex(ValueError, "Rename these files"):
+            fm.get_raw_reads_for_sample("Dmel", "IND001")
 
 
 if __name__ == "__main__":

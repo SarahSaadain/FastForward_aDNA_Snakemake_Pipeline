@@ -39,8 +39,9 @@ sections.
   `species`/module-level/sub-step `execute: false` gates, `skip_existing_files`, and the
   SCG-selector default (see below). Since these `.py` files are actually Snakemake `include:`
   targets that rely on sharing the Snakefile's globals (`config`, and each other's top-level
-  functions) rather than importing anything, `pipeline_namespace.py` loads them into a shared
-  namespace dict the same way, so they can run standalone.
+  functions) rather than importing anything, `workflow/scripts/pipeline_namespace.py` loads them into a
+  shared namespace dict the same way, so they can run standalone (the same loader
+  `./pastForward check`/`preview` use).
 
 - **`test_endogenous_reads_stats.py`** — the two endogenous-reads statistics helpers that are
   plain functions with no `snakemake` object dependency at import time
@@ -49,7 +50,7 @@ sections.
 
 While fixing a bug found during test-writing, `scg_selector.execute`'s default in
 `expected_output_manager_reveal_module_processing.py` had drifted to `False`, while
-`file_manager.should_auto_determine_scg()`, `preview.py`, and the docs all default it to `True`
+`file_manager.should_auto_determine_scg()`, `check.py`, and the docs all default it to `True`
 — so a config that (per the docs) correctly omits `scg_selector.execute` entirely would silently
 skip SCG auto-determination and, with it, all of REVEAL. Fixed to default `True`;
 `TestScgSelectorDefaults` in `test_expected_output_manager.py` locks in the documented behavior.

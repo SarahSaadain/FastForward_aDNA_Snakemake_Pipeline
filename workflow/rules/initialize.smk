@@ -20,6 +20,9 @@ from scripts.version import __version__
 # import species data-location symlink/lock setup from workflow/scripts/species_paths.py
 from scripts.species_paths import setup_species_data_locations
 
+# import deprecated-config-key handling from workflow/scripts/config_compat.py
+from scripts.config_compat import apply_config_key_aliases
+
 # Import Snakemake plugin settings for executor modes
 from snakemake_interface_executor_plugins.settings import ExecMode
 
@@ -55,12 +58,52 @@ snakemake.utils.min_version("9.9.0")
 configfile: "config/config.yaml"
 
 
+# Rewrite deprecated config keys onto their current names before any other file reads
+# config, so every read site only has to know the current key. Runs unconditionally
+# (subprocess Snakemake runs re-read the config file too, so they need it as well).
+apply_config_key_aliases(config)
+
+
+# =================================================================================================
+#     External tool version source (ECMSD / REVEAL)
+# =================================================================================================
+# ECMSD and REVEAL can each be pinned (the default) or side-loaded straight from GitHub. Each
+# version_source maps to its own dedicated conda env file (workflow/envs/<tool>[_git_<source>].yaml),
+# with a matching <same-name>.post-deploy.sh that does exactly the one thing that env file needs --
+# see those scripts and scripts/config_validation.py (validates version_source, resolves the env
+# filename). Rule files reference ECMSD_CONDA_ENV / REVEAL_CONDA_ENV (set below) as their `conda:`
+# directive instead of a literal path, so switching version_source switches which env file a rule
+# depends on and Snakemake (re)creates/reuses envs accordingly, same as any other conda env.
+from scripts.config_validation import resolve_ecmsd_conda_env, resolve_reveal_conda_env
+
+ECMSD_CONDA_ENV = os.path.join(
+    workflow.basedir, "envs", resolve_ecmsd_conda_env(config)
+)
+REVEAL_CONDA_ENV = os.path.join(
+    workflow.basedir, "envs", resolve_reveal_conda_env(config)
+)
+
+
 # =================================================================================================
 #     Workflow Header Logging
 # =================================================================================================
+PASTFORWARD_BANNER = r"""
+                 _   ___                           _
+   _ __  __ _ __| |_| __|__ _ ___ __ ____ _ _ _ __| |
+  | '_ \/ _` (_-<  _| _/ _ \ '_\ V  V / _` | '_/ _` |
+  | .__/\__,_/__/\__|_|\___/_|  \_/\_/\__,_|_| \__,_|
+  |_|
+"""
+
 # Skip all info gathering and output when running as a subprocess
 # (spawned by a parent Snakemake process — the parent already printed this)
 if workflow.exec_mode != ExecMode.SUBPROCESS:
+
+    # Printed directly (not via logger) so it isn't broken up by the per-line
+    # timestamp/level prefix; written to stderr to stay in the same stream as
+    # the logging handler so ordering is preserved when stdout+stderr are
+    # redirected to one log file.
+    print(PASTFORWARD_BANNER, file=sys.stderr)
 
     # Resolve optional per-species data-location overrides (species_dir, reads_dir, ...) into
     # symlinks at the conventional locations, and acquire the cross-project collision lock for

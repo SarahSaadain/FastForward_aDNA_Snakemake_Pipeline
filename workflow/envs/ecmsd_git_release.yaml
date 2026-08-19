@@ -1,4 +1,4 @@
-name: ecmsd_env_conda
+name: ecmsd_env_git_release
 channels:
   - conda-forge
   - bioconda

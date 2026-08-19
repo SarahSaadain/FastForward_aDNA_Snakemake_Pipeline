@@ -15,7 +15,7 @@ rule prepare_visualization_plotables_of_individual:
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_plotable.log",
     conda:
-        "../../envs/reveal_module.yaml"
+        REVEAL_CONDA_ENV
     params:
         bin_size=lambda _: config.get("pipeline", {})
         .get("reveal_module", {})
@@ -45,7 +45,7 @@ rule run_visualization_plots_of_individual:
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_plots.log",
     conda:
-        "../../envs/reveal_module.yaml"
+        REVEAL_CONDA_ENV
     threads: 15
     params:
         log_threshhold=lambda _: config.get("pipeline", {})
@@ -81,7 +81,7 @@ rule run_visualization_plots_of_species:
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_plots_facet.log",
     conda:
-        "../../envs/reveal_module.yaml"
+        REVEAL_CONDA_ENV
     threads: 15
     params:
         log_threshhold=lambda _: config.get("pipeline", {})

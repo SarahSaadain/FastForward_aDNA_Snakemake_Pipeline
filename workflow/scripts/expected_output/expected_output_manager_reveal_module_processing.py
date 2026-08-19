@@ -53,7 +53,7 @@ def get_expected_output_reveal_module_processing(species):
     visualization_settings = reveal_cfg.get("visualization", {}).get("settings", {})
     analysis_active = reveal_cfg.get("analysis", {}).get("execute", True)
     analysis_settings = reveal_cfg.get("analysis", {}).get("settings", {})
-    individual_plots_mode = visualization_settings.get("individual_plots", "plot")
+    individual_plots_mode = visualization_settings.get("individual_plots", "skip")
     comparison_plots_mode = visualization_settings.get("comparison_plots", "plot")
     coverage_analysis_active = analysis_active and analysis_settings.get("coverage_analysis", True)
     snp_analysis_active = analysis_active and analysis_settings.get("snp_analysis", False)
@@ -143,13 +143,5 @@ def get_expected_output_reveal_module_processing(species):
                     all_inputs.append(
                         f"{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_indelstats.tsv.gz"
                     )
-
-        # if reveal_cfg.get("pf_normalization", {}).get("execute", False):
-        #     all_inputs.append(
-        #         f"{species}/results/reveal_module/{feature_library}/normalization/plots/"
-        #     )
-        #     all_inputs.append(
-        #         f"{species}/results/reveal_module/{feature_library}/normalization/{species}_normalized_coverage.combined.tsv"
-        #     )
 
     return all_inputs

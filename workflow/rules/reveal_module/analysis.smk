@@ -13,7 +13,7 @@ rule estimate_visualization_of_individual:
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_estimation.log",
     conda:
-        "../../envs/reveal_module.yaml"
+        REVEAL_CONDA_ENV
     message:
         "Estimating REVEAL coverage for {wildcards.individual} of {wildcards.species}."
     shell:
@@ -30,7 +30,7 @@ rule calculate_visualization_normalized_stats_of_individual:
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_coverage.normalized.stats.log",
     conda:
-        "../../envs/reveal_module.yaml"
+        REVEAL_CONDA_ENV
     message:
         "Calculating normalized stats for {wildcards.individual} of {wildcards.species}."
     shell:
@@ -52,7 +52,7 @@ rule calculate_visualization_snp_stats_of_individual:
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_snpstats.log",
     conda:
-        "../../envs/reveal_module.yaml"
+        REVEAL_CONDA_ENV
     message:
         "Calculating SNP stats for {wildcards.individual} of {wildcards.species}."
     shell:
@@ -74,7 +74,7 @@ rule calculate_visualization_indel_stats_of_individual:
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/individual_level/{individual}_indelstats.log",
     conda:
-        "../../envs/reveal_module.yaml"
+        REVEAL_CONDA_ENV
     message:
         "Calculating indel stats for {wildcards.individual} of {wildcards.species}."
     shell:
@@ -101,7 +101,7 @@ rule compare_visualization_stats_accross_individuals_of_species:
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_coverage_comparison.log",
     conda:
-        "../../envs/reveal_module.yaml"
+        REVEAL_CONDA_ENV
     message:
         "Running REVEAL coverage comparison for {wildcards.species}."
     shell:
@@ -125,7 +125,7 @@ rule compare_visualization_snp_stats_across_individuals_of_species:
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_snp_comparison.log",
     conda:
-        "../../envs/reveal_module.yaml"
+        REVEAL_CONDA_ENV
     message:
         "Comparing SNP stats across individuals of {wildcards.species}."
     shell:
@@ -151,7 +151,7 @@ rule compare_visualization_indel_stats_across_individuals_of_species:
     log:
         "{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_indel_comparison.log",
     conda:
-        "../../envs/reveal_module.yaml"
+        REVEAL_CONDA_ENV
     message:
         "Comparing indel stats across individuals of {wildcards.species}."
     shell:

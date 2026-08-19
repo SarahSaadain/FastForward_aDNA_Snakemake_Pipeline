@@ -3,7 +3,7 @@
 ####################################################
 
 
-# Rule: Run ECMSD for contamination analysis
+# Rule: Run ECMSD for taxonomic screening
 rule prepare_raw_reads:
     input:
         raw_read="{species}/{raw_read}",

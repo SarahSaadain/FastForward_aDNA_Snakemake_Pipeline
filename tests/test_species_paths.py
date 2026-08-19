@@ -30,7 +30,11 @@ class SpeciesPathsTestCase(unittest.TestCase):
 
     def setUp(self):
         self._orig_cwd = os.getcwd()
-        self.project_dir = tempfile.mkdtemp(prefix="pf_test_project_")
+        # realpath: os.getcwd() (used by species_paths.py for lock metadata) resolves
+        # symlinks, and on macOS tempfile.mkdtemp()'s /var/folders/... is itself a symlink
+        # into /private/var/folders/... — without this, comparisons against a raw mkdtemp()
+        # path fail on macOS while passing on Linux.
+        self.project_dir = os.path.realpath(tempfile.mkdtemp(prefix="pf_test_project_"))
         os.chdir(self.project_dir)
         sp._ACQUIRED_LOCKS.clear()
         self._extra_dirs = []

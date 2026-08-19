@@ -418,16 +418,19 @@
       <div class="section-body open">
         <div class="toggle-wrap">
           <label class="toggle">
-            <input type="checkbox" id="global_skip" checked onchange="render()">
+            <input type="checkbox" id="global_skip" onchange="render()">
             <span class="slider"></span>
           </label>
           <label class="lbl" for="global_skip">Skip existing files</label>
         </div>
         <p class="hint" style="margin-top:6px">
-          <span class="def-pill on" style="vertical-align:middle">Default: ON</span>
+          <span class="def-pill off" style="vertical-align:middle">Default: OFF</span>
           Before each run the pipeline checks which output files already exist and excludes them from the target list.
-          <strong>Keep on</strong> to resume interrupted runs without reprocessing completed steps.
-          Turn off only if you want to force a full recomputation of all outputs from scratch.
+          <strong>Warning:</strong> because those files are never requested, changed input files do not propagate to
+          existing downstream outputs, which can leave results inconsistent.
+          <strong>Keep off</strong> so Snakemake decides itself what needs re-running.
+          Turn on only to resume an interrupted run without reprocessing completed steps, and only when you know the
+          inputs have not changed.
         </p>
       </div>
     </div>
@@ -666,11 +669,11 @@
             </div><!-- /.adv-content -->
           </div>
 
-          <!-- Contamination Analysis -->
+          <!-- Taxonomic Screening -->
           <div class="subsection">
             <div class="subsection-header clickable" onclick="toggleSub(this)">
               <span class="sdot on" id="d_ca"></span>
-              <span class="subsection-title">Contamination Analysis</span>
+              <span class="subsection-title">Taxonomic Screening</span>
               <label class="toggle" onclick="event.stopPropagation()">
                 <input type="checkbox" id="ca_exec" checked onchange="dot('ca_exec','d_ca'); render()">
                 <span class="slider"></span>
@@ -682,7 +685,7 @@
               <span class="tool-pill green">ECMSD</span><span class="tool-pill green">Centrifuge</span>
               Both tools operate on <strong>quality-filtered reads</strong>. Each tool can be toggled independently.
               Results from multiple samples belonging to the same individual are merged into a combined summary.
-              <div class="when-hint"><span class="def-pill on">Default: ON</span>Recommended for all aDNA work — contamination is a key quality metric for any ancient specimen. Turn off only if contamination screening has already been done externally, or if you need mapping results quickly and plan to run this separately.</div>
+              <div class="when-hint"><span class="def-pill on">Default: ON</span>Recommended for all aDNA work — the share of reads assigned to non-target taxa is a key quality metric for any ancient specimen. Turn off only if taxonomic screening has already been done externally, or if you need mapping results quickly and plan to run this separately.</div>
             </div>
             <div class="subsection-body open">
 
@@ -701,6 +704,24 @@
                   and taxonomic level (default: species). Per-sample results are merged per individual.
                   <div class="when-hint"><span class="def-pill on">Default: ON</span>Turn off if ECMSD is not installed or configured on your system. Well-suited for vertebrate aDNA where mitochondrial contamination is the primary concern.</div>
                 </p>
+                <div class="opt-group">
+                  <div class="opt-header" id="ca_ecmsd_vs_hdr">
+                    <input type="checkbox" id="ca_ecmsd_vs_en" onchange="optToggle('ca_ecmsd_vs_en','ca_ecmsd_vs_body','ca_ecmsd_vs_hdr'); render()">
+                    <label for="ca_ecmsd_vs_en">Tool version source</label>
+                    <span class="opt-tag">optional</span>
+                  </div>
+                  <div class="opt-body" id="ca_ecmsd_vs_body">
+                    <div class="field" style="margin-top:8px">
+                      <label>Version source</label>
+                      <select id="ca_ecmsd_vs" onchange="render()">
+                        <option value="conda" selected>conda (bioconda-packaged ecmsd=1.*)</option>
+                        <option value="latest_release">latest_release (always newest GitHub release)</option>
+                        <option value="dev">dev [experimental] (tip of ECMSD's development branch)</option>
+                      </select>
+                      <p class="hint">Default: <code>conda</code>. Only takes effect when the <code>ecmsd</code> conda environment is (re)created — see FAQ.md.</p>
+                    </div>
+                  </div>
+                </div>
                 <div class="opt-group">
                   <div class="opt-header" id="ca_ecmsd_db_hdr">
                     <input type="checkbox" id="ca_ecmsd_db_en" onchange="optToggle('ca_ecmsd_db_en','ca_ecmsd_db_body','ca_ecmsd_db_hdr'); render()">
@@ -829,7 +850,7 @@
           </label>
           <label class="lbl" for="rp_exec">Execute Reference Processing</label>
         </div>
-        <p class="exec-note"><span class="def-pill on">Default: ON</span>Turn off if you only need raw-reads QC and contamination screening without genome mapping. Must be explicitly set to <code style="font-size:.68rem;background:#e9ecf0;padding:1px 4px;border-radius:3px">true</code> in the config to run.</p>
+        <p class="exec-note"><span class="def-pill on">Default: ON</span>Turn off if you only need raw-reads QC and taxonomic screening without genome mapping. Must be explicitly set to <code style="font-size:.68rem;background:#e9ecf0;padding:1px 4px;border-radius:3px">true</code> in the config to run.</p>
 
         <div id="rp_body">
 
@@ -960,7 +981,7 @@
             <div class="step-desc">
               Optionally dispose of reads that did not map to the reference. Choose between writing a
               <strong>mapped-reads-only BAM</strong>, or extracting the unmapped reads to <strong>FASTQ.gz</strong>
-              or <strong>FASTA.gz</strong> for downstream analysis (e.g. further contamination screening).
+              or <strong>FASTA.gz</strong> for downstream analysis (e.g. further taxonomic screening).
               <div class="when-hint"><span class="def-pill off">Default: OFF</span>Turn on to process unmapped reads. The default action is <strong>keep</strong> (no-op) — you must explicitly change it to <strong>remove</strong> (mapped-only BAM), <strong>extract_fastq</strong>, or <strong>extract_fasta</strong>. Not needed for standard aDNA workflows.</div>
             </div>
             <div class="subsection-body open">
@@ -1082,6 +1103,28 @@
         <p class="exec-note"><span class="def-pill on">Default: ON</span>Turn off if you are not performing TE or genomic feature abundance analysis, or if the feature library and SCG library are not yet prepared. Requires both libraries placed in <code style="font-size:.68rem;background:#e9ecf0;padding:1px 4px;border-radius:3px">{species}/input/reveal_module/</code>.</p>
 
         <div id="rv_body">
+
+          <!-- REVEAL version source -->
+          <div style="border:1px solid var(--border);border-radius:7px;padding:11px 12px;margin-bottom:10px">
+            <div class="opt-group" style="margin:0">
+              <div class="opt-header" id="rv_vs_hdr">
+                <input type="checkbox" id="rv_vs_en" onchange="optToggle('rv_vs_en','rv_vs_body','rv_vs_hdr'); render()">
+                <label for="rv_vs_en">Tool version source</label>
+                <span class="opt-tag">optional</span>
+              </div>
+              <div class="opt-body" id="rv_vs_body">
+                <div class="field" style="margin-top:8px">
+                  <label>Version source</label>
+                  <select id="rv_vs" onchange="render()">
+                    <option value="pinned" selected>pinned (version pinned in reveal.post-deploy.sh)</option>
+                    <option value="latest_release">latest_release (always newest GitHub release)</option>
+                    <option value="dev">dev [experimental] (tip of REVEAL's develop branch)</option>
+                  </select>
+                  <p class="hint">Default: <code>pinned</code>. REVEAL is not yet on bioconda and is always side-loaded; this only takes effect when the <code>reveal_module</code> conda environment is (re)created — see FAQ.md.</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <!-- SCG Selector -->
           <div class="subsection">
@@ -1277,9 +1320,9 @@
               <div class="field">
                 <label>Individual plots</label>
                 <select id="viz_individual_plots" onchange="render()">
-                  <option value="plot" selected>plot &mdash; generate plotables and render plots</option>
+                  <option value="plot">plot &mdash; generate plotables and render plots</option>
                   <option value="plotable_only">plotable_only &mdash; generate plotables, skip rendering</option>
-                  <option value="skip">skip &mdash; skip plotables and plots</option>
+                  <option value="skip" selected>skip &mdash; skip plotables and plots</option>
                 </select>
               </div>
               <div class="field">
@@ -1548,6 +1591,44 @@ function buildYAML() {
   p(0, ''); p(0, '');
   kv(0, 'project_name', gv('project_name'));
   p(0, '');
+  p(0, '# Species-specific settings');
+  p(0, 'species:');
+  document.querySelectorAll('#species-list .species-row').forEach(row => {
+    const k          = row.querySelector('.sp-key').value.trim();
+    const n          = row.querySelector('.sp-name').value.trim();
+    const exec       = row.querySelector('.sp-exec').checked;
+    const lineage    = row.querySelector('.sp-lineage').value.trim();
+    const ref        = row.querySelector('.sp-ref').value.trim();
+    const individuals  = row.querySelector('.sp-individuals').value.trim();
+    const references   = row.querySelector('.sp-references').value.trim();
+    const featureLibs  = row.querySelector('.sp-feature-libs').value.trim();
+    const speciesDir        = row.querySelector('.sp-species-dir').value.trim();
+    const readsDir           = row.querySelector('.sp-reads-dir').value.trim();
+    const referenceDir       = row.querySelector('.sp-reference-dir').value.trim();
+    const scgDir             = row.querySelector('.sp-scg-dir').value.trim();
+    const featureLibraryDir  = row.querySelector('.sp-feature-library-dir').value.trim();
+    const competitionDir     = row.querySelector('.sp-competition-dir').value.trim();
+    const processedDir       = row.querySelector('.sp-processed-dir').value.trim();
+    const resultsDir         = row.querySelector('.sp-results-dir').value.trim();
+    if (!k) return;
+    p(2, `${k}:`);
+    kv(4, 'execute', exec);
+    kv(4, 'name', n);
+    if (lineage) kv(4, 'lineage', lineage);
+    if (ref) kv(4, 'scg_reference', ref);
+    pList(4, 'individuals', individuals);
+    pList(4, 'references', references);
+    pList(4, 'feature_libraries', featureLibs);
+    if (speciesDir)       kv(4, 'species_dir', speciesDir);
+    if (readsDir)          kv(4, 'reads_dir', readsDir);
+    if (referenceDir)      kv(4, 'reference_dir', referenceDir);
+    if (scgDir)             kv(4, 'scg_dir', scgDir);
+    if (featureLibraryDir) kv(4, 'feature_library_dir', featureLibraryDir);
+    if (competitionDir)    kv(4, 'competition_dir', competitionDir);
+    if (processedDir)      kv(4, 'processed_dir', processedDir);
+    if (resultsDir)        kv(4, 'results_dir', resultsDir);
+  });
+  p(0, '');
   p(0, '# Pipeline stages and their configurations');
   p(0, 'pipeline:');
   p(0, '');
@@ -1596,13 +1677,14 @@ function buildYAML() {
     kv(8, 'n_base_limit', gn('qf_nbase'));
   }
   p(0, '');
-  p(4, 'contamination:');
+  p(4, 'taxonomic_screening:');
   kv(6, 'execute', gb('ca_exec'));
   p(6, 'tools:');
   p(8, 'ecmsd:');
   kv(10, 'execute', gb('ca_ecmsd_exec'));
-  if (gb('ca_ecmsd_db_en') || gb('ca_ecmsd_adv_en')) {
+  if (gb('ca_ecmsd_vs_en') || gb('ca_ecmsd_db_en') || gb('ca_ecmsd_adv_en')) {
     p(10, 'settings:');
+    if (gb('ca_ecmsd_vs_en') && gv('ca_ecmsd_vs') !== 'conda') kv(12, 'version_source', gv('ca_ecmsd_vs'));
     if (gb('ca_ecmsd_db_en') && gv('ca_ecmsd_db').trim()) kv(12, 'database', gv('ca_ecmsd_db'));
     if (gb('ca_ecmsd_adv_en')) {
       kv(12, 'cov_threshold', gn('ca_ecmsd_cov_threshold'));
@@ -1656,6 +1738,10 @@ function buildYAML() {
   p(0, ''); p(0, '');
   p(2, 'reveal_module:');
   kv(4, 'execute', gb('rv_exec'));
+  if (gb('rv_vs_en') && gv('rv_vs') !== 'pinned') {
+    p(4, 'settings:');
+    kv(6, 'version_source', gv('rv_vs'));
+  }
   p(4, 'scg_selector:');
   kv(6, 'execute', gb('scg_exec'));
   p(6, 'settings:');
@@ -1706,44 +1792,6 @@ function buildYAML() {
   p(4, 'settings:');
   kv(6, 'individual_multiqc', gb('sp_individual'));
   kv(6, 'species_multiqc', gb('sp_species'));
-  p(0, '');
-  p(0, '# Species-specific settings');
-  p(0, 'species:');
-  document.querySelectorAll('#species-list .species-row').forEach(row => {
-    const k          = row.querySelector('.sp-key').value.trim();
-    const n          = row.querySelector('.sp-name').value.trim();
-    const exec       = row.querySelector('.sp-exec').checked;
-    const lineage    = row.querySelector('.sp-lineage').value.trim();
-    const ref        = row.querySelector('.sp-ref').value.trim();
-    const individuals  = row.querySelector('.sp-individuals').value.trim();
-    const references   = row.querySelector('.sp-references').value.trim();
-    const featureLibs  = row.querySelector('.sp-feature-libs').value.trim();
-    const speciesDir        = row.querySelector('.sp-species-dir').value.trim();
-    const readsDir           = row.querySelector('.sp-reads-dir').value.trim();
-    const referenceDir       = row.querySelector('.sp-reference-dir').value.trim();
-    const scgDir             = row.querySelector('.sp-scg-dir').value.trim();
-    const featureLibraryDir  = row.querySelector('.sp-feature-library-dir').value.trim();
-    const competitionDir     = row.querySelector('.sp-competition-dir').value.trim();
-    const processedDir       = row.querySelector('.sp-processed-dir').value.trim();
-    const resultsDir         = row.querySelector('.sp-results-dir').value.trim();
-    if (!k) return;
-    p(2, `${k}:`);
-    kv(4, 'execute', exec);
-    kv(4, 'name', n);
-    if (lineage) kv(4, 'lineage', lineage);
-    if (ref) kv(4, 'scg_reference', ref);
-    pList(4, 'individuals', individuals);
-    pList(4, 'references', references);
-    pList(4, 'feature_libraries', featureLibs);
-    if (speciesDir)       kv(4, 'species_dir', speciesDir);
-    if (readsDir)          kv(4, 'reads_dir', readsDir);
-    if (referenceDir)      kv(4, 'reference_dir', referenceDir);
-    if (scgDir)             kv(4, 'scg_dir', scgDir);
-    if (featureLibraryDir) kv(4, 'feature_library_dir', featureLibraryDir);
-    if (competitionDir)    kv(4, 'competition_dir', competitionDir);
-    if (processedDir)      kv(4, 'processed_dir', processedDir);
-    if (resultsDir)        kv(4, 'results_dir', resultsDir);
-  });
   return L.join('\n');
 }
 
@@ -1906,7 +1954,9 @@ function populateForm(c) {
     setOpt('qf_adv_en','qf_adv_body','qf_adv_hdr', true);
     sv('qf_unqual', qfs.unqualified_percent_limit); sv('qf_nbase', qfs.n_base_limit);
   } else setOpt('qf_adv_en','qf_adv_body','qf_adv_hdr', false);
-  const ca = rrp.contamination || {};
+  // `contamination` is the pre-rename name of `taxonomic_screening`; still loadable here,
+  // matching the pipeline's own config_compat fallback. Only the new name is ever written out.
+  const ca = rrp.taxonomic_screening || rrp.contamination || {};
   const cat = ca.tools || {};
   const cen = cat.centrifuge || {};
   const ces = cen.settings || {};
@@ -1914,6 +1964,8 @@ function populateForm(c) {
   const ecmsd_tool = cat.ecmsd || {};
   const ecmsd_s = ecmsd_tool.settings || {};
   sb('ca_ecmsd_exec', ecmsd_tool.execute);
+  if (ecmsd_s.version_source !== undefined) { setOpt('ca_ecmsd_vs_en','ca_ecmsd_vs_body','ca_ecmsd_vs_hdr',true); sv('ca_ecmsd_vs',ecmsd_s.version_source); }
+  else { setOpt('ca_ecmsd_vs_en','ca_ecmsd_vs_body','ca_ecmsd_vs_hdr',false); sv('ca_ecmsd_vs','conda'); }
   if (ecmsd_s.database !== undefined) { setOpt('ca_ecmsd_db_en','ca_ecmsd_db_body','ca_ecmsd_db_hdr',true); sv('ca_ecmsd_db',ecmsd_s.database); }
   else setOpt('ca_ecmsd_db_en','ca_ecmsd_db_body','ca_ecmsd_db_hdr',false);
   if (ecmsd_s.cov_threshold !== undefined || ecmsd_s.top_n !== undefined || ecmsd_s.mapping_quality !== undefined || ecmsd_s.taxonomic_hierarchy !== undefined) {
@@ -1958,6 +2010,9 @@ function populateForm(c) {
 
   sb('rv_exec', reveal.execute);
   toggleStage('rv_body', document.getElementById('rv_exec'));
+  const revealS = reveal.settings || {};
+  if (revealS.version_source !== undefined) { setOpt('rv_vs_en','rv_vs_body','rv_vs_hdr',true); sv('rv_vs',revealS.version_source); }
+  else { setOpt('rv_vs_en','rv_vs_body','rv_vs_hdr',false); sv('rv_vs','pinned'); }
   const scg  = reveal.scg_selector || {};
   const scgs = scg.settings || {};
   sb('scg_exec', scg.execute); dot('scg_exec','d_scg');
@@ -1986,7 +2041,7 @@ function populateForm(c) {
   const norms = (reveal.normalization||{}).settings||{};
   sb('viz_exec',  (reveal.visualization||{}).execute);                     dot('viz_exec','d_viz');
   const svs = (reveal.visualization||{}).settings||{};
-  sv('viz_individual_plots', svs.individual_plots || 'plot');
+  sv('viz_individual_plots', svs.individual_plots || 'skip');
   sv('viz_comparison_plots', svs.comparison_plots || 'plot');
   sv('viz_log_thresh_ind',  svs.y_axis_log_scale_threshold_individual != null ? svs.y_axis_log_scale_threshold_individual : 25);
   sv('viz_log_thresh_sp',   svs.y_axis_log_scale_threshold_species    != null ? svs.y_axis_log_scale_threshold_species    : 25);
@@ -2033,17 +2088,17 @@ function resetDefaults() {
   populateForm({
     project_name: 'pastForward_Project',
     pipeline: {
-      global: { skip_existing_files: true },
+      global: { skip_existing_files: false },
       read_module: {
         execute: true,
         analysis: { execute: true, settings: { multiqc_raw_reads: true, multiqc_trimmed_reads: true, multiqc_quality_filtered_reads: true, multiqc_merged_reads: true, create_plots: true } },
         adapter_removal: { execute: true, settings: { min_quality: 0, min_length: 0 } },
         quality_filtering: { execute: true, settings: { min_quality: 15, min_length: 30 } },
-        contamination: {
+        taxonomic_screening: {
           execute: true,
           tools: {
             ecmsd: { execute: true, settings: { cov_threshold: 25, top_n: 25, mapping_quality: 20, taxonomic_hierarchy: 'species' } },
-            centrifuge: { execute: true, settings: { include_human_taxid: true } }
+            centrifuge: { execute: true, settings: { include_human_taxid: false } }
           }
         },
       },
@@ -2062,7 +2117,7 @@ function resetDefaults() {
         analysis: { execute: true, settings: { coverage_analysis: true, snp_analysis: false, indel_analysis: false } },
         sequence_overview: { settings: { mapping_quality_threshold: 5, minimum_count_snp: 5, minimum_frequency_snp: 0.1, minimum_count_indel: 3, minimum_frequency_indel: 0.01 } },
         normalization: { settings: { end_distance: 100, exclude_quantile: 25 } },
-        visualization: { execute: true, settings: { individual_plots: 'plot', comparison_plots: 'plot', y_axis_log_scale_threshold_individual: 25, y_axis_log_scale_threshold_species: 25, visualization_bin_size: 'target:5000' } }
+        visualization: { execute: true, settings: { individual_plots: 'skip', comparison_plots: 'plot', y_axis_log_scale_threshold_individual: 25, y_axis_log_scale_threshold_species: 25, visualization_bin_size: 'target:5000' } }
       },
       summary_module: { execute: true, settings: { individual_multiqc: true, species_multiqc: true } }
     },

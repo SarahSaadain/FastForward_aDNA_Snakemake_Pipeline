@@ -17,9 +17,10 @@ from scripts.species_paths import release_pastforward_locks
 
 # file_manager.py: Manages file paths and directories.
 include: "scripts/file_manager.py"
-# preview.py: Logs the per-species summary (individuals, references, libraries).
-# Included after file_manager.py so all functions see config via the Snakemake namespace.
-include: "scripts/preview.py"
+# check.py: Logs the per-species summary (individuals, references, libraries) surfaced by
+# `pastForward check`. Included after file_manager.py so all functions see config via the
+# Snakemake namespace.
+include: "scripts/check.py"
 # expected_output_manager.py: Manages expected output of pipeline
 # and requests the files for rule all
 include: "scripts/expected_output/expected_output_manager_reveal_module_processing.py"

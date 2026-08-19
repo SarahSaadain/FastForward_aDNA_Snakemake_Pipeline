@@ -1,13 +1,23 @@
 # =================================================================================================
-#     Species Preview
+#     Species Check (discovered species/individuals/references/... — see `pastForward check`)
 # =================================================================================================
 # Included after file_manager.py so all file_manager functions are in the Snakemake namespace
 # with config in scope — no imports required.
 
 import logging
-from snakemake_interface_executor_plugins.settings import ExecMode
 
-if workflow.exec_mode != ExecMode.SUBPROCESS:
+try:
+    from snakemake_interface_executor_plugins.settings import ExecMode
+
+    _is_snakemake_subprocess = workflow.exec_mode == ExecMode.SUBPROCESS
+except ImportError:
+    # `pastForward check` execs this file in-process (scripts/pipeline_namespace.py), where
+    # there is no Snakemake and so no spawned subprocess to stay quiet for. Falling back
+    # keeps check/preview working without Snakemake installed - the comparison above is the
+    # only thing in the whole in-process path that needs it.
+    _is_snakemake_subprocess = False
+
+if not _is_snakemake_subprocess:
 
     species_section = config.get("species", {})
     species_lines = []

@@ -8,16 +8,26 @@ output_file = snakemake.output[0]     # output TSV path
 taxonomic_hierarchy = snakemake.params.taxonomic_hierarchy  # e.g., "genus", "family", etc.
 
 all_dfs = []
+taxonomic_column = taxonomic_hierarchy.lower()
 
 for file in input_files:
     df = pd.read_csv(file, sep="\t")
+
+    # no contamination hits for this sample -> keep it as a placeholder row
+    # instead of dropping it. A zero-only row breaks MultiQC's relative-stacked
+    # bargraph ("No datasets to plot") when it's the individual's only sample,
+    # since relative stacking can't normalize a row that sums to zero
+    # (ponytail: synthetic placeholder row, revisit if ECMSD output format changes)
+    if df.empty:
+        df = pd.DataFrame({taxonomic_column: ["none_detected"], "TotalReads": [1]})
+
     sample_name = Path(file).stem
     df['Sample'] = sample_name.replace(f"_Mito_summary_{taxonomic_hierarchy}_proportions", '')
-    
+
     # remove Proportion column if exists
     if 'Proportion' in df.columns:
         df = df.drop(columns=['Proportion'])
-    
+
     all_dfs.append(df)
 
 # Combine all dataframes
