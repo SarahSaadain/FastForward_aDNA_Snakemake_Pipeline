@@ -11,8 +11,6 @@ _ecmsd_taxonomic_hierarchy = (
     .get("taxonomic_hierarchy", "species")
 )
 
-_ecmsd_tax_hierarchy_readlength_output = f"{{species}}/results/read_module/taxonomic_screening/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}_ReadLengths.png"
-_ecmsd_tax_hierarchy_proportions_png_output = f"{{species}}/results/read_module/taxonomic_screening/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}_Proportions.png"
 _ecmsd_tax_hierarchy_proportions_txt_output = f"{{species}}/results/read_module/taxonomic_screening/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}_proportions.txt"
 _ecmsd_tax_hierarchy_summary_txt_output = f"{{species}}/results/read_module/taxonomic_screening/ecmsd/{{individual}}/{{sample}}/mapping/{{sample}}_Mito_summary_{_ecmsd_taxonomic_hierarchy}.txt"
 
@@ -47,6 +45,10 @@ rule ecmsd_taxonomic_screening:
         .get("settings", {})
         .get("database")
         or "resources/ecmsd_database",
+    # ECMSD also writes {sample}_Mito_summary_{hierarchy}_{ReadLengths,Proportions}.png next to
+    # the files below, but only when the sample has hits to plot - an empty result yields the
+    # tables and no plots. They are deliberately not declared as outputs, so a sample with no
+    # hits does not fail the rule.
     output:
         summary="{species}/results/read_module/taxonomic_screening/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.txt",
         paf="{species}/results/read_module/taxonomic_screening/ecmsd/{individual}/{sample}/mapping/{sample}_Mito.paf.gz",
@@ -54,8 +56,6 @@ rule ecmsd_taxonomic_screening:
         ranked_summary="{species}/results/read_module/taxonomic_screening/ecmsd/{individual}/{sample}/mapping/{sample}_Mito_summary.ref_summary.txt",
         tax_hierarchy_proportions=_ecmsd_tax_hierarchy_proportions_txt_output,
         tax_hierarchy_summary=_ecmsd_tax_hierarchy_summary_txt_output,
-        #tax_hierarchy_readlength=_ecmsd_tax_hierarchy_readlength_output,
-        #tax_hierarchy_proportions_png=_ecmsd_tax_hierarchy_proportions_png_output,
     log:
         "{species}/results/read_module/taxonomic_screening/ecmsd/{individual}/{sample}/mapping/{sample}_ecmsd.log",
     conda:
@@ -68,7 +68,7 @@ rule ecmsd_taxonomic_screening:
         .get("tools", {})
         .get("ecmsd", {})
         .get("settings", {})
-        .get("cov_threshold", 50),
+        .get("cov_threshold", 25),
         top_n=config.get("pipeline", {})
         .get("read_module", {})
         .get("taxonomic_screening", {})

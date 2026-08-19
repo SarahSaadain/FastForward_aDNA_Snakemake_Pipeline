@@ -121,8 +121,9 @@ def _ensure_project_root(require_snakemake=True):
             "pastForward: this isn't a project root (needs workflow/ and config/ in the "
             "current directory). cd into your project folder first."
         )
-    # check/preview/version never spawn snakemake. check/preview still need PyYAML to read
-    # config.yaml, so they fail later on ImportError instead; version needs neither.
+    # check/preview/version/print-log never spawn snakemake. check/preview still need PyYAML to
+    # read config.yaml, so they fail later on ImportError instead; version and print-log need
+    # neither (print-log only reads files back out of logs/).
     if require_snakemake and shutil.which("snakemake") is None:
         _die("pastForward: `snakemake` not found on PATH. Activate its conda env first.")
 
@@ -621,7 +622,7 @@ def cmd_preview(argv):
 
 
 def cmd_print_log(argv):
-    _ensure_project_root()
+    _ensure_project_root(require_snakemake=False)
     live = "--live" in argv
     rest = [a for a in argv if a != "--live"]
     tail_n = None
