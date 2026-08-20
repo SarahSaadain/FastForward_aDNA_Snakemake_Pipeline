@@ -385,6 +385,27 @@ class ArgvValidationTestCase(unittest.TestCase):
         self.assertNotIn("Last finished jobs", output)
         self.assertNotIn("Currently running jobs", output)
 
+    def test_status_not_interrupted_when_progress_percent_has_no_decimal(self):
+        # Snakemake only prints a decimal for non-round percentages, so a clean 100% finish
+        # can log "(100%)" instead of "(100.0%)" - must not be misread as a force-kill.
+        cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
+        os.makedirs(cli.LOG_DIR)
+        log_path = cli.LOG_DIR / "run_finished_no_decimal.log"
+        log_path.write_text("177 of 177 steps (100%) done\nWorkflow finished, no error\n")
+        cli.STATE_FILE.write_text(
+            json.dumps(
+                {
+                    "pid": 999999,
+                    "cmd": ["snakemake", "--cores", "4"],
+                    "log_file": str(log_path),
+                    "started_at": datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+        )
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_status([])
+        self.assertNotIn("Interrupted", out.getvalue())
+
     def test_status_prints_tail_of_failed_job_log(self):
         # On a dead+failed run, status should surface the actual error message from each
         # failed job's own log file - not just Snakemake's "check log file(s)" pointer.
