@@ -403,7 +403,7 @@ def _print_status(tail=None):
     elif not alive and LOCK_RE.search(text):
         print(_color(RED, "Locked:     directory is locked (stale lock from a killed run or power loss)."))
         print(_color(DIM, "Fix with: ./pastForward unlock, then ./pastForward resume --cores <N>"))
-    elif not alive and (progress is None or progress.group(3) != "100.0"):
+    elif not alive and (progress is None or float(progress.group(3)) != 100.0):
         # Died before 100% with no "did not complete successfully" marker either - Snakemake
         # never got the chance to log a reason, so this is most likely a force-kill (SIGKILL,
         # `abort --force`, OOM-killer) rather than a graceful failure.
