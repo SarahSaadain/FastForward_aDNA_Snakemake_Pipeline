@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Bug Fixes
 
 - **`pastForward status` false "Interrupted" on a clean finish**: the force-kill check compared the logged progress percentage to the literal string `"100.0"`, but Snakemake only prints a decimal for non-round percentages — a clean 100% finish can log `(100%)` instead of `(100.0%)`, which the string compare rejected. A completed run could therefore be reported as force-killed (SIGKILL/OOM) with a bogus `resume` suggestion. The comparison is now numeric
+- **`check`/`preview` misreported ambiguous read filenames as "none found"**: an unresolvable naming conflict (e.g. two bare `_1` markers, or a `_1`/`_2` conflict left on the R2 side of an otherwise-valid `R1`-named pair) raises `ValueError` from `file_manager.py`, but `check.py`'s per-species summary caught it with a bare `except Exception` and printed `Individuals: (none found)` / `Reads: (reads not found)` — indistinguishable from "no files exist at all" and hiding which file was actually the problem. Both spots now catch `ValueError` first and show the real message, matching the pattern already used for Competition FASTA errors
 
 ## [2.1.0] - 2026-08-20
 
