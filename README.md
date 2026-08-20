@@ -27,7 +27,7 @@ New to pastForward? Here's the whole path, start to finish. Each step links to m
 
 1. **Install Conda and Snakemake, and download pastForward.** The [Setup Guide](config/README.md) walks through this step by step.
 2. **Add your species and sequencing data.** Also covered in the [Setup Guide](config/README.md#step-4-add-your-species-and-data), including how your read files need to be named.
-3. **Create a `config.yaml` file.** Every pipeline stage is turned on by default, but can be adjusted if required. To run with default settings,only a minimal config with a project name and species list is required. If you want to adjust the config, but rather not edit a text file by hand, open [config/config_designer.html](config/config_designer.html) in your browser to create your config.
+3. **Create a `config.yaml` file.** Every pipeline stage is turned on by default, but can be adjusted if required. To run with default settings,only a minimal config with a project name and species list is required. If you want to adjust the config, but rather not edit a text file by hand, open the [Config Designer](https://sarahsaadain.github.io/pastForward/config/config_designer.html) in your browser to create your config.
 4. **Run the pipeline.** See [Running the Pipeline](#running-the-pipeline) below for the exact command.
 
 Already running pastForward and want a newer version? See the [Update Guide](docs/update.md).
@@ -84,3 +84,9 @@ pastForward generates a MultiQC report for:
   * Location: `{species}/results/summary_module/individual_level/{individual}_multiqc.html`
 
 These reports summarize reads before and after trimming, taxonomic screening, coverage, deduplication, and damage rescaling. Use them to judge the quality of your sequenced reads and decide whether a sample needs additional library preparation.
+
+## Citation
+
+If you use pastForward in your research, please cite:
+
+> Saadain, S., Kapun, M., & Kofler, R. (2026). pastForward: a Snakemake pipeline for ancient and historical DNA with eukaryote-wide taxonomic screening and tracking of copy-number variation. *bioRxiv*. https://doi.org/10.64898/2026.08.07.743613

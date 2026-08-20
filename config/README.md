@@ -16,19 +16,13 @@ If you don't already have conda, download and install it [Miniforge](https://git
 
 ## Step 2: Install Snakemake
 
-Open a terminal and type each of these lines, pressing Enter after each one:
+Run:
 
 ```bash
-conda create -c conda-forge -c bioconda -c nodefaults -n snakemake snakemake
-conda activate snakemake
-snakemake --help
+conda create -c conda-forge -c bioconda -c nodefaults -n snakemake snakemake   # one-time
+conda activate snakemake                                                      # every new terminal, before using pastForward
+snakemake --help                                                              # sanity check, should print the help page
 ```
-
-What each line does:
-
-1. Creates a separate, self-contained conda environment called `snakemake` and installs Snakemake into it. You only need to do this once.
-2. Switches your terminal into that environment. Run this line every time you open a new terminal window, before using pastForward.
-3. Checks that the install worked. You should see the helppage print out.
 
 For more installation options, see the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
 
@@ -74,7 +68,7 @@ One project can handle one species or many. Which you choose depends on how you 
 
 To add a new species:
 
-1. Create a folder for it in the project root (next to `workflow/` and `config/`). The folder name must exactly (case sensitive) match the species key you'll use under `species:` in `config.yaml` (see [Configuration](#configuration-configyaml) below).
+1. Create a folder for it in the project root. The folder name must exactly (case sensitive) match the species key you'll use under `species:` in `config.yaml` (see [Configuration](#configuration-configyaml) below).
 2. Put your raw read files and reference genome inside that folder (see below).
 
 #### Providing Your Data
@@ -88,7 +82,7 @@ IF you want to place the files directly in their final place, put your files her
 * (optional) a feature library — a FASTA of TE or other genomic feature sequences to compare across samples — in `<species>/input/reveal_module/feature_library/`, needed only if you're using the REVEAL comparison stage
 * (optional) a pre-built SCG (single-copy gene) FASTA in `<species>/input/reveal_module/scg/`. If you skip this, pastForward determines SCGs automatically via BUSCO, as long as `pipeline.reveal_module.scg_selector.execute` is `true` (the default) and `species.<key>.lineage` is set to a BUSCO lineage name (e.g. `drosophilidae_odb12`, see [busco.ezlab.org](https://busco.ezlab.org/)). No lineage configured and no FASTA provided means SCG determination is skipped.
 
-If your files are large, shared with other tools, or already live somewhere else on disk, you don't need to copy them. Place a **symlink** (a shortcut/pointer file) in the expected location instead, and pastForward will use it directly. The symlink's name must follow pastForward's naming convention (below), but the real file it points to can keep its own name and live anywhere.
+If your files are large, shared with other tools, or already live somewhere else on disk, you don't need to copy them. Place a **symlink** in the expected location instead, and pastForward will use it directly. The symlink's name must follow pastForward's naming convention (below), but the real file it points to can keep its own name and live anywhere.
 
 #### Storing Species Data Elsewhere
 
@@ -144,22 +138,22 @@ Dmel01_DabneyProtocol_1.fastq.gz
 Dmel01_DabneyProtocol_R1.fq.gz
 ```
 
-The pattern, piece by piece:
+Pattern:
 
 ```text
 <Individual>_[<FreeText>_]<ReadNumber>[_<FreeText>].fastq.gz
 ```
 
-* **`<Individual>`** is a unique ID for the sample, e.g. `Dmel01`. It's everything before the first underscore, and pastForward uses it to group files that belong together.
+* **`<Individual>`** is a unique ID for the sample, e.g. `Dmel01`. It's everything **before the first underscore**, and pastForward uses it to group files that belong together.
 * **`<FreeText>`** (optional, can appear before or after the read number) is any extra label you want, e.g. a protocol name. Useful when the same individual was extracted twice with different methods.
-* **`<ReadNumber>`** marks which read of the pair this file is: `R1`/`R2`, or a plain `1`/`2`. A plain `1` or `2` must stand on its own between underscores or right before the file extension. It won't be picked up inside a longer number like `_10_` or `_21`. In case you provide single end data, use `1` or `R1` as well.
+* **`<ReadNumber>`** marks which read of the pair this file is: `R1`/`R2`, or a plain `1`/`2`. It can sit in the middle of the filename (followed by more `<FreeText>`) or be the last part, right before the extension, as in the second and third examples above. A plain `1` or `2` must stand on its own between underscores or right before the file extension. It won't be picked up inside a longer number like `_10_` or `_21`. In case you provide single end data, use `1` or `R1` as well.
 * The file must end in **`.fastq.gz`** or **`.fq.gz`** (compressed FASTQ). Uncompressed `.fastq`/`.fq` files are not supported.
 
 ## Configuration (`config.yaml`)
 
 `config.yaml` tells pastForward which species to process and which pipeline options to use.
 
-**If you don't want to change the config in the terminal*, open [config_designer.html](config_designer.html) in your web browser. This interactive tool walks you through every option with a graphical interface and generates a ready-to-use `config.yaml` for you. No code required.
+**If you don't want to change the config in the terminal**, open the [Config Designer](https://sarahsaadain.github.io/pastForward/config/config_designer.html) in your web browser. This interactive tool walks you through every option with a graphical interface and generates a ready-to-use `config.yaml` for you. No code required.
 
 If you'd rather write it yourself, every pipeline stage is turned on by default, so a minimal config only needs a project name and species list:
 
