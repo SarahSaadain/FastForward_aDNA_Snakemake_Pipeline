@@ -12,7 +12,7 @@ ECMSD_ENV_FILES = {
     "dev": "ecmsd_git_development.yaml",
 }
 REVEAL_ENV_FILES = {
-    "pinned": "reveal.yaml",
+    "conda": "reveal.yaml",
     "latest_release": "reveal_git_release.yaml",
     "dev": "reveal_git_development.yaml",
 }
@@ -41,7 +41,7 @@ def resolve_reveal_conda_env(config):
         config.get("pipeline", {})
         .get("reveal_module", {})
         .get("settings", {})
-        .get("version_source", "pinned")
+        .get("version_source", "conda")
     )
     if version_source not in REVEAL_ENV_FILES:
         raise ConfigValidationError(

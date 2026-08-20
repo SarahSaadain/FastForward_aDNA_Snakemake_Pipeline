@@ -1,27 +1,20 @@
 #!/usr/bin/env python3
 """
-Side-loads the pinned release of REVEAL (https://github.com/SarahSaadain/REVEAL) into this conda
-environment, since REVEAL is not yet published on bioconda.
+Side-loads the latest tagged GitHub release of REVEAL (https://github.com/SarahSaadain/REVEAL)
+into this conda environment, since REVEAL is not yet published on bioconda.
 
 Snakemake runs this once, automatically, right after creating the conda environment from the
-neighboring reveal.yaml (see "Post-Deployment Scripts for Conda Environments" in the Snakemake
-docs) -- no manual setup needed, and every reveal_module rule keeps calling the plain `REVEAL`
-command as if it came from bioconda.
+neighboring reveal_git_release.yaml (see "Post-Deployment Scripts for Conda Environments" in the
+Snakemake docs) -- every reveal_module rule keeps calling the plain `REVEAL` command as if it came
+from bioconda.
 
-Mirrors REVEAL's own shell/install.sh (which installs into $CONDA_PREFIX of the currently active
-conda env) and conda/build.sh (what the eventual bioconda recipe will do) -- just triggered by
-Snakemake instead of by hand.
-
-Selected via pipeline.reveal_module.settings.version_source: "pinned" (the default; see
-initialize.smk, which maps that setting to this env file). Since conda only re-runs this script
-when the environment is (re)created, bumping REVEAL_PINNED_TAG below requires recreating the env
-to take effect (e.g. `snakemake --conda-create-envs-only --conda-cleanup-envs`).
-
-Once reveal-tools is published on bioconda: replace reveal.yaml's dependency list with
-`- reveal-tools` and delete this file. No rule changes are needed either way.
+Selected via pipeline.reveal_module.settings.version_source: "latest_release" (see initialize.smk,
+which maps that setting to this env file). Unpinned by design -- recreate the env to pick up a
+newer release (e.g. `snakemake --conda-create-envs-only --conda-cleanup-envs`).
 """
 
 import hashlib
+import json
 import os
 import shutil
 import tarfile
@@ -30,15 +23,24 @@ import urllib.request
 
 REVEAL_REPO = "SarahSaadain/REVEAL"
 
-# Pinned default: exact tag + sha256 of its source tarball (matches REVEAL's own
-# conda/meta.yaml). GitHub does not expose a digest API for auto-generated source archives
-# (unlike uploaded release assets), so this must be updated by hand -- e.g. via
-# `curl -sL <url> | shasum -a 256` -- whenever the pinned tag is bumped.
-REVEAL_PINNED_TAG = "v1.0.0"
-REVEAL_PINNED_SHA256 = "93c65603a2db0bc5ee2dd551468f385fb7fdcf44cc33534d3b37ff68d0338843"
+GITHUB_API_HEADERS = {
+    "User-Agent": "pastForward-pipeline",
+    "Accept": "application/vnd.github+json",
+}
 
-tarball_url = f"https://github.com/{REVEAL_REPO}/archive/refs/tags/{REVEAL_PINNED_TAG}.tar.gz"
-description = f"pinned release {REVEAL_PINNED_TAG}"
+
+def _latest_release_tag():
+    req = urllib.request.Request(
+        f"https://api.github.com/repos/{REVEAL_REPO}/releases/latest",
+        headers=GITHUB_API_HEADERS,
+    )
+    with urllib.request.urlopen(req) as resp:
+        return json.load(resp)["tag_name"]
+
+
+resolved_tag = _latest_release_tag()
+tarball_url = f"https://github.com/{REVEAL_REPO}/archive/refs/tags/{resolved_tag}.tar.gz"
+description = f"latest release ({resolved_tag})"
 
 conda_prefix = os.environ["CONDA_PREFIX"]
 reveal_bin = os.path.join(conda_prefix, "bin", "REVEAL")
@@ -57,10 +59,6 @@ with tempfile.TemporaryDirectory() as tmp_dir:
         for chunk in iter(lambda: f.read(1 << 20), b""):
             digest.update(chunk)
     print(f"Downloaded {tarball_url} (sha256: {digest.hexdigest()})")
-    if digest.hexdigest() != REVEAL_PINNED_SHA256:
-        raise RuntimeError(
-            f"downloaded {tarball_url} does not match expected sha256 {REVEAL_PINNED_SHA256}"
-        )
 
     with tarfile.open(tarball_path) as tar:
         tar.extractall(tmp_dir)
