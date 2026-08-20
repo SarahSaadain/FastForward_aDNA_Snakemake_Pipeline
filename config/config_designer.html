@@ -1116,11 +1116,11 @@
                 <div class="field" style="margin-top:8px">
                   <label>Version source</label>
                   <select id="rv_vs" onchange="render()">
-                    <option value="pinned" selected>pinned (version pinned in reveal.post-deploy.sh)</option>
+                    <option value="conda" selected>conda release</option>
                     <option value="latest_release">latest_release (always newest GitHub release)</option>
                     <option value="dev">dev [experimental] (tip of REVEAL's develop branch)</option>
                   </select>
-                  <p class="hint">Default: <code>pinned</code>. REVEAL is not yet on bioconda and is always side-loaded; this only takes effect when the <code>reveal_module</code> conda environment is (re)created — see FAQ.md.</p>
+                  <p class="hint">Default: <code>conda</code>. REVEAL is not yet on bioconda and is always side-loaded; this only takes effect when the <code>reveal_module</code> conda environment is (re)created — see FAQ.md.</p>
                 </div>
               </div>
             </div>
@@ -1738,7 +1738,7 @@ function buildYAML() {
   p(0, ''); p(0, '');
   p(2, 'reveal_module:');
   kv(4, 'execute', gb('rv_exec'));
-  if (gb('rv_vs_en') && gv('rv_vs') !== 'pinned') {
+  if (gb('rv_vs_en') && gv('rv_vs') !== 'conda') {
     p(4, 'settings:');
     kv(6, 'version_source', gv('rv_vs'));
   }
@@ -2012,7 +2012,7 @@ function populateForm(c) {
   toggleStage('rv_body', document.getElementById('rv_exec'));
   const revealS = reveal.settings || {};
   if (revealS.version_source !== undefined) { setOpt('rv_vs_en','rv_vs_body','rv_vs_hdr',true); sv('rv_vs',revealS.version_source); }
-  else { setOpt('rv_vs_en','rv_vs_body','rv_vs_hdr',false); sv('rv_vs','pinned'); }
+  else { setOpt('rv_vs_en','rv_vs_body','rv_vs_hdr',false); sv('rv_vs','conda'); }
   const scg  = reveal.scg_selector || {};
   const scgs = scg.settings || {};
   sb('scg_exec', scg.execute); dot('scg_exec','d_scg');

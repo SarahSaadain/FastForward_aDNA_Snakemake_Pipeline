@@ -153,7 +153,7 @@ Place feature libraries in `{species}/input/reveal_module/feature_library/` and,
 
 | Setting | Default | Description |
 |---|---|---|
-| `settings.version_source` | `pinned` | Where to get the REVEAL toolkit (not yet on bioconda, always side-loaded). `pinned` uses the exact version pinned in `reveal.post-deploy.sh` (`reveal.yaml`); `latest_release` always side-loads the newest tagged release from [SarahSaadain/REVEAL](https://github.com/SarahSaadain/REVEAL) (`reveal_git_release.yaml`); `dev` **(experimental)** side-loads the tip of REVEAL's `develop` branch — unreleased and untested (`reveal_git_development.yaml`). Each value has its own conda env, so switching it builds/reuses that env automatically; picking up a newer release/commit on an already-built unpinned env still needs a manual rebuild — see [FAQ.md](FAQ.md). |
+| `settings.version_source` | `conda` | `conda` uses the bioconda-packaged; `latest_release` always side-loads the newest tagged release from [SarahSaadain/REVEAL](https://github.com/SarahSaadain/REVEAL) (`reveal_git_release.yaml`); `dev` **(experimental)** side-loads the tip of REVEAL's `develop` branch — unreleased and untested (`reveal_git_development.yaml`). Each value has its own conda env, so switching it builds/reuses that env automatically; picking up a newer release/commit on an already-built unpinned env still needs a manual rebuild — see [FAQ.md](FAQ.md). |
 
 #### `scg_selector`
 

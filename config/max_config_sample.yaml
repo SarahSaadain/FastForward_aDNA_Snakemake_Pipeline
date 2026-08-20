@@ -280,7 +280,7 @@ pipeline:
     settings:
       # Where to get the REVEAL toolkit from (not yet on bioconda, always side-loaded)
       # (Default: "pinned"). Options:
-      #   "pinned"          -- the version pinned in reveal.post-deploy.sh (default)
+      #   "conda"           -- the version of REVEAL pinned in the conda environment (default)
       #   "latest_release"  -- always side-load the newest tagged release from
       #                        https://github.com/SarahSaadain/REVEAL (unpinned by design)
       #   "dev"             -- [experimental] side-load the tip of REVEAL's "develop" branch.
