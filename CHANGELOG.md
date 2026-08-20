@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file.
 - **`pastForward status` false "Interrupted" on a clean finish**: the force-kill check compared the logged progress percentage to the literal string `"100.0"`, but Snakemake only prints a decimal for non-round percentages — a clean 100% finish can log `(100%)` instead of `(100.0%)`, which the string compare rejected. A completed run could therefore be reported as force-killed (SIGKILL/OOM) with a bogus `resume` suggestion. The comparison is now numeric
 - **`check`/`preview` misreported ambiguous read filenames as "none found"**: an unresolvable naming conflict (e.g. two bare `_1` markers, or a `_1`/`_2` conflict left on the R2 side of an otherwise-valid `R1`-named pair) raises `ValueError` from `file_manager.py`, but `check.py`'s per-species summary caught it with a bare `except Exception` and printed `Individuals: (none found)` / `Reads: (reads not found)` — indistinguishable from "no files exist at all" and hiding which file was actually the problem. Both spots now catch `ValueError` first and show the real message, matching the pattern already used for Competition FASTA errors
 
+### Docs
+- **Adapter sequence FAQ corrected**: [docs/FAQ.md](docs/FAQ.md) claimed custom adapters are supplied as a path to a FASTA file. `pipeline.read_module.adapter_removal.settings.adapters_sequences.{r1,r2}` is passed to fastp as `--adapter_sequence`/`--adapter_sequence_r2`, so the value is the sequence itself
+- **MultiQC report paths corrected**: [README.md](README.md) pointed at `{species}/results/summary_module/...`, but the rules write to `{species}/results/summary/...`
+- **Duplicate paragraph and a broken sentence removed** from [docs/process_overview.md](docs/process_overview.md): the damage-rescaling section repeated its input-BAM selection paragraph, and a bad find/replace had left "ancient and historical DNA and historical DNA is characterised by"
+
 ## [2.1.0] - 2026-08-20
 
 ### New Features

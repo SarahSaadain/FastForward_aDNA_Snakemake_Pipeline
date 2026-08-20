@@ -33,7 +33,7 @@ Defines the overall pipeline behavior, including execution controls and process 
 
 Quality checking, adapter removal, quality filtering, merging, taxonomic screening, and read count statistics of raw reads.
 
-> **Read count statistics always run** — per-stage counts (raw → trimmed → quality-filtered) are written unconditionally as `{species}/results/read_module/statistics/{species}_reads_counts.csv`.
+> **Read count statistics always run.** Per-stage counts (raw → trimmed → quality-filtered) are written unconditionally as `{species}/results/read_module/statistics/{species}_reads_counts.csv`.
 
 #### `analysis`
 
@@ -78,18 +78,18 @@ reference database, and the resulting taxon proportions are used to judge how mu
 > Renamed from `contamination`. The old key still works and is rewritten to `taxonomic_screening`
 > at startup, with a deprecation warning in the log.
 
-**ECMSD** — maps reads against a curated mitochondrial reference database.
+**ECMSD** maps reads against a curated mitochondrial reference database.
 
 | Setting | Default | Description |
 |---|---|---|
-| `tools.ecmsd.settings.version_source` | `conda` | Where to get the ECMSD binary. `conda` uses the bioconda-packaged `ecmsd=1.*` release (`workflow/envs/ecmsd.yaml`); `latest_release` always side-loads the newest tagged release from [capoony/ECMSD](https://github.com/capoony/ECMSD) (`ecmsd_git_release.yaml`); `dev` **(experimental)** side-loads the tip of ECMSD's `development` branch — unreleased and untested (`ecmsd_git_development.yaml`). Each value has its own conda env, so switching it builds/reuses that env automatically; picking up a newer release/commit on an already-built unpinned env still needs a manual rebuild — see [FAQ.md](FAQ.md). |
+| `tools.ecmsd.settings.version_source` | `conda` | Where to get the ECMSD binary. `conda` uses the bioconda-packaged `ecmsd=1.*` release (`workflow/envs/ecmsd.yaml`); `latest_release` always side-loads the newest tagged release from [capoony/ECMSD](https://github.com/capoony/ECMSD) (`ecmsd_git_release.yaml`); `dev` **(experimental)** side-loads the tip of ECMSD's `development` branch, unreleased and untested (`ecmsd_git_development.yaml`). Each value has its own conda env, so switching it builds or reuses that env automatically. Picking up a newer release/commit on an already-built unpinned env still needs a manual rebuild, see [FAQ.md](FAQ.md). |
 | `tools.ecmsd.settings.database` | — | Path to the ECMSD database folder. If omitted, the pipeline auto-creates a database at `resources/ecmsd_database` via `ECMSD --create-db`. |
 | `tools.ecmsd.settings.cov_threshold` | `25` | Minimum % of reference covered by reads to retain it. |
 | `tools.ecmsd.settings.top_n` | `25` | Number of top references to generate alignment plots for. |
 | `tools.ecmsd.settings.mapping_quality` | `20` | Minimum mapping quality score to include a read. |
 | `tools.ecmsd.settings.taxonomic_hierarchy` | `species` | Taxonomic level at which to aggregate and report results. Options: `species`, `genus`, `family`, `order`. |
 
-**Centrifuge** — k-mer-based taxonomic classification against a user-provided database.
+**Centrifuge** does k-mer-based taxonomic classification against a user-provided database.
 
 | Setting | Default | Description |
 |---|---|---|
@@ -99,7 +99,7 @@ reference database, and the resulting taxon proportions are used to judge how mu
 
 ### Stage: `reference_module`
 
-Mapping, deduplication, damage analysis, coverage — runs per individual per reference.
+Mapping, deduplication, damage analysis, and coverage. Runs per individual per reference.
 
 #### `mapping`
 
@@ -128,7 +128,7 @@ Optionally removes or extracts reads that did not map to the reference. Default:
 
 | Setting | Default | Description |
 |---|---|---|
-| `settings.action` | `keep` | What to do with unmapped reads: `keep` — retain in final BAM (default, must be changed explicitly); `remove` — write a mapped-reads-only BAM; `extract_fastq` — write unmapped reads to a compressed FASTQ; `extract_fasta` — write unmapped reads to a compressed FASTA. |
+| `settings.action` | `keep` | What to do with unmapped reads: `keep` retains them in the final BAM (default, must be changed explicitly), `remove` writes a mapped-reads-only BAM, `extract_fastq` writes unmapped reads to a compressed FASTQ, `extract_fasta` writes unmapped reads to a compressed FASTA. |
 
 #### Other `reference_module` steps
 
@@ -147,13 +147,13 @@ Optionally removes or extracts reads that did not map to the reference. Default:
 
 ### Stage: `reveal_module`
 
-TE and genomic feature abundance analysis — maps to a combined SCG + feature library for depth-normalised comparisons.
+TE and genomic feature abundance analysis. Maps to a combined SCG + feature library for depth-normalised comparisons.
 
 Place feature libraries in `{species}/input/reveal_module/feature_library/` and, optionally, a pre-built SCG FASTA in `{species}/input/reveal_module/scg/`. If no SCG FASTA is provided and `scg_selector.execute` is `true`, SCGs are determined automatically via BUSCO (requires a lineage configured per species). To use competitive mapping, place a single competition FASTA in `{species}/input/reveal_module/competition/`.
 
 | Setting | Default | Description |
 |---|---|---|
-| `settings.version_source` | `conda` | Where to get the REVEAL toolkit (not yet on bioconda, always side-loaded). `conda` takes REVEAL from its conda package (`reveal.yaml`) — no such package exists yet, so `reveal.post-deploy.sh` stands in for it and side-loads the newest tagged release until one does; `latest_release` always side-loads the newest tagged release from [SarahSaadain/REVEAL](https://github.com/SarahSaadain/REVEAL) (`reveal_git_release.yaml`); `dev` **(experimental)** side-loads the tip of REVEAL's `develop` branch — unreleased and untested (`reveal_git_development.yaml`). Each value has its own conda env, so switching it builds/reuses that env automatically; picking up a newer release/commit on an already-built unpinned env still needs a manual rebuild — see [FAQ.md](FAQ.md). |
+| `settings.version_source` | `conda` | Where to get the REVEAL toolkit (not yet on bioconda, always side-loaded). `conda` takes REVEAL from its conda package (`reveal.yaml`). No such package exists yet, so `reveal.post-deploy.sh` stands in for it and side-loads the newest tagged release until one does. `latest_release` always side-loads the newest tagged release from [SarahSaadain/REVEAL](https://github.com/SarahSaadain/REVEAL) (`reveal_git_release.yaml`). `dev` **(experimental)** side-loads the tip of REVEAL's `develop` branch, unreleased and untested (`reveal_git_development.yaml`). Each value has its own conda env, so switching it builds or reuses that env automatically. Picking up a newer release/commit on an already-built unpinned env still needs a manual rebuild, see [FAQ.md](FAQ.md). |
 
 #### `scg_selector`
 
@@ -193,7 +193,7 @@ Can also be used standalone (without feature libraries) to produce an SCG rankin
 
 Competitive mapping adds a competition FASTA to the combined reference (alongside SCG and feature library sequences) before mapping. Reads mapping to competition sequences are removed after mapping, so only SCG and feature library reads reach downstream analysis. This is useful for reducing false-positive mappings when reads originate from competing sources (e.g. a host genome fragment).
 
-To use competitive mapping, place exactly one FASTA file in `{species}/input/reveal_module/competition/`. The pipeline auto-discovers it — no path needs to be specified in the config.
+To use competitive mapping, place exactly one FASTA file in `{species}/input/reveal_module/competition/`. The pipeline auto-discovers it, so no path needs to be specified in the config.
 
 Competition sequences are internally suffixed with `_comp` to distinguish them from SCG (`_scg`) and feature library (`_fle`) sequences.
 
@@ -205,21 +205,21 @@ Competition sequences are internally suffixed with `_comp` to distinguish them f
 
 | Step / Setting | Default | Description |
 |---|---|---|
-| `visualization` | on | Generates SO profiles — per-position coverage, SNP, and indel information — normalised into a REVEAL directory structure for per-individual TE occupancy plots and a faceted species-level comparison plot. |
+| `visualization` | on | Generates SO profiles (per-position coverage, SNP, and indel information) normalised into a REVEAL directory structure for per-individual TE occupancy plots and a faceted species-level comparison plot. |
 | `analysis` | on | Produces coverage/SNP/indel stats and comparisons per `analysis.settings.*` below. |
 | `analysis.settings.coverage_analysis` | `true` | When `true`, produce per-individual and species-level coverage stats, comparisons, and plots. |
 | `analysis.settings.snp_analysis` | `false` | When `true`, produce per-individual and species-level SNP stats and comparisons. |
 | `analysis.settings.indel_analysis` | `false` | When `true`, produce per-individual and species-level indel stats and comparisons. |
-| `visualization.settings.individual_plots` | `skip` | `plot` — generate plotables and render per-individual plots; `plotable_only` — generate plotables only, skip rendering; `skip` — skip both. |
-| `visualization.settings.comparison_plots` | `plot` | `plot` — generate plotables and render the faceted species comparison plot; `plotable_only` — generate plotables only, skip rendering; `skip` — skip both. |
+| `visualization.settings.individual_plots` | `skip` | `plot` generates plotables and renders per-individual plots, `plotable_only` generates plotables only and skips rendering, `skip` skips both. |
+| `visualization.settings.comparison_plots` | `plot` | `plot` generates plotables and renders the faceted species comparison plot, `plotable_only` generates plotables only and skips rendering, `skip` skips both. |
 | `visualization.settings.y_axis_log_scale_threshold_individual` | `25` | Y-axis value above which per-individual plots switch to a log scale. |
 | `visualization.settings.y_axis_log_scale_threshold_species` | `25` | Y-axis value above which the species comparison plot switches to a log scale. |
 | `visualization.settings.visualization_bin_size` | `target:5000` | Bin size for per-position coverage plotables. Accepts a fixed integer (e.g. `100`), `target:N` to auto-compute `bin_size = max(1, seq_len // N)` per sequence, or length-threshold rules (e.g. `10000:1,100000:10,default:500`). |
 | `sequence_overview.settings.mapping_quality_threshold` | `5` | Mapping quality threshold for bam2so; reads below this value are treated as ambiguously mapped and excluded. |
 | `sequence_overview.settings.minimum_count_snp` | `5` | Minimum number of reads supporting a variant for it to be called as a SNP. |
-| `sequence_overview.settings.minimum_frequency_snp` | `0.1` | Minimum allele frequency (0–1) for a SNP call. |
+| `sequence_overview.settings.minimum_frequency_snp` | `0.1` | Minimum allele frequency (0 to 1) for a SNP call. |
 | `sequence_overview.settings.minimum_count_indel` | `3` | Minimum number of reads supporting an indel for it to be reported. |
-| `sequence_overview.settings.minimum_frequency_indel` | `0.01` | Minimum allele frequency (0–1) for an indel call. |
+| `sequence_overview.settings.minimum_frequency_indel` | `0.01` | Minimum allele frequency (0 to 1) for an indel call. |
 | `normalization.settings.end_distance` | `100` | Number of positions from each end of a sequence excluded when computing the normalisation factor, to avoid edge-coverage artefacts. |
 | `normalization.settings.exclude_quantile` | `25` | Percentile used to exclude the most extreme coverage values from normalisation (excludes both the top and bottom tail). |
 
@@ -245,14 +245,14 @@ Each entry under `species:` in the config corresponds to a species folder in the
 | `feature_libraries` | *(all discovered)* | Optional list of feature library IDs to use for the REVEAL stage. Same ID format as `references`. If omitted, all libraries in `{species}/input/reveal_module/feature_library/` are used. An error is raised if any listed ID is not found on disk. |
 | `lineage` | — | Required for SCG auto-determination. BUSCO lineage name (e.g. `drosophilidae_odb12`). Browse available lineages at [busco.ezlab.org](https://busco.ezlab.org/). |
 | `scg_reference` | auto-detect | Explicit path to the reference FASTA used by BUSCO. Required when multiple FASTAs exist in `{species}/input/reference_module/`; auto-detected and logged when exactly one is present. |
-| `species_dir` | *(none — data stays in-project)* | Optional: point the whole species root at a location outside the project. Must contain the same `input/{read_module,reference_module,reveal_module/{scg,feature_library,competition}}`, `processed/`, `results/` layout as a normal species folder. Sets the default target for every setting below; each can still be overridden individually. See [README.md](README.md#storing-species-data-elsewhere). |
+| `species_dir` | *(none, data stays in-project)* | Optional: point the whole species root at a location outside the project. Must contain the same `input/{read_module,reference_module,reveal_module/{scg,feature_library,competition}}`, `processed/`, `results/` layout as a normal species folder. Sets the default target for every setting below. Each can still be overridden individually. See [README.md](README.md#storing-species-data-elsewhere). |
 | `reads_dir` | *(none)* | Optional: override the location of `{species}/input/read_module/`. |
 | `reference_dir` | *(none)* | Optional: override the location of `{species}/input/reference_module/`. |
 | `scg_dir` | *(none)* | Optional: override the location of `{species}/input/reveal_module/scg/`. |
 | `feature_library_dir` | *(none)* | Optional: override the location of `{species}/input/reveal_module/feature_library/`. |
 | `competition_dir` | *(none)* | Optional: override the location of `{species}/input/reveal_module/competition/`. |
-| `processed_dir` | *(none)* | Optional: override the location of `{species}/processed/`. Protected by a cross-project lock — see [FAQ.md](../docs/FAQ.md). |
-| `results_dir` | *(none)* | Optional: override the location of `{species}/results/`. Protected by a cross-project lock — see [FAQ.md](../docs/FAQ.md). |
+| `processed_dir` | *(none)* | Optional: override the location of `{species}/processed/`. Protected by a cross-project lock, see [FAQ.md](../docs/FAQ.md). |
+| `results_dir` | *(none)* | Optional: override the location of `{species}/results/`. Protected by a cross-project lock, see [FAQ.md](../docs/FAQ.md). |
 
 When `individuals`, `references`, or `feature_libraries` are specified, the startup preview logs which items were found but not selected under **"ignored"** entries. This makes it easy to verify your selection before a full run.
 

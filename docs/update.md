@@ -2,8 +2,8 @@
 
 Your project folder holds two kinds of things:
 
-* **Pipeline code** — `workflow/`, the `pastForward` CLI, `docs/`, `README.md`, `CHANGELOG.md`, and the sample/reference files in `config/`. An update replaces these.
-* **Your stuff** — `config/config.yaml`, your `<species>/` folders (input, processed, results), `logs/`, `.pastforward/`. An update never touches these.
+* **Pipeline code**: `workflow/`, the `pastForward` CLI, `docs/`, `README.md`, `CHANGELOG.md`, and the sample/reference files in `config/`. An update replaces these.
+* **Your stuff**: `config/config.yaml`, your `<species>/` folders (input, processed, results), `logs/`, `.pastforward/`. An update never touches these.
 
 ## Before You Update
 
@@ -32,7 +32,7 @@ Start from a fresh config instead of patching your old one key by key. Open [con
 | `...contamination_analysis` | `pipeline.read_module.taxonomic_screening` (called `contamination` in 2.0.x) |
 | `pipeline.dynamics.teplotter`, `pipeline.dynamics.pf_normalization` | gone, replaced by `pipeline.reveal_module.sequence_overview`, `.normalization`, `.analysis` and `.visualization` |
 
-The full list of settings is in [config/parameters.md](../config/parameters.md). The 2.x defaults are sensible on their own, so anything you never changed can simply be left out.
+The full list of settings is in [config/parameters.md](../config/parameters.md). The 2.x defaults are sensible on their own, so anything you never changed can be left out.
 
 ### 2. Move Your Input Files
 
