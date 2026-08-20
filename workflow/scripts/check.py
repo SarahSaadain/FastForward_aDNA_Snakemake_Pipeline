@@ -61,6 +61,8 @@ if not _is_snakemake_subprocess:
                             lines.append(f"            Reads ({len(reads)}):")
                             for r in reads:
                                 lines.append(f"              {r}")
+                        except ValueError as e:
+                            lines.append(f"            Reads: (ERROR — {e})")
                         except Exception:
                             lines.append(f"            Reads: (reads not found)")
                 except Exception:
@@ -81,6 +83,8 @@ if not _is_snakemake_subprocess:
                     lines.append(f"      - {r}")
         except ConfigValidationError:
             raise
+        except ValueError as e:
+            lines.append(f"    Individuals: (ERROR — {e})")
         except Exception:
             lines.append("    Individuals: (none found)")
 
