@@ -177,6 +177,9 @@ pipeline:
 
 This way, pastForward will use your pre-processed reads directly for downstream steps without attempting to re-process them. 
 
+**Q: My reads are already merged (e.g. already adapter removed, quality filtered, and combined per individual). Can I add them?**
+Yes. pastForward processes all the read_module steps by default, but if your data has already been through some of them, you can simply disable those steps in the config so it isn't reprocessed. Place your prepared FASTQ files under `<species>/input/read_module/`, still following pastForward's [read file naming convention](../config/README.md#naming-your-read-files), and set `execute: false` for whichever steps you've already applied (see "Can I provide already pre-processed reads?" above for the adapter removal and quality filtering example).
+
 ---
 
 ## Configuration
