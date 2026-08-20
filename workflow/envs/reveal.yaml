@@ -1,4 +1,4 @@
-name: reveal_env_pinned
+name: reveal_env_conda
 channels:
   - conda-forge
   - bioconda
@@ -6,9 +6,10 @@ channels:
 dependencies:
   # REVEAL (https://github.com/SarahSaadain/REVEAL) is not yet published on
   # bioconda, so we pin its runtime deps directly (same list as REVEAL's own
-  # shell/install.sh) and side-load REVEAL itself via the neighboring
-  # reveal.post-deploy.sh (pinned release). Once reveal-tools lands on
-  # bioconda, replace this list with `- reveal-tools` and delete that script.
+  # shell/install.sh) and the neighboring reveal.post-deploy.sh stands in for
+  # the missing package by side-loading REVEAL's latest GitHub release. Once
+  # reveal-tools lands on bioconda, replace this list with `- reveal-tools`
+  # and delete that script.
   - conda-forge::python>=3.10
   - bioconda::pysam
   - conda-forge::numpy

@@ -40,7 +40,7 @@ For more installation options, see the [Snakemake documentation](https://snakema
 git clone https://github.com/SarahSaadain/pastForward.git
 ```
 
-That folder becomes your **project folder**. pastForward, your data, and your results will all live inside it. See [Project Structure](#project-structure) below for what this folder should contain.
+That folder becomes your **project folder**. pastForward, your data, and your results will all live inside it. To move an existing project folder to a newer pastForward version later, see the [Update Guide](../docs/update.md). See [Project Structure](#project-structure) below for what this folder should contain.
 
 ## Step 4: Add Your Species and Data
 

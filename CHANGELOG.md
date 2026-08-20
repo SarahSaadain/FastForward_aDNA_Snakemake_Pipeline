@@ -7,12 +7,10 @@ All notable changes to this project will be documented in this file.
 
 ## [2.1.0] - 2026-08-20
 
-## [2.1.0] - 2026-08-19
-
 ### New Features
 
 - **`pastForward` CLI**: a wrapper around `snakemake` at the project root — `run`/`resume` (backgrounded by default), `status`/`abort`/`unlock`, `check`/`preview`, `dryrun`, `doctor` (list/rebuild conda envs), `print-log`, `version`. `run`/`dryrun` write timestamped logs to `logs/`. `check`/`preview` run in-process, so they return in well under a second and need no Snakemake at all (`preview.py` was renamed to `check.py` to match). See [README.md](README.md#running-the-pipeline); plain `snakemake` usage moved to [docs/snakemake.md](docs/snakemake.md)
-- **Configurable ECMSD/REVEAL version source**: `tools.ecmsd.settings.version_source` (default `conda`) and `pipeline.reveal_module.settings.version_source` (default `pinned`) can side-load either tool straight from GitHub — `latest_release`, or an experimental `dev` — instead of its pinned build. Each value has its own conda env, so switching it rebuilds automatically. See [config/parameters.md](config/parameters.md) and [docs/FAQ.md](docs/FAQ.md)
+- **Configurable ECMSD/REVEAL version source**: `tools.ecmsd.settings.version_source` and `pipeline.reveal_module.settings.version_source` (both default `conda`) can side-load either tool straight from GitHub — `latest_release`, or an experimental `dev` — instead of its conda build. Each value has its own conda env, so switching it rebuilds automatically. For ECMSD, `conda` is the bioconda package `ecmsd=1.*`. REVEAL is not on bioconda yet, so `conda` has no package to install and `workflow/envs/reveal.post-deploy.sh` stands in for it by side-loading REVEAL's newest tagged release: the REVEAL default is therefore unpinned until `reveal-tools` is published — a single run stays consistent, but an environment rebuilt later can pick up a newer REVEAL. See [config/parameters.md](config/parameters.md) and [docs/FAQ.md](docs/FAQ.md)
 
 ### Bug Fixes
 
@@ -33,6 +31,7 @@ All notable changes to this project will be documented in this file.
 
 ### Docs
 
+- **Update guide**: [docs/update.md](docs/update.md) describes how to move an existing project folder to a newer pastForward version, both for a git clone and for a downloaded zip, plus what to check afterwards. Covers the manual migration needed when coming from a 1.x version (renamed config keys, `raw/` to `input/`, moved result folders) and the `config/config.yaml` handover for updates from before 2.1.0, where that file was still tracked by git. Linked from [README.md](README.md#quick-start) and [config/README.md](config/README.md#step-3-get-pastforward)
 - **README overhaul**: "Running the Pipeline" leads with the CLI; direct-`snakemake` usage, flags, backgrounding, and HPC/cluster notes moved to [docs/snakemake.md](docs/snakemake.md)
 - **Sample defaults corrected**: `config/max_config_sample.yaml` and `config/config_designer.html` listed `tools.centrifuge.settings.include_human_taxid: true`, while the rule and [config/parameters.md](config/parameters.md) default it to `false`
 

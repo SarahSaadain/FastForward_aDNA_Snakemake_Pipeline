@@ -279,8 +279,9 @@ pipeline:
 
     settings:
       # Where to get the REVEAL toolkit from (not yet on bioconda, always side-loaded)
-      # (Default: "pinned"). Options:
-      #   "conda"           -- the version of REVEAL pinned in the conda environment (default)
+      # (Default: "conda"). Options:
+      #   "conda"           -- whatever the conda package provides (default). No bioconda package
+      #                        exists yet, so this currently side-loads the newest tagged release
       #   "latest_release"  -- always side-load the newest tagged release from
       #                        https://github.com/SarahSaadain/REVEAL (unpinned by design)
       #   "dev"             -- [experimental] side-load the tip of REVEAL's "develop" branch.
@@ -288,7 +289,7 @@ pipeline:
       # Each option has its own conda env file, so switching this builds/reuses that env
       # automatically; picking up a newer release/commit on an already-built unpinned env
       # still needs a manual rebuild (see FAQ.md).
-      #version_source: "pinned"
+      #version_source: "conda"
 
     # ── SCG Selector ──────────────────────────────────────────────────────────
     # Automatically determines single-copy genes (SCGs) via BUSCO when no SCG

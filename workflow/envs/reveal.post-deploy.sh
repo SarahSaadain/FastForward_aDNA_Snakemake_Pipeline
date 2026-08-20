@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 """
-Side-loads the latest tagged GitHub release of REVEAL (https://github.com/SarahSaadain/REVEAL)
-into this conda environment, since REVEAL is not yet published on bioconda.
+Side-loads REVEAL (https://github.com/SarahSaadain/REVEAL) into this conda environment, since
+REVEAL is not yet published on bioconda.
 
 Snakemake runs this once, automatically, right after creating the conda environment from the
-neighboring reveal_git_release.yaml (see "Post-Deployment Scripts for Conda Environments" in the
-Snakemake docs) -- every reveal_module rule keeps calling the plain `REVEAL` command as if it came
-from bioconda.
+neighboring reveal.yaml (see "Post-Deployment Scripts for Conda Environments" in the Snakemake
+docs) -- no manual setup needed, and every reveal_module rule keeps calling the plain `REVEAL`
+command as if it came from bioconda.
 
-Selected via pipeline.reveal_module.settings.version_source: "latest_release" (see initialize.smk,
-which maps that setting to this env file). Unpinned by design -- recreate the env to pick up a
-newer release (e.g. `snakemake --conda-create-envs-only --conda-cleanup-envs`).
+Selected via pipeline.reveal_module.settings.version_source: "conda" (the default; see
+initialize.smk, which maps that setting to this env file). "conda" means "whatever the conda
+package provides", but no such package exists yet -- so until it does, this script stands in for
+it and installs the newest tagged GitHub release. Unpinned by design, since there is nothing to
+pin against: recreate the env to pick up a newer release (e.g. `snakemake
+--conda-create-envs-only --conda-cleanup-envs`).
+
+Once reveal-tools is published on bioconda: replace reveal.yaml's dependency list with
+`- reveal-tools` and delete this file. No rule changes are needed either way.
 """
 
 import hashlib

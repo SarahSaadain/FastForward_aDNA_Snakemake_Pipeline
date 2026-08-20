@@ -30,6 +30,8 @@ New to pastForward? Here's the whole path, start to finish. Each step links to m
 3. **Create a `config.yaml` file.** Every pipeline stage is turned on by default, but can be adjusted if required. To run with default settings,only a minimal config with a project name and species list is required. If you want to adjust the config, but rather not edit a text file by hand, open [config/config_designer.html](config/config_designer.html) in your browser to create your config.
 4. **Run the pipeline.** See [Running the Pipeline](#running-the-pipeline) below for the exact command.
 
+Already running pastForward and want a newer version? See the [Update Guide](docs/update.md).
+
 ## Running the Pipeline
 
 Run `./pastForward` from your **project folder**, the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. See [Project Structure](config/README.md#project-structure) for what that folder should look like.

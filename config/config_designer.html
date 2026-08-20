@@ -1116,11 +1116,11 @@
                 <div class="field" style="margin-top:8px">
                   <label>Version source</label>
                   <select id="rv_vs" onchange="render()">
-                    <option value="conda" selected>conda release</option>
+                    <option value="conda" selected>conda (bioconda package once available)</option>
                     <option value="latest_release">latest_release (always newest GitHub release)</option>
                     <option value="dev">dev [experimental] (tip of REVEAL's develop branch)</option>
                   </select>
-                  <p class="hint">Default: <code>conda</code>. REVEAL is not yet on bioconda and is always side-loaded; this only takes effect when the <code>reveal_module</code> conda environment is (re)created — see FAQ.md.</p>
+                  <p class="hint">Default: <code>conda</code>. REVEAL is not yet on bioconda and is always side-loaded, so <code>conda</code> currently installs the newest tagged release; this only takes effect when the <code>reveal</code> conda environment is (re)created — see FAQ.md.</p>
                 </div>
               </div>
             </div>
