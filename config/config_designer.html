@@ -2105,7 +2105,7 @@ function resetDefaults() {
       reference_module: {
         execute: true,
         mapping: { settings: { mapper: 'bwa-mem2' } },
-        deduplication: { execute: false, settings: { min_contigs_per_cluster: 1, max_contigs_per_cluster: 500 } },
+        deduplication: { execute: true, settings: { min_contigs_per_cluster: 1, max_contigs_per_cluster: 500 } },
         damage_rescaling: { execute: true },
         filter_unmapped_reads: { execute: false, settings: { action: 'keep' } },
         analysis: { execute: true, settings: { damage_analysis: true, create_plots: true, individual_multiqc: true, species_multiqc: true, preseq_complexitiy_curve: true, qualimap: true, samtools_stats: true } }
