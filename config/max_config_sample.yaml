@@ -277,7 +277,7 @@ pipeline:
     # When true, this stage will be executed (Default: true)
     execute: true
 
-    settings:
+    #settings:
       # Where to get the REVEAL toolkit from (not yet on bioconda, always side-loaded)
       # (Default: "conda"). Options:
       #   "conda"           -- whatever the conda package provides (default). No bioconda package
