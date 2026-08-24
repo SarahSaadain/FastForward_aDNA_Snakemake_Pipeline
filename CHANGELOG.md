@@ -5,16 +5,6 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Bug Fixes
-
-- **`pastForward status` false "Interrupted" on a clean finish**: the force-kill check compared the logged progress percentage to the literal string `"100.0"`, but Snakemake only prints a decimal for non-round percentages — a clean 100% finish can log `(100%)` instead of `(100.0%)`, which the string compare rejected. A completed run could therefore be reported as force-killed (SIGKILL/OOM) with a bogus `resume` suggestion. The comparison is now numeric
-- **`check`/`preview` misreported ambiguous read filenames as "none found"**: an unresolvable naming conflict (e.g. two bare `_1` markers, or a `_1`/`_2` conflict left on the R2 side of an otherwise-valid `R1`-named pair) raises `ValueError` from `file_manager.py`, but `check.py`'s per-species summary caught it with a bare `except Exception` and printed `Individuals: (none found)` / `Reads: (reads not found)` — indistinguishable from "no files exist at all" and hiding which file was actually the problem. Both spots now catch `ValueError` first and show the real message, matching the pattern already used for Competition FASTA errors
-
-### Docs
-- **Adapter sequence FAQ corrected**: [docs/FAQ.md](docs/FAQ.md) claimed custom adapters are supplied as a path to a FASTA file. `pipeline.read_module.adapter_removal.settings.adapters_sequences.{r1,r2}` is passed to fastp as `--adapter_sequence`/`--adapter_sequence_r2`, so the value is the sequence itself
-- **MultiQC report paths corrected**: [README.md](README.md) pointed at `{species}/results/summary_module/...`, but the rules write to `{species}/results/summary/...`
-- **Duplicate paragraph and a broken sentence removed** from [docs/process_overview.md](docs/process_overview.md): the damage-rescaling section repeated its input-BAM selection paragraph, and a bad find/replace had left "ancient and historical DNA and historical DNA is characterised by"
-
 ## [2.1.0] - 2026-08-20
 
 ### New Features
@@ -25,8 +15,11 @@ All notable changes to this project will be documented in this file.
 ### Bug Fixes
 
 - **Read-number marker in raw read filenames**: a bare `1`/`2` mid-filename (e.g. `IND001_B_1_box-1-22_R1_001.fastq.gz`) could beat the explicit `R1`/`R2` token and cut the sample ID at the wrong underscore, silently merging two specimens into one sample. `R1`/`R2` now always wins, and `get_raw_reads_for_sample()` raises instead of silently picking one of several matching files
+- **Read-number marker still confusable when only the other read's file carried the explicit token**: the fix above only preferred `R1`/`R2` over a bare digit when the *same* filename had that token. A file with only `_R2` (no `_R1` of its own) could still have a bare replicate/box number — e.g. the `_1_` in `..._1_box-3-227_R2.fastq.gz` — mistaken for a bare R1 marker, and its counterpart's `_2_` for a bare R2 marker, silently colliding two different replicates into one phantom sample. The R-form preference is now filename-wide: any explicit `R1`/`R2` token anywhere in the name disables the bare-digit fallback entirely, for both read numbers
 - **ECMSD `cov_threshold` default**: the rule fell back to `50` when the key was omitted, while [config/parameters.md](config/parameters.md), the samples, and the config designer all documented `25`. The rule now uses `25` as intended
 - **ECMSD samples with no hits**: newer ECMSD writes an empty result table instead of failing when a sample has no hits, and the pipeline now handles that case — the sample is kept as a `none_detected` placeholder row so MultiQC's relative-stacked bargraph still renders, and the per-sample `_ReadLengths.png`/`_Proportions.png` plots ECMSD skips for an empty result are no longer declared rule outputs
+- **`pastForward status` false "Interrupted" on a clean finish**: the force-kill check compared the logged progress percentage to the literal string `"100.0"`, but Snakemake only prints a decimal for non-round percentages — a clean 100% finish can log `(100%)` instead of `(100.0%)`, which the string compare rejected. A completed run could therefore be reported as force-killed (SIGKILL/OOM) with a bogus `resume` suggestion. The comparison is now numeric
+- **`check`/`preview` misreported ambiguous read filenames as "none found"**: an unresolvable naming conflict (e.g. two bare `_1` markers, or a `_1`/`_2` conflict left on the R2 side of an otherwise-valid `R1`-named pair) raises `ValueError` from `file_manager.py`, but `check.py`'s per-species summary caught it with a bare `except Exception` and printed `Individuals: (none found)` / `Reads: (reads not found)` — indistinguishable from "no files exist at all" and hiding which file was actually the problem. Both spots now catch `ValueError` first and show the real message, matching the pattern already used for Competition FASTA errors
 
 ### Changed
 
@@ -44,6 +37,9 @@ All notable changes to this project will be documented in this file.
 - **Update guide**: [docs/update.md](docs/update.md) describes how to move an existing project folder to a newer pastForward version, both for a git clone and for a downloaded zip, plus what to check afterwards. Covers the manual migration needed when coming from a 1.x version (renamed config keys, `raw/` to `input/`, moved result folders) and the `config/config.yaml` handover for updates from before 2.1.0, where that file was still tracked by git. Linked from [README.md](README.md#quick-start) and [config/README.md](config/README.md#step-3-get-pastforward)
 - **README overhaul**: "Running the Pipeline" leads with the CLI; direct-`snakemake` usage, flags, backgrounding, and HPC/cluster notes moved to [docs/snakemake.md](docs/snakemake.md)
 - **Sample defaults corrected**: `config/max_config_sample.yaml` and `config/config_designer.html` listed `tools.centrifuge.settings.include_human_taxid: true`, while the rule and [config/parameters.md](config/parameters.md) default it to `false`
+- **Adapter sequence FAQ corrected**: [docs/FAQ.md](docs/FAQ.md) claimed custom adapters are supplied as a path to a FASTA file. `pipeline.read_module.adapter_removal.settings.adapters_sequences.{r1,r2}` is passed to fastp as `--adapter_sequence`/`--adapter_sequence_r2`, so the value is the sequence itself
+- **MultiQC report paths corrected**: [README.md](README.md) pointed at `{species}/results/summary_module/...`, but the rules write to `{species}/results/summary/...`
+- **Duplicate paragraph and a broken sentence removed** from [docs/process_overview.md](docs/process_overview.md): the damage-rescaling section repeated its input-BAM selection paragraph, and a bad find/replace had left "ancient and historical DNA and historical DNA is characterised by"
 
 ### CI / Maintenance
 
