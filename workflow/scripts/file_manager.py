@@ -145,7 +145,11 @@ _READ_BARE_MARKER_RE = {
 
 # -----------------------------------------------------------------------------------------------
 # Find the read-number marker in a filename. Prefers an explicit R1/R2 token; only falls back
-# to a bare 1/2 segment if no R-token is present. Raises ValueError if either form occurs more
+# to a bare 1/2 segment if no R-token is present *anywhere* in the filename - not just for the
+# requested read_num. Otherwise a file like "..._1_box-3-227_R2.fastq.gz" (explicit R2, plus an
+# unrelated bare "_1_" replicate/box number) would spuriously match a bare-form R1 marker on
+# the replicate number, since checking read_num "1" alone never sees the "_R2" token that marks
+# this file as already using the R-form convention. Raises ValueError if either form occurs more
 # than once, since the marker position would then be ambiguous rather than just guessable.
 # Returns the match object, or None if the filename has no marker for that read number.
 def _find_read_marker(filename: str, read_num: str):
@@ -154,6 +158,10 @@ def _find_read_marker(filename: str, read_num: str):
         raise ValueError(f"File '{filename}' has multiple R{read_num} markers; cannot determine read number unambiguously.")
     if r_matches:
         return r_matches[0]
+
+    other_read_num = "2" if read_num == "1" else "1"
+    if _READ_R_MARKER_RE[other_read_num].search(filename):
+        return None
 
     bare_matches = list(_READ_BARE_MARKER_RE[read_num].finditer(filename))
     if len(bare_matches) > 1:

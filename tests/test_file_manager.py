@@ -342,6 +342,34 @@ class TestReadMarkerRPrefersOverBare(unittest.TestCase):
         marker = fm._find_read_marker("IND002_lib1_1.fastq.gz", "1")
         self.assertEqual(marker.group(0), "_1")
 
+    def test_no_r1_marker_when_only_r2_present_with_confusable_bare_1(self):
+        # "DfunF2_B_1_box-3-227_R2.fastq.gz" is a real R2 file whose replicate/box number
+        # (the "_1_") must not be mistaken for a bare R1 marker just because this
+        # particular filename happens to have no explicit "_R1" of its own.
+        self.assertIsNone(fm._find_read_marker("DfunF2_B_1_box-3-227_R2.fastq.gz", "1"))
+
+    def test_no_r2_marker_when_only_r1_present_with_confusable_bare_2(self):
+        self.assertIsNone(fm._find_read_marker("DfunF2_B_2_box-3-231_R1.fastq.gz", "2"))
+
+    def test_sample_ids_not_confused_across_replicates(self):
+        # Regression for the "DfunF2_B" phantom-sample incident: three replicates, each with
+        # its own explicit R1/R2 pair, must yield three distinct sample IDs - not a spurious
+        # extra "DfunF2_B" sample formed by cross-matching one replicate's R2 with another's R1.
+        files = [
+            "DfunF2_B_1_box-3-227_R1.fastq.gz",
+            "DfunF2_B_1_box-3-227_R2.fastq.gz",
+            "DfunF2_B_2_box-3-231_R1.fastq.gz",
+            "DfunF2_B_2_box-3-231_R2.fastq.gz",
+            "DfunF2_B_3_box-3-219_R1.fastq.gz",
+            "DfunF2_B_3_box-3-219_R2.fastq.gz",
+        ]
+        r1_files = [f for f in files if fm._find_read_marker(f, "1")]
+        samples = [f[: fm._find_read_marker(f, "1").start()] for f in r1_files]
+        self.assertEqual(
+            sorted(samples),
+            sorted(["DfunF2_B_1_box-3-227", "DfunF2_B_2_box-3-231", "DfunF2_B_3_box-3-219"]),
+        )
+
 
 class TestOneReadFileOrPairPerSample(unittest.TestCase):
     """get_raw_reads_for_sample() must resolve exactly one R1 (and, if present, exactly one
