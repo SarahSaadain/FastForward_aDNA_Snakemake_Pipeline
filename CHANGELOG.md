@@ -5,8 +5,6 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [2.1.1] - 2026-08-24
-
 ### Bug Fixes
 
 - **`pastForward status` false "Interrupted" on a clean finish**: the force-kill check compared the logged progress percentage to the literal string `"100.0"`, but Snakemake only prints a decimal for non-round percentages — a clean 100% finish can log `(100%)` instead of `(100.0%)`, which the string compare rejected. A completed run could therefore be reported as force-killed (SIGKILL/OOM) with a bogus `resume` suggestion. The comparison is now numeric
