@@ -12,7 +12,7 @@ pastForward runs on two free tools:
 
 ## Step 1: Install Conda
 
-If you don't already have conda, download and install it [Miniforge](https://github.com/conda-forge/miniforge). Follow the instructions for your operating system.
+If you don't already have conda, install [Miniforge](https://github.com/conda-forge/miniforge). Follow the instructions for your operating system.
 
 ## Step 2: Install Snakemake
 
@@ -43,7 +43,7 @@ That folder becomes your **project folder**. pastForward, your data, and your re
 A pastForward **project** is a single folder containing the `workflow/` and `config/` folders (the pipeline code you just downloaded) plus one folder per species you want to process:
 
 ```text
-my_project/                  <- project folder — run `./pastForward` (or `snakemake`) from here
+my_project/                  <- project folder, run `./pastForward` (or `snakemake`) from here
 ├── workflow/                <- pastForward pipeline code (do not edit)
 ├── config/                  <- config.yaml, config_designer.html
 ├── pastForward               <- CLI wrapper, see "Running the Pipeline" in README.md
@@ -73,13 +73,13 @@ To add a new species:
 
 #### Providing Your Data
 
-The simplest option: drop your raw read files and reference genome inside the `<species>` folder. The first time you run pastForward, it automatically finds them and moves them to its destination. This shortcut only works for reads and the reference genome. REVEAL input files (feature library, and optionally SCG) must go in their specific folders, not just anywhere in `<species>`.
+The simplest option: drop your raw read files and reference genome inside the `<species>` folder. The first time you run pastForward, it finds them and moves them to the right place. This shortcut only works for reads and the reference genome. REVEAL input files (feature library, and optionally SCG) must go in their specific folders, not just anywhere in `<species>`.
 
-IF you want to place the files directly in their final place, put your files here:
+If you want to put the files straight into their final location, put them here:
 
 * raw reads in `<species>/input/read_module/`
 * the reference genome(s) in `<species>/input/reference_module/`
-* (optional) a feature library — a FASTA of TE or other genomic feature sequences to compare across samples — in `<species>/input/reveal_module/feature_library/`, needed only if you're using the REVEAL comparison stage
+* (optional) a feature library in `<species>/input/reveal_module/feature_library/`, a FASTA of TE or other genomic feature sequences to compare across samples. Needed only if you're using the REVEAL comparison stage
 * (optional) a pre-built SCG (single-copy gene) FASTA in `<species>/input/reveal_module/scg/`. If you skip this, pastForward determines SCGs automatically via BUSCO, as long as `pipeline.reveal_module.scg_selector.execute` is `true` (the default) and `species.<key>.lineage` is set to a BUSCO lineage name (e.g. `drosophilidae_odb12`, see [busco.ezlab.org](https://busco.ezlab.org/)). No lineage configured and no FASTA provided means SCG determination is skipped.
 
 If your files are large, shared with other tools, or already live somewhere else on disk, you don't need to copy them. Place a **symlink** in the expected location instead, and pastForward will use it directly. The symlink's name must follow pastForward's naming convention (below), but the real file it points to can keep its own name and live anywhere.
@@ -124,7 +124,7 @@ At startup, pastForward creates a shortcut (symlink) at the usual in-project loc
 You don't need to create any folders beyond your species folder. Everything else is created as the pipeline runs:
 
 * `<species>/processed/` holds files created while the pipeline is working. Most are temporary files and are deleted automatically once they're no longer needed. Some are kept so the pipeline can pick up from a failed step without starting over.
-* `<species>/results/` holds your final results and reports. This is what you'll actually look at.
+* `<species>/results/` holds your final results and reports. This is the folder you will look at.
 
 Everything related to a reference is grouped under a `<reference>` folder inside `processed/` or `results/`. For most purposes, only `results/` matters. If you need more detail, the `processed/` folder usually has it. A couple of large intermediate file types (`.sam` and unsorted `.bam` files) are always deleted to save disk space. If you ever need to redo a step, just delete its output files and re-run pastForward.
 
@@ -153,7 +153,7 @@ Pattern:
 
 `config.yaml` tells pastForward which species to process and which pipeline options to use.
 
-**If you don't want to change the config in the terminal**, open the [Config Designer](https://sarahsaadain.github.io/pastForward/config/config_designer.html) in your web browser. This interactive tool walks you through every option with a graphical interface and generates a ready-to-use `config.yaml` for you. No code required.
+If you don't want to edit the config in a terminal, open the [Config Designer](https://sarahsaadain.github.io/pastForward/config/config_designer.html) in your web browser. It walks you through every option and writes a ready-to-use `config.yaml` for you.
 
 If you'd rather write it yourself, every pipeline stage is turned on by default, so a minimal config only needs a project name and species list:
 

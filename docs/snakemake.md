@@ -1,6 +1,6 @@
 # Running with Snakemake
 
-pastForward is a [Snakemake](https://snakemake.github.io) workflow. The [`pastForward` CLI](../README.md#running-the-pipeline) is a thin wrapper around `snakemake` that covers day-to-day use (backgrounding, progress checks, a clean stop) and is the recommended way to run the pipeline. This page is for calling `snakemake` directly instead: tuning its flags, running on an HPC cluster, and how it decides what to (re-)run.
+pastForward is a [Snakemake](https://snakemake.github.io) workflow. The [`pastForward` CLI](../README.md#running-the-pipeline) is a thin wrapper around `snakemake` that covers day-to-day use (backgrounding, progress checks, a clean stop) and is the recommended way to run the pipeline. This page is for calling `snakemake` directly instead. It covers the flags worth tuning, running on an HPC cluster, and how Snakemake decides what to (re-)run.
 
 Run these commands from your **project folder**, the folder that directly contains `workflow/`, `config/`, and your `<species>/` folders. See [Project Structure](../config/README.md#project-structure) for what that folder should look like.
 
@@ -24,7 +24,7 @@ Replace `<number_of_threads>` with the number of CPU threads you want to give th
 
 **A few other flags you might want:**
 
-* `--dryrun` (or `-n`): show what the pipeline *would* do, without actually running anything. Use it to check if pastForward picks up all your data correctly (this is what `./pastForward dryrun` runs for you).
+* `--dryrun` (or `-n`): show what the pipeline *would* do, without running anything. Use it to check if pastForward picks up all your data correctly (this is what `./pastForward dryrun` runs for you).
 * `--configfile <path_to_config.yaml>`: use a config file other than the default.
 * `--rerun-incomplete`: pick back up rules that failed or were cancelled in a previous run (this is what `./pastForward resume` runs for you).
 * `--rerun-trigger <code|input|mtime|params|software-env>`: choose what counts as "changed" when deciding whether to re-run a step. By default, all of these are checked, which is the safest option. `mtime` (used above) checks only file modification times, which is faster but less thorough.
@@ -34,7 +34,7 @@ For the full list of Snakemake's command-line options, see the [Snakemake docume
 
 ## Running in the Background
 
-Large datasets can take a while to process, so it's often best to run pastForward in the background. That way it keeps running even if you close your terminal window. `./pastForward run` does this by default; the equivalent with plain `snakemake` is:
+Large datasets can take a while to process, so it's often best to run pastForward in the background. That way it keeps running even if you close your terminal window. `./pastForward run` does this by default. The equivalent with plain `snakemake` is:
 
 ```bash
 nohup snakemake --cores 40 --use-conda --keep-going --rerun-trigger mtime > pipeline.log 2>&1 &
