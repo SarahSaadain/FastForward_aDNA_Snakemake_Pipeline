@@ -112,7 +112,7 @@ Merged per-individual reads are mapped to the reference genome. Mapping always r
 
 #### `deduplication`
 
-Removes PCR and sequencing duplicates using DeDup. Default: **off**.
+Removes PCR and sequencing duplicates using DeDup. Default: **on**.
 
 Uses a [modified DeDup fork](https://github.com/SarahSaadain/DeDup) for performance improvements over upstream DeDup ([benchmark comparison repo](https://github.com/SarahSaadain/DeDup_comparison_fork)).
 
