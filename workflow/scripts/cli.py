@@ -60,6 +60,9 @@ DETECTED_SPECIES_RE = re.compile(r"^\[.*?Detected species", re.MULTILINE)
 ABORTING_RE = re.compile(r"Will exit after finishing currently running jobs \(scheduler\)\.")
 FAILED_RE = re.compile(r"At least one job did not complete successfully\.")
 LOCK_RE = re.compile(r"LockException")
+# Printed instead of a "N of N steps" progress line when the DAG's targets were already all
+# present and up to date - a legitimate no-op success, not a sign the run never started.
+NOTHING_TO_DO_RE = re.compile(r"^Nothing to be done \(all requested files are present and up to date\)\.", re.MULTILINE)
 PROJECT_NAME_RE = re.compile(r'^project_name:\s*["\']?([^"\'\n]+?)["\']?\s*$', re.MULTILINE)
 JOB_ERROR_BLOCK_RE = re.compile(r"^Error in rule \S+:\n(?:[ \t]+.*\n?)*", re.MULTILINE)
 # The `log:` line Snakemake prints inside an "Error in rule" block - points at the rule's own
@@ -403,10 +406,12 @@ def _print_status(tail=None):
     elif not alive and LOCK_RE.search(text):
         print(_color(RED, "Locked:     directory is locked (stale lock from a killed run or power loss)."))
         print(_color(DIM, "Fix with: ./pastForward unlock, then ./pastForward resume --cores <N>"))
-    elif not alive and (progress is None or float(progress.group(3)) != 100.0):
+    elif not alive and (progress is None or float(progress.group(3)) != 100.0) and not NOTHING_TO_DO_RE.search(text):
         # Died before 100% with no "did not complete successfully" marker either - Snakemake
         # never got the chance to log a reason, so this is most likely a force-kill (SIGKILL,
-        # `abort --force`, OOM-killer) rather than a graceful failure.
+        # `abort --force`, OOM-killer) rather than a graceful failure. Exception: a DAG with
+        # nothing left to run prints "Nothing to be done" instead of a progress line at all,
+        # which would otherwise look identical to a run that never got going.
         print(_color(YELLOW, "Interrupted: not running, and the log shows neither success nor a recorded failure - likely force-killed (SIGKILL/OOM) rather than a normal error exit."))
         print(_color(DIM, "Resume with: ./pastForward resume --cores <N>"))
 

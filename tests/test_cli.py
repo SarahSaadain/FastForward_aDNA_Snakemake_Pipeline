@@ -333,6 +333,28 @@ class ArgvValidationTestCase(unittest.TestCase):
             cli.cmd_status([])
         self.assertIn("Interrupted", out.getvalue())
 
+    def test_status_not_interrupted_when_nothing_to_be_done(self):
+        # Process not running, log has no progress line at all because the DAG's targets were
+        # already present and up to date - Snakemake's normal no-op success, must not be
+        # misread as a force-kill just because there's no "100%" line to match.
+        cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
+        os.makedirs(cli.LOG_DIR)
+        log_path = cli.LOG_DIR / "run_nothing_to_do.log"
+        log_path.write_text("Nothing to be done (all requested files are present and up to date).\n")
+        cli.STATE_FILE.write_text(
+            json.dumps(
+                {
+                    "pid": 999999,
+                    "cmd": ["snakemake", "--cores", "4"],
+                    "log_file": str(log_path),
+                    "started_at": datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+        )
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_status([])
+        self.assertNotIn("Interrupted", out.getvalue())
+
     def test_status_flags_lock_exception(self):
         # Process not running, log has a LockException (stale lock from a killed run or
         # power loss) - must be reported as "Locked", not misread as a force-kill.
