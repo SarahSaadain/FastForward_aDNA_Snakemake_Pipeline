@@ -278,17 +278,15 @@ pipeline:
     execute: true
 
     #settings:
-      # Where to get the REVEAL toolkit from (not yet on bioconda, always side-loaded)
-      # (Default: "conda"). Options:
-      #   "conda"           -- whatever the conda package provides (default). No bioconda package
-      #                        exists yet, so this currently side-loads the newest tagged release
+      # Where to get the REVEAL toolkit from (Default: "conda"). Options:
+      #   "conda"           -- the bioconda package reveal-tools=1.* (default)
       #   "latest_release"  -- always side-load the newest tagged release from
       #                        https://github.com/SarahSaadain/REVEAL (unpinned by design)
       #   "dev"             -- [experimental] side-load the tip of REVEAL's "develop" branch.
       #                        Unreleased and untested -- use at your own risk.
       # Each option has its own conda env file, so switching this builds/reuses that env
-      # automatically; picking up a newer release/commit on an already-built unpinned env
-      # still needs a manual rebuild (see FAQ.md).
+      # automatically; picking up a newer release/commit on an already-built unpinned
+      # latest_release/dev env still needs a manual rebuild (see FAQ.md).
       #version_source: "conda"
 
     # ── SCG Selector ──────────────────────────────────────────────────────────

@@ -153,7 +153,7 @@ Place feature libraries in `{species}/input/reveal_module/feature_library/` and,
 
 | Setting | Default | Description |
 |---|---|---|
-| `settings.version_source` | `conda` | Where to get the REVEAL toolkit (not yet on bioconda, always side-loaded). `conda` takes REVEAL from its conda package (`reveal.yaml`). No such package exists yet, so `reveal.post-deploy.sh` stands in for it and side-loads the newest tagged release until one does. `latest_release` always side-loads the newest tagged release from [SarahSaadain/REVEAL](https://github.com/SarahSaadain/REVEAL) (`reveal_git_release.yaml`). `dev` **(experimental)** side-loads the tip of REVEAL's `develop` branch, unreleased and untested (`reveal_git_development.yaml`). Each value has its own conda env, so switching it builds or reuses that env automatically. Picking up a newer release/commit on an already-built unpinned env still needs a manual rebuild, see [FAQ.md](FAQ.md). |
+| `settings.version_source` | `conda` | Where to get the REVEAL toolkit. `conda` takes REVEAL from the bioconda package `reveal-tools=1.*` (`reveal.yaml`). `latest_release` side-loads the newest tagged release from [SarahSaadain/REVEAL](https://github.com/SarahSaadain/REVEAL) instead (`reveal_git_release.yaml`). `dev` **(experimental)** side-loads the tip of REVEAL's `develop` branch, unreleased and untested (`reveal_git_development.yaml`). Each value has its own conda env, so switching it builds or reuses that env automatically. Picking up a newer release/commit on an already-built unpinned `latest_release`/`dev` env still needs a manual rebuild, see [FAQ.md](FAQ.md). |
 
 #### `scg_selector`
 

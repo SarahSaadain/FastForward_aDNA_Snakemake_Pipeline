@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **REVEAL is now on bioconda**: `reveal-tools` was [published to bioconda](https://github.com/bioconda/bioconda-recipes/pull/67451), so `pipeline.reveal_module.settings.version_source: "conda"` (the default) now installs the pinned bioconda package `reveal-tools=1.*` instead of side-loading REVEAL's newest tagged GitHub release. `workflow/envs/reveal.post-deploy.sh`, which stood in for the missing package, is removed — no rule changes needed. `latest_release` and `dev` are unaffected and still side-load from GitHub
+
 ### Bug Fixes
 
 - **`dedup_deduplicate_bam_cluster` lost its log on a crash**: the rule's `log:` file was written inside its own `directory()` output (`dedup_{start}_{end}/`). When `dedup` exited non-zero, Snakemake's on-failure cleanup deleted that whole directory to keep the failed job's outputs atomic, wiping the crash log along with it. The log now lives as a sibling of the directory instead of inside it, matching every other rule in the file
