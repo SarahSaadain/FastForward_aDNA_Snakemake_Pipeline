@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- **`skip_low_coverage_individuals` crashed REVEAL's cross-individual comparison steps**: an excluded individual gets header-only stats files (no data rows), but `compare_visualization_stats_accross_individuals_of_species`, `compare_visualization_snp_stats_across_individuals_of_species`, and `compare_visualization_indel_stats_across_individuals_of_species` still passed every individual's stats file, excluded or not, to `REVEAL covcompare`/`snpcompare`/`indelcompare`, which divided by zero on the empty ones. All three rules now drop stats files with no data rows before invoking REVEAL, and skip the REVEAL call entirely (writing an empty comparison output instead) when fewer than two individuals have usable stats, since REVEAL's compare commands need at least two to compare
 - **`dedup_deduplicate_bam_cluster` lost its log on a crash**: the rule's `log:` file was written inside its own `directory()` output (`dedup_{start}_{end}/`). When `dedup` exited non-zero, Snakemake's on-failure cleanup deleted that whole directory to keep the failed job's outputs atomic, wiping the crash log along with it. The log now lives as a sibling of the directory instead of inside it, matching every other rule in the file
 
 ## [2.1.0] - 2026-08-20
