@@ -89,6 +89,7 @@ def _color(code, text):
 # regexes elsewhere in this file (PROGRESS_RE, JOB_STARTED_RE, ...) keep working on it.
 SNAKEMAKE_LINE_RULES = [
     (ABORTING_RE, YELLOW),
+    (re.compile(r"Workflow finished, no error"), GREEN),
     (re.compile(r"error", re.IGNORECASE), RED),
     (re.compile(r"^WARNING"), YELLOW),
     (re.compile(r"^Finished jobid:"), GREEN),
