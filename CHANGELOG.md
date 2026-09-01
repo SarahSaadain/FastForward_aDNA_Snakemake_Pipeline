@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### New Features
+
+- **`pipeline.reveal_module.normalization.settings.skip_low_coverage_individuals`**: when an individual's SCG coverage is too low for REVEAL to compute a normalization factor, this now excludes that individual instead of failing the whole species' REVEAL comparison and faceted plot. Excluded individuals are listed, with the reason, in `{species}_{feature_library}_excluded_individuals.tsv`. Default `false` keeps the previous strict-fail behavior. See [config/parameters.md](config/parameters.md)
+
 ### Changed
 
 - **REVEAL is now on bioconda**: `reveal-tools` was [published to bioconda](https://github.com/bioconda/bioconda-recipes/pull/67451), so `pipeline.reveal_module.settings.version_source: "conda"` (the default) now installs the pinned bioconda package `reveal-tools=1.*` instead of side-loading REVEAL's newest tagged GitHub release. `workflow/envs/reveal.post-deploy.sh`, which stood in for the missing package, is removed — no rule changes needed. `latest_release` and `dev` are unaffected and still side-load from GitHub

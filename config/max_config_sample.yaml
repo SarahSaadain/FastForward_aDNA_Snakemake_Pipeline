@@ -378,6 +378,10 @@ pipeline:
         end_distance: 100
         # Exclude the most extreme coverage quantiles for normalization (Default: 25)
         exclude_quantile: 25
+        # When an individual's SCG coverage is too low to normalize, exclude that
+        # individual instead of failing the whole species-level comparison/plot.
+        # Excluded individuals are listed in *_excluded_individuals.tsv (Default: false)
+        skip_low_coverage_individuals: false
 
     visualization:
       # When true, this sub-stage will be executed (Default: true)

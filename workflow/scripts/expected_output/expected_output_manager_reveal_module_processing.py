@@ -61,6 +61,12 @@ def get_expected_output_reveal_module_processing(species):
 
     individuals = get_individuals_for_species(species)
 
+    skip_low_coverage_individuals = (
+        reveal_cfg.get("normalization", {})
+        .get("settings", {})
+        .get("skip_low_coverage_individuals", False)
+    )
+
     if reveal_cfg.get("visualization", {}).get("execute", True) and coverage_analysis_active:
         all_inputs.append(f"{species}/results/reveal_module/{species}_reveal_coverage_comparison.tsv")
 
@@ -87,6 +93,11 @@ def get_expected_output_reveal_module_processing(species):
                 all_inputs.append(
                     f"{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_flagged_seqids.tsv"
                 )
+
+                if skip_low_coverage_individuals:
+                    all_inputs.append(
+                        f"{species}/results/reveal_module/{feature_library}/visualization/species_level/{species}_{feature_library}_excluded_individuals.tsv"
+                    )
 
                 if comparison_plots_mode == "plot":
                     all_inputs.append(

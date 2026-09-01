@@ -1387,6 +1387,13 @@
                 <input type="number" id="viz_excl_quant" value="25" min="0" max="49" oninput="render()">
                 <span style="font-size:.68rem;color:var(--text-muted);margin-top:3px;display:block">Percentile used to exclude extreme coverage values from normalisation (Default: 25)</span>
               </div>
+              <div class="toggle-wrap" style="margin-top:8px">
+                <label class="toggle">
+                  <input type="checkbox" id="viz_skip_low_cov" onchange="render()">
+                  <span class="slider"></span>
+                </label>
+                <label class="lbl" for="viz_skip_low_cov">Skip individuals with too-low SCG coverage to normalize <span style="color:var(--text-muted);font-size:.75em">(default: off — otherwise a single low-coverage individual fails the species-level comparison/plot; excluded individuals are listed in <code>*_excluded_individuals.tsv</code>)</span></label>
+              </div>
             </div>
             </div><!-- /.adv-content -->
           </div>
@@ -1778,6 +1785,7 @@ function buildYAML() {
   p(6, 'settings:');
   kv(8, 'end_distance',    gn('viz_end_dist'));
   kv(8, 'exclude_quantile', gn('viz_excl_quant'));
+  kv(8, 'skip_low_coverage_individuals', gb('viz_skip_low_cov'));
   p(4, 'visualization:');
   kv(6, 'execute', gb('viz_exec'));
   p(6, 'settings:');
@@ -2053,6 +2061,7 @@ function populateForm(c) {
   sv('viz_mf_indel',        sos.minimum_frequency_indel     != null ? sos.minimum_frequency_indel     : 0.01);
   sv('viz_end_dist',        norms.end_distance               != null ? norms.end_distance               : 100);
   sv('viz_excl_quant',      norms.exclude_quantile           != null ? norms.exclude_quantile           : 25);
+  sb('viz_skip_low_cov',    norms.skip_low_coverage_individuals);
   const sps = sp.settings || {};
   sb('sp_exec',       sp.execute);
   sb('sp_individual', sps.individual_multiqc);

@@ -222,6 +222,7 @@ Competition sequences are internally suffixed with `_comp` to distinguish them f
 | `sequence_overview.settings.minimum_frequency_indel` | `0.01` | Minimum allele frequency (0 to 1) for an indel call. |
 | `normalization.settings.end_distance` | `100` | Number of positions from each end of a sequence excluded when computing the normalisation factor, to avoid edge-coverage artefacts. |
 | `normalization.settings.exclude_quantile` | `25` | Percentile used to exclude the most extreme coverage values from normalisation (excludes both the top and bottom tail). |
+| `normalization.settings.skip_low_coverage_individuals` | `false` | When an individual's SCG coverage is too low for REVEAL to compute a normalisation factor, exclude that individual from normalised outputs and species-level comparisons/plots instead of failing them. Excluded individuals are listed, with the reason, in `{species}_{feature_library}_excluded_individuals.tsv`. Default `false` keeps today's behaviour: a low-coverage individual fails the whole species-level REVEAL comparison. |
 
 ### Stage: `summary_module`
 
