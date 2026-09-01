@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Bug Fixes
+
+- **`dedup_deduplicate_bam_cluster` lost its log on a crash**: the rule's `log:` file was written inside its own `directory()` output (`dedup_{start}_{end}/`). When `dedup` exited non-zero, Snakemake's on-failure cleanup deleted that whole directory to keep the failed job's outputs atomic, wiping the crash log along with it. The log now lives as a sibling of the directory instead of inside it, matching every other rule in the file
+
 ## [2.1.0] - 2026-08-20
 
 ### New Features
