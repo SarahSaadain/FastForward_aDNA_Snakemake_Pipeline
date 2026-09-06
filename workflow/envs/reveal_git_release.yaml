@@ -2,7 +2,6 @@ name: reveal_env_git_release
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   # This env intentionally tracks REVEAL (https://github.com/SarahSaadain/REVEAL)
   # straight from its latest GitHub release rather than the bioconda package

@@ -2,6 +2,5 @@ name: reveal_env_conda
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - reveal-tools=1.*

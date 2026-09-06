@@ -2,7 +2,6 @@ name: reveal_env_git_development
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   # This env intentionally tracks the tip of REVEAL's (https://github.com/SarahSaadain/REVEAL)
   # "develop" branch rather than the bioconda package (see reveal.yaml for that), so we pin its
