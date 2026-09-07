@@ -34,6 +34,7 @@ LOG_DIR = Path("logs")
 STATE_FILE = STATE_DIR / "run_state.json"
 
 CORES_FLAGS = ("--cores", "-c", "-j", "--jobs")
+DRYRUN_FLAGS = ("--dryrun", "--dry-run", "-n")
 CONFIGFILE_FLAGS = ("--configfile", "--configfiles")
 DEFAULT_CONFIGFILE = "config/config.yaml"  # matches initialize.smk's `configfile:` directive
 
@@ -148,11 +149,14 @@ def _build_run_cmd(extra_args):
 
 
 def _build_dryrun_cmd(extra_args):
-    cmd = ["snakemake", "--dryrun"]
+    # Reuses _build_run_cmd so a dry run predicts what `run` will actually do. Without
+    # --rerun-trigger mtime a dry run falls back to Snakemake's default trigger set (mtime,
+    # params, input, code, software-env) and reports reruns - e.g. "Code has changed since
+    # last execution" - that the real run would never perform. --keep-going is a no-op here.
+    extra_args = list(extra_args)
     if not any(a in CORES_FLAGS for a in extra_args):
-        cmd += ["--cores", "1"]
-    cmd += extra_args
-    return cmd
+        extra_args += ["--cores", "1"]
+    return _build_run_cmd(extra_args) + ["--dryrun"]
 
 
 def _run_foreground(cmd, log_path):
@@ -355,6 +359,14 @@ def cmd_status(argv):
     _print_status()
 
 
+def _print_log_tail(text, log_path, tail):
+    if not tail:
+        return
+    print(_color(DIM, f"\n--- tail -n {tail} {log_path} ---"))
+    for line in text.splitlines()[-tail:]:
+        sys.stdout.write(_colorize(line + "\n", SNAKEMAKE_LINE_RULES))
+
+
 def _print_status(tail=None):
     state = _read_state()
     pid = state["pid"]
@@ -370,6 +382,10 @@ def _print_status(tail=None):
     )
     runtime = _format_duration((end - started).total_seconds())
     cores = _cores_from_cmd(state["cmd"]) or "?"
+    # `run`/`resume` pass unknown flags straight through to Snakemake, so `run --cores N -n`
+    # tracks a dry run in the state file. A dry run executes nothing, so none of the progress
+    # or exit-classification reporting below applies to it.
+    dryrun = any(a in DRYRUN_FLAGS for a in state["cmd"])
     print(f"{_color(CYAN, 'Project:')}   {project_name}")
     print(f"{_color(CYAN, 'Config:')}    {configfile}")
     print(f"{_color(CYAN, 'PID:')}       {pid} ({_color(GREEN, 'running') if alive else _color(RED, 'not running')})")
@@ -378,10 +394,18 @@ def _print_status(tail=None):
     print(f"{_color(CYAN, 'Cores:')}     {cores}")
     print(f"{_color(CYAN, 'Log:')}       {state['log_file']}")
 
+    if dryrun:
+        print(f"{_color(CYAN, 'Mode:')}      {_color(YELLOW, 'dry run (--dryrun) - no jobs are executed')}")
+
     if not log_path.exists():
         print(_color(DIM, "(log file not found yet)"))
         return alive
     text = log_path.read_text(errors="replace")
+
+    if dryrun:
+        print(_color(DIM, "(dry run in progress)") if alive else _color(GREEN, "Dry run finished. Nothing was executed, so there is nothing to resume."))
+        _print_log_tail(text, log_path, tail)
+        return alive
 
     progress = None
     for progress in PROGRESS_RE.finditer(text):
@@ -430,10 +454,7 @@ def _print_status(tail=None):
         for rule_name, jobid in running:
             print(f"  - {rule_name} (jobid {jobid})")
 
-    if tail:
-        print(_color(DIM, f"\n--- tail -n {tail} {log_path} ---"))
-        for line in text.splitlines()[-tail:]:
-            sys.stdout.write(_colorize(line + "\n", SNAKEMAKE_LINE_RULES))
+    _print_log_tail(text, log_path, tail)
 
     return alive
 

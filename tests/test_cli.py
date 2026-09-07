@@ -43,11 +43,30 @@ class BuildCmdTestCase(unittest.TestCase):
 
     def test_dryrun_cmd_defaults_cores(self):
         cmd = cli._build_dryrun_cmd([])
-        self.assertEqual(cmd, ["snakemake", "--dryrun", "--cores", "1"])
+        self.assertEqual(
+            cmd,
+            ["snakemake", "--use-conda", "--keep-going", "--rerun-trigger", "mtime", "--cores", "1", "--dryrun"],
+        )
 
     def test_dryrun_cmd_respects_user_cores(self):
         cmd = cli._build_dryrun_cmd(["-j", "8"])
-        self.assertEqual(cmd, ["snakemake", "--dryrun", "-j", "8"])
+        self.assertEqual(
+            cmd,
+            ["snakemake", "--use-conda", "--keep-going", "--rerun-trigger", "mtime", "-j", "8", "--dryrun"],
+        )
+
+    def test_dryrun_cmd_uses_same_rerun_trigger_as_run(self):
+        # A dry run must predict what `run` does. Without --rerun-trigger mtime, Snakemake
+        # falls back to its full default trigger set and reports reruns (e.g. "Code has
+        # changed since last execution") that the real run would never perform.
+        dryrun = cli._build_dryrun_cmd(["--cores", "8"])
+        run = cli._build_run_cmd(["--cores", "8"])
+        self.assertEqual([a for a in dryrun if a != "--dryrun"], run)
+
+    def test_dryrun_cmd_does_not_duplicate_user_supplied_flags(self):
+        cmd = cli._build_dryrun_cmd(["--rerun-trigger", "code", "--cores", "4"])
+        self.assertEqual(cmd.count("--rerun-trigger"), 1)
+        self.assertNotIn("mtime", cmd)
 
 
 class StatusHelpersTestCase(unittest.TestCase):
@@ -354,6 +373,31 @@ class ArgvValidationTestCase(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()) as out:
             cli.cmd_status([])
         self.assertNotIn("Interrupted", out.getvalue())
+
+    def test_status_reports_dry_run_instead_of_force_kill(self):
+        # `run`/`resume` pass unknown snakemake flags through, so `run --cores N -n` is tracked
+        # in the state file like a real run. A dry run executes nothing and exits in seconds, so
+        # it has no progress line and no failure marker - it must not be reported as a force-kill.
+        cli.STATE_DIR.mkdir(parents=True, exist_ok=True)
+        os.makedirs(cli.LOG_DIR)
+        log_path = cli.LOG_DIR / "run_dryrun.log"
+        log_path.write_text("This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.\n")
+        cli.STATE_FILE.write_text(
+            json.dumps(
+                {
+                    "pid": 999999,
+                    "cmd": ["snakemake", "--cores", "40", "-n"],
+                    "log_file": str(log_path),
+                    "started_at": datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+        )
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cli.cmd_status([])
+        output = out.getvalue()
+        self.assertNotIn("Interrupted", output)
+        self.assertNotIn("Resume with", output)
+        self.assertIn("dry run", output)
 
     def test_status_flags_lock_exception(self):
         # Process not running, log has a LockException (stale lock from a killed run or
