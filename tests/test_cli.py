@@ -623,5 +623,36 @@ Workflow defines that rule index_reference_for_mapping_bwa_mem2 is eligible for 
         self.assertEqual(len(requested), 2)
 
 
+class ListCondaEnvsTestCase(unittest.TestCase):
+    # Real `snakemake --list-conda-envs` output shape: one row per rule, so an env used by
+    # several rules repeats with the same location (the crash in `doctor --rebuild-envs` was
+    # rmtree() on that same directory twice).
+    OUT = """\
+[2026-09-07 10:00:00 (CEST)] [INFO] Building DAG of jobs...
+environment\tsource\tlocation
+workflow/envs/python_and_r.yaml\t-\t.snakemake/conda/3f83c79_
+workflow/envs/python_and_r.yaml\t-\t.snakemake/conda/3f83c79_
+workflow/envs/read_module/environment.yaml\t-\t.snakemake/conda/2844fb9_
+workflow/envs/reference_module/environment.yaml\t-\t.snakemake/conda/1c817e9_
+"""
+
+    def test_rows_are_deduplicated_by_location(self):
+        class FakeProc:
+            returncode = 0
+            stdout = ListCondaEnvsTestCase.OUT
+
+        real_run = cli.subprocess.run
+        cli.subprocess.run = lambda *a, **kw: FakeProc()
+        try:
+            envs = cli._list_conda_envs()
+        finally:
+            cli.subprocess.run = real_run
+        self.assertEqual(
+            [e["location"] for e in envs],
+            [".snakemake/conda/3f83c79_", ".snakemake/conda/2844fb9_", ".snakemake/conda/1c817e9_"],
+        )
+        self.assertEqual(envs[0]["env_file"], "workflow/envs/python_and_r.yaml")
+
+
 if __name__ == "__main__":
     unittest.main()

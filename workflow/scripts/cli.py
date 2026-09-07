@@ -506,12 +506,15 @@ def _list_conda_envs():
         sys.exit(proc.returncode)
     # The env table is the only tab-separated, 3-column output on the whole stream - everything
     # else is the usual startup logging (see initialize.smk), which never looks like that.
-    envs = []
+    # One row per rule, so an env shared by several rules is listed several times with the
+    # same location. Deduplicate on location: the table would otherwise repeat it, and
+    # --rebuild-envs would rmtree() the same directory twice and crash on the second try.
+    envs = {}
     for line in proc.stdout.splitlines():
         parts = line.split("\t")
         if len(parts) == 3 and parts[0] != "environment":
-            envs.append({"env_file": parts[0], "location": parts[2]})
-    return envs
+            envs.setdefault(parts[2], {"env_file": parts[0], "location": parts[2]})
+    return list(envs.values())
 
 
 def cmd_doctor(argv):
